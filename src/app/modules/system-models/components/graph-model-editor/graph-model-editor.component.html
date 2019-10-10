@@ -1,0 +1,108 @@
+<div class="grid"
+    appDropTarget
+    (appOnDrop)="itemDropped($event)"
+    (contextmenu)="false"
+></div>
+<div
+    *ngIf="graphModel"
+>
+    <app-graph-control-bar [graphModel]="graphModel"></app-graph-control-bar>
+    <svg
+        class="edges"
+        width="100%"
+        height="100%"
+        [ngStyle]="transformStyle()"
+    >
+        <svg:g
+            *ngIf="cablePullService.isActive"
+            app-gm-connection
+            [source]="cablePullService.source"
+            [destination]="cablePullService.destination"
+        >
+        </svg:g>
+        <svg:g
+            *ngFor="let connection of graphModel.connections"
+            app-gm-connection
+            [source]="(connection.metadata)?.referenceSource || connection.source"
+            [destination]="(connection.metadata)?.referenceDestination || connection.destination"
+        >
+        </svg:g>
+    </svg>
+    <div
+        class="processes"
+        [ngStyle]="transformStyle()"
+    >
+        <app-gm-port
+            class="graph-port"
+            *ngFor="let inport of graphModel.inports"
+            [appGraphNode]="inport"
+            [position]="{ x: inport.metadata.x, y: inport.metadata.y }"
+            [direction]="'out'"
+            [port]="inport"
+        >
+        </app-gm-port>
+        <app-gm-port
+            class="graph-port"
+            *ngFor="let outport of graphModel.outports"
+            [appGraphNode]="outport"
+            [position]="{ x: outport.metadata.x, y: outport.metadata.y }"
+            [direction]="'in'"
+            [port]="outport"
+        >
+        </app-gm-port>
+        <app-gm-process
+            class="process"
+            *ngFor="let process of graphModel.processes"
+            [appGraphNode]="process"
+            [position]="{ x: process.metadata.x, y: process.metadata.y }"
+            [process]="process"
+            (processInportDblClicked)="doubleClick()">
+        >
+        </app-gm-process>
+        <ng-container *ngFor="let broadcastVariable of graphModel.broadcastVariables">
+            <app-gm-broadcast-variable
+                *ngFor="let reference of broadcastVariable.metadata.references"
+                [variable]="broadcastVariable"
+                [variableReference]="reference"
+                [appGraphNode]="reference"
+                [position]="{ x: reference.metadata.x, y: reference.metadata.y }"
+            >
+            </app-gm-broadcast-variable>
+        </ng-container>
+        <ng-container *ngFor="let namedVariable of graphModel.namedVariables">
+            <app-gm-named-variable
+                *ngFor="let reference of namedVariable.metadata.references"
+                [variable]="namedVariable"
+                [variableReference]="reference"
+                [appGraphNode]="reference"
+                [position]="{ x: reference.metadata.x, y: reference.metadata.y }"
+            >
+            </app-gm-named-variable>
+        </ng-container>
+    </div>
+
+    <div class="hud">
+        Zoom: {{layoutEngineService.scale  | percent}}
+    </div>
+
+    <div class="graph-name">
+        {{graphModel.name}}
+    </div>
+
+    <svg id="marching-ants" width="10px" height="10px" preserveAspectRatio='none' [style.display]="marchingAntsStyle" >
+        <svg:rect width='100%' height='100%'/>
+    </svg>
+</div>
+
+<ng-template #variablePicker let-close="close">
+    <app-gm-variable-picker
+        [variables]="graphModel.variables"
+        [connections]="graphModel.connections"
+        [graphModelId]="graphModel.id"
+        [originPortId]="cablePullService.port.id"
+        [originPortType]="cablePullService.port.portType"
+        [x]="cablePullService.dropDestination.x"
+        [y]="cablePullService.dropDestination.y"
+        (onPick)="close();"
+    ></app-gm-variable-picker>
+</ng-template>

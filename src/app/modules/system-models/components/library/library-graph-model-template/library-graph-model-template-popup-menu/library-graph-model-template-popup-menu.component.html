@@ -1,0 +1,14 @@
+<ul>
+    <li (click)="onOpenModelTemplate()">Open</li>
+    <div *appHasPermission="modifyPermissionsObj">
+        <hr>
+        <li (click)="onRenameModelTemplate()">Rename</li>
+        <!-- <li (click)="onMoveModelTemplate()">Move</li> -->
+        <!-- <li (click)="onDuplicateModelTemplate()">Duplicate</li> -->
+        <!-- <li (click)="onCopyModelTemplate()">Copy</li> -->
+    </div>
+    <div *appHasPermission="deletePermissionsObj">
+        <hr>
+        <li (click)="onTrashModelTemplate()">Send to Trash</li>
+    </div>
+</ul>      

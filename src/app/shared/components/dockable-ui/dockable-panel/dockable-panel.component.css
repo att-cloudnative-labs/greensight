@@ -1,0 +1,15 @@
+:host {
+    flex: 1;
+    border-radius: 4px;
+    margin: 8px 4px 4px 4px;
+    display: flex;
+    overflow: hidden;
+}
+
+.panels {
+    flex: 1;
+    background: #606060;
+    display: flex;
+    border-radius: 4px;
+    overflow: hidden;
+}

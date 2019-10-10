@@ -1,0 +1,21 @@
+<div>
+    <table>
+        <tr>
+            <td>
+                <app-user-picker
+                     (onUpdateUserAccess)="updateUserAccess($event)"
+                     [user]="selectedUser"
+                     [omit]="omit">
+                </app-user-picker>
+            </td>
+            <td>
+                <app-permission-select 
+                    (onUpdatePermission)="updatePermission($event)"
+                    [permission]="selectedPermission">
+                </app-permission-select>
+            </td>
+            <td><span (click)="removeAccess()"><i class="fas fa-times"></i></span></td>
+        </tr>
+
+    </table>
+</div>

@@ -1,0 +1,45 @@
+header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.name {
+    font-size: 18px;
+    margin-left: 8px;
+}
+
+label {
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+select, input[type="text"], input[type="month"] {
+    display: block;
+    margin-top: 5px;
+}
+
+input[type="checkbox"] {
+    margin-left: 5px;
+}
+
+.default-param {
+    display: flex;
+}
+.default-param > label {
+    color:rgb(172, 169, 169);
+    padding: 11px;
+}
+
+.description {
+    background-color: rgb(64, 68, 71);
+    width: 100%;
+    position: center;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    box-sizing: border-box;
+    padding: 2px 5px;
+    border-radius:4px;
+    font-weight: normal;
+}

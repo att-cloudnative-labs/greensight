@@ -1,0 +1,9 @@
+<label>
+    Label:
+    <input
+        type="text"
+        [value]="variable.label || ''"
+        (change)="saveLabel($event)"
+        #inputVarRef
+    >
+</label>

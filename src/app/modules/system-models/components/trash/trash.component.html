@@ -1,0 +1,13 @@
+<div
+    class="loading"
+    *ngIf="!(trashHasLoaded$ | async)"
+>
+    Loading...
+</div>
+<ng-container *ngIf="(trashHasLoaded$ | async)">
+    <header>
+        <button (click)="onRestoreClicked()"[disabled]="(selected$ | async) == null" class="restore">Restore</button>
+        <app-trash-search-filter (searchResultsChange)="setSearchResults($event)"></app-trash-search-filter>
+    </header>
+    <app-trash-list [trashedNodes]="searchResults"></app-trash-list>
+</ng-container>

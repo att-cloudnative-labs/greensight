@@ -1,0 +1,50 @@
+:host.is-clickable {
+    cursor: pointer;
+}
+
+:host.index-0 > .relative-container{
+    background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.1) 10%, rgba(0,0,0,0) 20%);
+}
+
+:host.last > .relative-container{
+    background: linear-gradient(to top, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.1) 10%, rgba(0,0,0,0) 20%);
+}
+
+:host.index-0.last > .relative-container {
+    background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.1) 15%, rgba(0,0,0,0) 30%),
+                linear-gradient(to top, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.1) 15%, rgba(0,0,0,0) 50%);
+
+}
+
+.relative-container{
+    position: relative;
+    padding: 3px;
+    vertical-align: center;
+     width:100%;
+    height:100%;
+}
+
+.edit-actual-value {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+i {
+    position: absolute;
+    right: 5px;
+    top: 4px;
+    font-size: 7px;
+    color: #ccc;
+}
+
+:host.has-actual .value {
+    color: #00a500;
+    font-weight: bold;
+}
+
+:host.has-actual.actual-is-gt-projected .value {
+    color: #0062ff;
+}

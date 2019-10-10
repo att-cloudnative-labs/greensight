@@ -1,0 +1,15 @@
+.pre-scrollable {
+    max-height: 250px;
+    overflow-y: scroll;
+}
+
+.tool-set {
+    padding: 5px;
+}
+
+button {
+    display: block;
+    border-radius: 0;
+    width:100%;
+    height:40px;
+}

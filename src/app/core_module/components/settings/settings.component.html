@@ -1,0 +1,204 @@
+<div class="container-fluid">
+    <div class="row">
+        <app-header title="Settings"></app-header>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group" data-testid="timezone">
+                <label for="">Selected Timezone</label>
+                    <div class="input-group">
+                        <div class="input-group-addon">Timezone</div>
+                            <select class="form-control" [(ngModel)]="timezone" (change)="onChangeSettings()">
+                                <option [ngValue]="timezone">{{timezone}}</option>
+                                <option *ngFor="let tz of utcList" [ngValue]="tz">{{tz}}</option>
+                            </select>    
+                    </div>
+            </div>            
+            <div class="form-group" data-testid="percentiles">
+                <label for="">User Selected Percentiles</label>
+                <div class="input-group">
+                    <div class="input-group-addon">%</div>
+                    <input type="text" [disabled]="userRole !== 'ROLE_Admin'" class="form-control" [(ngModel)]="sigma" (clickOutside)="onValidatePercentile()" (change)="onChangeSettings()">
+                </div>
+                <span class="help-block">Use comma separated values</span>
+            </div>
+            <div class="row" data-testid="decimal-places">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="">Number of decimal places</label>
+                            <div class="input-group" data-testid="breakdown-decimal-places">
+                                <div class="input-group-addon"> Breakdown Variables </div>
+                                <input type="text" class="form-control" [(ngModel)]="breakdownDec" (change)="onChangeSettings()">
+                            </div>
+                            <br>
+                            <div class="input-group" data-testid="other-decimal-places">
+                                <div class="input-group-addon"> Other Variables </div>
+                                <input type="text" class="form-control" [(ngModel)]="variableDecimal" (change)="onChangeSettings()">
+                            </div>
+                            <span class="help-block">Enter number of decimals to be displayed</span>
+                        </div>
+                    </div>
+                </div>
+        </div>
+        <div class="col-md-6">
+            <div class="pre-scrollable">
+            <table class="table table-bordered table-striped" data-testid="variable-units">
+                <thead>
+                    <tr>
+                        <th>Variable Units <button id="unitBtn" class="pull-right btn btn-link" (click)="onAddUnit()">+ New Unit</button></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let unit of units" data-testid="variable-units-list">
+                        <td class="text-left">{{unit.title}} <fa *ngIf="unit.isCustom===true" name="times" (click)="onDeleteUnit(unit.id)" class="add_button pull-right"></fa></td>
+                    </tr>
+                    <tr *ngFor = "let newUnit of newUnits; let i=index; trackBy:trackByIndex">
+                        <td>
+                            <div class="form-inline">
+                                <input type="text" class="form-control" [(ngModel)]="newUnits[i]" (clickOutside)="onUnitCancel(i)">
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="commaCheck" id="commaCheck" (change)="onChangeSettings()">
+                        <label class="form-check-label" for="commaCheck">
+                            Enable Comma separator
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row pull-right col-md-6">
+        <div class="col-md-12 user-buttons">
+            <button class="btn btn-info" *ngIf="userRole == 'ROLE_Admin'" data-toggle="modal" data-target="#userGroup-modal" (click)="createUserGroup()">CREATE USER GROUP</button>
+            <button class="btn btn-info" *ngIf="userRole == 'ROLE_Admin'" data-toggle="modal" data-target="#user-modal" (click)="createUser()">CREATE NEW USER</button>
+            <button class="btn btn-warning" data-toggle="modal" data-target="#user-modal" (click)="editUser()">EDIT USER</button>
+<!--             <button class="btn btn-warning">EDIT USER GROUP</button>-->
+        </div>
+        <div class="col-md-12 version-info" data-testid="version-info">
+            <h4><b>Version Info</b></h4>
+            <i><b>UI version</b></i>
+            <div class="info-box">
+                <div class="key">Version number:</div><div class="value">{{version}}</div>
+                <div style="clear: both;"></div>​
+            </div>
+
+            <i><b>Forecast backend version</b></i>
+            <div class="info-box">
+                <div class="key">Version number:</div><div class="value">{{forecastBackendVersion.version}}</div>
+                <div style="clear: both;"></div>​
+                <div class="key">Model version:</div><div class="value">{{forecastBackendVersion.modelVersion}}</div>
+                <div style="clear: both;"></div>​
+                <div class="key">Group ID:</div><div class="value">{{forecastBackendVersion.groupId}}</div>
+                <div style="clear: both;"></div>​
+                <div class="key">Artifact ID:</div><div class="value">{{forecastBackendVersion.artifactId}}</div>
+                <div style="clear: both;"></div>​
+            </div>
+
+            <i><b>Model backend version</b></i>
+            <div class="info-box">
+                <div class="key">Version number:</div><div class="value">{{modelBackendVersion.version}}</div>
+                <div style="clear: both;"></div>​
+                <div class="key">Model version:</div><div class="value">{{modelBackendVersion.modelVersion}}</div>
+                <div style="clear: both;"></div>​
+                <div class="key">Group ID:</div><div class="value">{{modelBackendVersion.groupId}}</div>
+                <div style="clear: both;"></div>​
+                <div class="key">Artifact ID:</div><div class="value">{{modelBackendVersion.artifactId}}</div>
+                <div style="clear: both;"></div>​
+            </div>
+
+            <i><b>Simulation backend version</b></i>
+            <div class="info-box">
+                <div class="key">Version number:</div><div class="value">{{simBackendVersion.version}}</div>
+                <div style="clear: both;"></div>​
+                <div class="key">Tag:</div><div class="value">{{simBackendVersion.tag}}</div>
+                <div style="clear: both;"></div>​
+            </div>
+
+            <i><b>Projection version</b></i>
+            <div class="info-box">
+                <div class="key">Version number:</div><div class="value">{{ProjectionVersion}}</div>
+                <div style="clear: both;"></div>​
+            </div>
+        </div>
+    </div>
+
+    <div class="row user-list" *ngIf="userRole == 'ROLE_Admin'">
+        <table class="table" id="userTable">
+            <thead>
+                <tr>
+                    <th class="headers">Users</th>
+                    <th class="headers" *ngFor="let role of roles">{{role.roleName}}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of users" data-testid="users-list">
+                    <td>{{user.username}}</td>
+                    <td *ngFor="let role of roles">
+                        <input type="radio" value="{{role['id']}}" name="{{user.username}}-role" [checked]="isChecked(user, role)" (click)="setRoles(user, role)" (change)="onChangeUserRole(user)">
+                    </td>
+                    <td class="col-md-1 text-center">
+                        <fa name="trash" class="btn btn-danger" (click)="deleteUser(user)"></fa>
+                    </td>
+                    <td class="col-md-1 text-center">
+                        <fa name="pencil-alt" class="btn btn-primary" data-toggle="modal" data-target="#user-modal" (click)="editUser(user.id)"></fa>
+                    </td>
+            </tbody>
+        </table>
+    </div>
+    <br>
+      <div class="row user-list" *ngIf="userRole == 'ROLE_Admin'">
+            <table class="table" id="userGroupTable">
+                <thead>
+                    <tr>
+                        <th class="headers">UserGroups</th>
+                        <th class="headers" *ngFor="let role of roles">{{role.roleName}}</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let usergroup of usergroups" data-testid="usergroups-list">
+                        <td>{{usergroup.userGroupName}}</td>
+                        <td *ngFor="let role of roles">
+                            <input type="radio" value="{{role}}" name="{{usergroup.userGroupName}}-role" [checked]="isCheckedUserGroup(usergroup, role)" (click)="setUserGroupsRoles(usergroup, role)" (change)="onChangeUsergroupRole(usergroup)">
+                        </td>
+                        <td class="col-md-1 text-center">
+                            <fa name="trash" class="btn btn-danger" (click)="deleteUsergroup(usergroup)"></fa>
+                        </td>
+                       <td class="col-md-1 text-center">
+                            <fa name="pencil-alt" class="btn btn-primary" data-toggle="modal" data-target="#userGroup-modal" (click)="editUsergroup(usergroup.id)"></fa>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+      </div>
+    <br>
+</div>
+
+<div *ngIf="showUGModal" class="modal-container">
+    <usergroups
+        (cancel-UGModal-event)="cancelUGModal()"
+        (save-UGModal-event)="saveUGModal()"
+        [selectedUGId]="selectedUserGroupId">
+    </usergroups>
+</div>
+
+<div *ngIf="showUserModal" class="modal-container">
+    <users
+        (cancel-UserModal-event)="cancelUserModal()"
+        (save-UserModal-event)="saveUserModal()"
+        [selectedUserId]="selectedUserId">
+    </users>
+</div>

@@ -1,0 +1,19 @@
+:host {
+    display: block;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+app-nav-bar {
+    flex: 0 0 60px;
+}
+
+#dialog-target {
+    z-index: 21000;
+}
+
+/* TODO: load in global stylesheet, consistent across whole site */
+:host ::ng-deep {
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol" !important;
+}

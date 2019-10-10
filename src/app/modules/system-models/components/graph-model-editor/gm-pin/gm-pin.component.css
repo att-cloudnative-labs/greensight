@@ -1,0 +1,21 @@
+:host {
+    padding: 4px;
+    cursor: crosshair;
+}
+
+.circle {
+    box-sizing: border-box;
+    height: 15px;
+    width: 15px;
+    background-color: black;
+    border-radius: 50%;
+    border: 2px solid #43ecff;
+}
+
+:host.hasParam .circle {
+    background-color: rgba(67, 236, 255, 0.5);
+}
+
+:host.isConnected .circle {
+    background-color: #43ecff;
+}

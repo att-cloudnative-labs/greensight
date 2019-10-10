@@ -1,0 +1,104 @@
+.fa-chart-bar {
+    margin-right: 1px;
+    margin-left: 6px;
+    color: #999;
+}
+
+.simulation-result-label {
+    user-select: none;
+    white-space: nowrap;
+    padding: 2px 0 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    width: 100%;
+    justify-content: space-between;
+    padding-right: 4px;
+    padding-left: 4px;
+}
+
+.highlighted {
+    cursor: pointer;
+    background-color: #383838;
+}
+
+.selected {
+    background-color: #428bca;
+}
+
+.selected > .far {
+    color: white;
+}
+
+.selected > * .icon-button {
+    color: white;
+}
+
+.simulation-result-name {
+    display: inline-flex;
+    user-select: none;
+    min-width: 0px;
+    overflow: hidden;
+}
+
+.simulation-result-description {
+    display: inline-flex;
+    user-select: none;
+    min-width: 0px;
+    overflow: hidden;
+    padding-left:150px;
+}
+
+.simulation-result-name-icon {
+    min-width: min-content;
+    overflow: hidden;
+    display: inline;
+}
+
+.simulation-result-name-label {
+    min-width: 0px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline;
+    padding-left: 4px;
+}
+
+app-edit-in-place {
+    display: inline-block;
+    margin-top: -3px;
+}
+
+app-edit-in-place input {
+    padding: 2px 4px;
+    box-sizing: border-box;
+}
+
+.icon-button:hover{
+    background-color:#606060;
+}
+
+.icon-button {
+    color: #999;
+    height:100%;
+    padding: 0;
+    border:none;
+    background:none;
+    padding-right: 3px;
+    padding-left: 3px;
+}
+
+.icon-button:focus{
+    outline: 0;
+}
+
+.highlighted .simulation-result-options{
+    display: block;
+}
+
+.more-simulation-result-options{
+    display: inline;
+}
+
+.simulation-result-options {
+    margin-right: 2px;
+}

@@ -1,0 +1,9 @@
+<div *ngIf="!filteredNodes.length" class="no-results">
+    No results
+</div>
+
+<ul>
+    <li *ngFor="let node of filteredNodes">
+        <app-library-search-result [filteredNodes]="filteredNodes" [node]="node"></app-library-search-result>
+    </li>
+</ul>

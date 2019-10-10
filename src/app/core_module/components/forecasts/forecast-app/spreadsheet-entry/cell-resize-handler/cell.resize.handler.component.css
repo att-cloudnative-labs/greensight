@@ -1,0 +1,9 @@
+.resize-handle {
+    width: 10px;
+    height: 100%;
+    position: absolute;
+    top:0;
+    right: -7px;
+    cursor: col-resize;
+    z-index: 10000;
+}

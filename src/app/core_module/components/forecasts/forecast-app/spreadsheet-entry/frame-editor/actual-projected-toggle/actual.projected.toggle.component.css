@@ -1,0 +1,42 @@
+.actual-projected-selector {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    margin-top: -20px;
+    z-index: 9999;
+    display: flex;
+    justify-content: space-around;
+    background: white;
+    border-top: 1px solid black;
+    box-sizing: border-box;
+  }
+
+button {
+    flex: 1;
+    text-align: center;
+    border: 0;
+    background: 0;
+    cursor: pointer;
+    color: #c3c3c3;
+    text-rendering: auto;
+    letter-spacing: normal;
+    word-spacing: normal;
+    text-transform: none;
+    text-indent: 0px;
+    text-shadow: none;
+    display: inline-block;
+    text-align: start;
+    margin: 0em;
+    font: 400 11px system-ui;
+  }
+
+button:focus {
+    outline: 0;
+}
+
+button:disabled {
+    color: black;
+    cursor: default;
+}

@@ -1,0 +1,16 @@
+:host {
+    --even-bg-color: rgba(0, 0, 0, 0);
+    --odd-bg-color: rgba(0, 0, 0, 0.05);
+
+    display: block;
+   
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: repeating-linear-gradient(
+        to bottom,
+        var(--odd-bg-color),
+        var(--odd-bg-color) 30px,
+        var(--even-bg-color) 30px,
+        var(--even-bg-color) 60px
+      );
+}

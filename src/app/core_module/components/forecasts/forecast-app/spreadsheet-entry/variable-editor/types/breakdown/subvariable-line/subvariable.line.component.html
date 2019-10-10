@@ -1,0 +1,10 @@
+<div class="line">
+    <div class="name">
+        <inline-edit
+                [value]="subVariable.name"
+                (onSave)="onSave($event)"></inline-edit>
+    </div>
+    <button (click)="onDelete()" class="trash subVar-delete">
+        <fa size="sm" name="times"></fa>
+    </button>
+</div>

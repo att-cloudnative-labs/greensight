@@ -1,0 +1,54 @@
+.sim-scenario {
+    border: solid 1px white;
+}
+
+.scenario-table {
+    width: 100%;
+}
+
+th {
+    background-color: #272727;
+    padding: 2px 8px;
+    white-space: nowrap;
+    border-left: 1px solid rgb(170, 170, 170);
+}
+
+th:first {
+    border-left: none;
+}
+
+tr:nth-child(even) {
+    background-color: #4C4C4C;
+}
+
+.no-inports {
+    text-align: center;
+    font-size: medium;
+    height: 40px;
+    border-left: 1px solid rgb(170, 170, 170);
+}
+
+button {
+    float: left;
+    background-color:#404040;
+    color: white;
+    border: none;
+}
+button:focus {
+    outline: none;
+}
+
+.display-name {
+    margin-bottom: 3px;
+    font-weight: normal;
+    max-width: 500px;
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+app-edit-in-place {
+    font-weight: normal;
+    margin-bottom: 1px;
+}

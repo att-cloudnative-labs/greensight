@@ -1,0 +1,52 @@
+.list-group {
+    max-height: 200px;
+    overflow-y:scroll;
+}
+
+.list-group-item {
+    word-wrap:break-word;
+}
+
+li:hover {
+    background: #CCCCCC;
+    cursor: pointer;
+}
+
+/*spinner animation setup*/
+#loader-overlay {
+    border: 16px dotted #abd3ee; 
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    animation: borderScale 2s linear infinite;
+    color: white;
+    -webkit-animation: borderScale 5s infinite;
+    transform: rotate(-90deg); 
+    /*centre the spinner*/
+    position: absolute;
+    margin: auto;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+@-webkit-keyframes borderScale {
+    25% {
+        border-right: 16px dotted #3498db;
+    }
+    50% {
+        border-bottom: 16px dotted #3498db;
+    }
+    75% {
+        border-left: 16px dotted #3498db;
+    }
+    90% { 
+        
+        border-top: 16px dotted #3498db;
+    }
+    100% {
+        transform: rotate(360deg);
+        border: 16px dotted #abd3ee;
+    }
+}

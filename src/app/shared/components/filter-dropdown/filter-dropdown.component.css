@@ -1,0 +1,27 @@
+button {
+    height: 100%;
+}
+button:focus{
+    outline: none;
+}
+
+.fa {
+    color:black;
+}
+
+.is-open {
+    background-color: #272727;
+}
+
+.is-open .fa {
+    color: white;
+}
+
+.fa-caret-down {
+    margin-left: 5px;
+}
+
+.filter-dropdown{
+    display: block;
+    box-shadow: 9px 14px 32px -8px rgba(0,0,0,0.75);
+}

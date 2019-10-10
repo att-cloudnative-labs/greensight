@@ -1,0 +1,25 @@
+<div class="group sub-variables">
+    <label>Values</label>
+
+    <div>
+        <div class="new">
+            <input #valueInput class="form-control custom-form-control" [(ngModel)]="newSubvariable.name" (keydown)="onKeyDown($event)" placeholder="Name">
+            <button class="btn btn-primary custom-form-control" type="submit" (click)="addNewSubVar()" [disabled]="!clickable()">Add</button>
+        </div>
+        <div class="error-message" *ngIf="errorMessage !== undefined && errorMessage !== ''">{{errorMessage}}</div>
+    </div>
+
+    <div class="list">
+        <table>
+            <tr *ngFor="let subVariable of subVariables">
+                <td>
+                    <subvariable-line
+                        [subVariable]="subVariable"
+                        (onDelete)="deleteSubVariable($event)"
+                        (onCommit)="onCommit($event)"
+                        (onEdit)="editSubVariable($event)"></subvariable-line>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+<div #selectedLabelElement (mousedown)="openSearchDisplay()"class="selected-label">
+    <div> {{selectedLabel}}<span [ngClass]="{'fa-angle-down': !showSearch,  'fa-angle-up': showSearch}" class="fa"></span></div>
+</div>
+<div *ngIf="showSearch" class="search-display"
+    appTether
+    [appTetherTarget]="selectedLabelElement"
+    [appTetherTargetAttachment]="'bottom left'"
+    [appTetherAttachment]="'top left'"
+    [appTetherOffset]="'0px 0px'">
+    <app-typeahead-search 
+            [itemList]="itemList"
+            [selectedIndex]="selectedIndex"
+            [searchKey]="searchKey"
+            (closeSearch)="closeSearchDisplay($event)"
+            (resultSelected)="onSelectResult($event)"
+    ></app-typeahead-search>
+</div>

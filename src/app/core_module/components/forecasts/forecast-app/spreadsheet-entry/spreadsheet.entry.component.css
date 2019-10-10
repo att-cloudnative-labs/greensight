@@ -1,0 +1,120 @@
+.spreadsheet {
+    overflow: scroll;
+    height: 100%;
+    position: relative;
+    width: 100%;
+    background-size: 111px 45px;
+    background-image: linear-gradient(to right, black 1px, transparent 1px), linear-gradient(to bottom, black 1px, white 1px);
+    background-position: 160px 0;
+}
+
+table {
+    border-collapse: unset;
+}
+
+.spreadsheet-interface {
+    width: 100%;
+    border-spacing: 0;
+    table-layout: fixed;
+    background: white;
+    font-size: var(--default-font-size);
+}
+
+th {
+    position: sticky;
+    top: 0;
+    z-index: 1001;
+    height: 30px;
+    border-bottom: 1px solid #717171;
+    padding: 5px;
+    border-right: 1px solid #717171;
+    box-sizing: border-box;
+    text-align:center;
+    background: #efefef;
+}
+
+th:last-child {
+  border-right: 0;
+}
+
+th.cornerstone {
+  background: #efefef;
+}
+
+th:first-child {
+  left: 0;
+  z-index: 1002;
+}
+
+th.is-past {
+  background: #dddddd;
+}
+
+td {
+  padding: 0;
+  height: 26px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #c1c1c1;
+  text-align: center;
+  border-right: 1px solid #c1c1c1;
+  background: #efefef;
+  position:relative;
+}
+
+td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1000;
+  border-right: 1px solid #717171;
+  border-bottom: 1px solid #717171;
+  background: #efefef;
+}
+
+td:last-child {
+   border-right: 0;
+}
+
+tr.subframe > td{
+  height: 100%;
+  background: white;
+  padding: 0;
+  text-align: center;
+}
+
+td.is-past, tr.subframe > td.is-past{
+  background: #fff8e6;
+}
+
+tr.subframe > td.subframe-cell.selected {
+    outline: var(--frame-outline);
+    outline-offset: var(--frame-outline-offset);
+    z-index: 1;
+}
+
+.resize-cell{
+  opacity: 0;
+  width: 0;
+  padding: 0;
+  position: relative;
+  z-index:10000;
+}
+
+input.name::-webkit-inner-spin-button,
+input.name::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input.name {
+    height: calc(100% - 5px);
+    width: calc(100% - 5px);
+    box-sizing: border-box;
+    border: 0;
+    text-align: left;
+    padding: 10px;
+    background: transparent;
+}
+
+input.name:focus {
+    outline: 0;
+}

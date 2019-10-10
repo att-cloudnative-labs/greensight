@@ -1,0 +1,2 @@
+<a *ngIf="!processingCreation" (click)="onCreateVariable()">+ Create Variable</a>
+<input *ngIf="processingCreation" class="name" (focusin)="onVariableNameClicked()" (focusout)="onEscPressed()" [value]="newVariableTitle" (keydown.enter)="processingVariableCreation()" #inputNewVariableName [(ngModel)]="newVariableTitle" placeholder="Enter a variable name">

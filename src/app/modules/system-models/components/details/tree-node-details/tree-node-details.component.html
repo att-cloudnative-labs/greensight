@@ -1,0 +1,26 @@
+<header style="white-space: nowrap;">
+    <i class="fa" [ngClass]="{'fa-folder-open': isFolder, 'fa-cubes': isGraphModelTemplate, 'fa-cube': isGraphModel}"></i>
+    <i class="far" [ngClass]="{'fa-clock': isSimulation, 'fa-chart-bar': isSimulationResult}"></i>
+    <span>&nbsp;</span>
+    <label class="node-name">{{selectedNode.name}}</label>
+    <span>&nbsp;</span>
+    <label class="owner-name">{{selectedNode.ownerName}}</label>
+</header>
+
+<div style="margin-top: 20px;">
+    <label>Description:</label><br>
+    <textarea
+      type="text"
+      cols="55"
+      rows="3"
+      [(ngModel)]="description"
+      (blur)="saveDescription()">{{description}}</textarea>
+</div><br>
+
+<div *appHasPermission="permissionsObj">
+    <div *ngIf="selectedNode.type === 'FOLDER' && displayAccess">
+        <label>Access:</label>
+        <app-access-control [folder]="selectedNode">
+        </app-access-control>
+    </div>
+</div>

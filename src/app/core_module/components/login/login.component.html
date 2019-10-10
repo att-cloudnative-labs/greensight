@@ -1,0 +1,29 @@
+<!-- <nav class="navbar navbar-inverse" style="background-color: black">
+    <div class="container-fluid">
+      <div style="vertical-align: middle;" class="collapse navbar-collapse" id="myNavbar">
+
+        <ul class="nav navbar-nav">
+          <li class="active title"><a href="" routerLink=""><img style="width: 49px; height: 36px; max-width: 49px;" class="img" src="assets/images/att-logo.png">&nbsp;&nbsp;CAPACITY PLANNING TOOL</a></li>
+        </ul>
+      </div>
+    </div>
+</nav> -->
+<app-nav-bar [hideNavLinks]="true" [isLoginPage]="true"></app-nav-bar>
+<div class="container-fluid">
+    <div class="login">
+        <div class="form-group" data-testid="username">
+            <input [(ngModel)]="userName" type="text" (keyup.enter)="login()" placeholder="Username" class="form-control">
+        </div>
+        <div class="form-group" data-testid="password">
+            <input [(ngModel)]="password" type="password" (keyup.enter)="login()" placeholder="Password" class="form-control">
+        </div>
+        <div class="form-group">
+            <label class="checkbox-inline">
+                <input type="checkbox" (click)="toggleCheckbox($event)"> Remember Username
+            </label>
+        </div>
+        <div class="form-group">
+            <button class="login-button" (click)="login()">LOG IN</button>
+        </div>
+    </div>
+</div>

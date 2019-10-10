@@ -1,0 +1,38 @@
+<div class="header">
+    <div class="tabs">
+        <div id="sr-tree-tab" class='tab'
+            (click)='onTabClick("tree")'
+            [class.active]='selectedTab === "tree"'
+            title="Load">
+            <div class="name">
+                Load
+            </div>
+        </div>
+        <div id="sr-responses-tab" class='tab'
+             (click)='onTabClick("responses")'
+             [class.active]='selectedTab === "responses"'
+             title="Responses">
+            <div class="name">
+                Responses
+            </div>
+        </div>
+        <div id="sr-err-warn-tab" class='tab'
+            (click)='onTabClick("error-warning")'
+            [class.active]='selectedTab === "error-warning"'
+            title="Errors/Warnings">
+            <div class="name">
+                Errors/Warnings
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panels" [hidden]="selectedTab !== 'tree'">
+    <app-sr-tree [results]="simResult" [selectedScenarioId]="selectedScenarioId" [simResultId]="simResultId" [dataType]="'data'"></app-sr-tree>
+</div>
+<div class="panels" [hidden]="selectedTab !== 'responses'">
+    <app-sr-tree [results]="simResult" [selectedScenarioId]="selectedScenarioId" [simResultId]="simResultId" [dataType]="'response'"></app-sr-tree>
+</div>
+<div class="panels" [hidden]="selectedTab !== 'error-warning'">
+    <app-sr-error-warning-list [results]="simResult"></app-sr-error-warning-list>
+</div>

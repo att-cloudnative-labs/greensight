@@ -1,0 +1,41 @@
+<div
+    appDropList
+    (appDropListDrop)="handleDrop($event)"
+    class="table-container"
+>
+    <div *ngIf='tableEntries.length === 0; else dataTable' class="no-table">
+        Drag variables from the list here to display their data
+    </div>
+    <ng-template #dataTable>
+            <table class="simResultDataTable" *ngIf="hasData">
+                <thead>
+                    <tr>
+                        <th scope="col" class="cornerstone">
+                        </th>
+                        <th scope="col" class="cornerstone" [hidden]="true">Type</th>
+                        <th scope="col" class="cornerstone" [hidden]="true">AGG</th>
+                        <th scope="col" class="cornerstone" [hidden]="true">Unit</th>
+                        <th *ngFor="let month of months">
+                            {{month}}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor='let variable of tableEntries; let i=index' app-result-data-table-row
+                        [resultVariableRef]="variable"
+                        [selected]="isSelectedRow(variable)"
+                        [selectedCell]="selectedCell"
+                        (rowClicked)="onRowSelected($event, i)"
+                        (rowCtrlClicked)="onRowSelected($event, i, true)"
+                        (rowShiftClicked)="onRowShiftSelected(i)"
+                        (cellClicked)="onCellSelected($event, i)"
+                        (aggregationMethodChanged)="updateSelectedAggregationMethod($event)"
+                        [simResult]="simResult"
+                        [aggregatedReportIndex]="aggregatedReportIndex"
+                        [dataType]="variable.dataType"
+                        [selectedScenarioId]="selectedScenarioId">
+                    </tr>
+                </tbody>
+            </table>
+    </ng-template>
+</div>

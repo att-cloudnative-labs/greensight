@@ -1,0 +1,15 @@
+<app-gm-pin [port]="port"></app-gm-pin>
+<div *ngIf="isProcess" class="name">
+    {{name}}
+</div>
+
+<div
+    *ngIf="(port.param || displayDefault) && !port.isConnected"
+    class="param-value-bubble"
+>
+    <div class="param-value">
+        <div [ngClass]="{'display-default': displayDefault}">
+                {{paramValue}}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+<div #resultElement (mousedown)="selectResult()">
+    <span class="icon">
+        <i class="fa" [ngClass]="isGraphModel ? 'fa-cube' : 'fa-microchip'"></i>
+    </span>
+    <span class='item-name'>
+        <div [ngClass]="isCircularDependencies ? 'disable-select' : ''">
+            {{itemName}}
+        </div>
+    </span>
+</div>

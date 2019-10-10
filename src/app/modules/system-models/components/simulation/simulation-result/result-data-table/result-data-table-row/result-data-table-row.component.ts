@@ -1,0 +1,124 @@
+import { Component, Input, OnInit, Output, EventEmitter, HostBinding, OnChanges } from '@angular/core';
+import { Select } from '@ngxs/store';
+import { ProcessingElementState } from '@app/modules/system-models/state/processing-element.state';
+import { Observable } from 'rxjs';
+import { SimulationResult } from '@cpt/capacity-planning-simulation-types';
+
+@Component({
+    selector: '[app-result-data-table-row]',
+    templateUrl: './result-data-table-row.component.html',
+    styleUrls: ['./result-data-table-row.component.css']
+})
+export class ResultDataTableRowComponent implements OnInit, OnChanges {
+    @Input() simResult: SimulationResult;
+    // the id and aggregation method of the result variable
+    @Input() resultVariableRef;
+    @Input() dataType: string;
+    @Input() selectedCell;
+    @Input() aggregatedReportIndex;
+    @Input() selectedScenarioId;
+    @HostBinding('class.selected') @Input('selected') selected = true;
+    @Output() rowClicked = new EventEmitter();
+    @Output() rowShiftClicked = new EventEmitter();
+    @Output() rowCtrlClicked = new EventEmitter();
+    @Output() cellClicked = new EventEmitter();
+    @Output() aggregationMethodChanged = new EventEmitter();
+    @Select(ProcessingElementState.errorWarningProcessingElements) errorWarningProcessingElements$: Observable<any[]>;
+    // only dealing with one scenario for now so hardcoding the scenario Id
+    selectedScenario = 'default';
+    resultVariable;
+    resultVariableReport = [];
+    isResponse = false;
+
+    hasData: boolean;
+    isErrorWarningPe;
+
+    ngOnInit() {
+        this.isResponse = this.dataType === 'response';
+    }
+
+    ngOnChanges() {
+        const dataType = this.dataType;
+        this.resultVariable = this.simResult.nodes[this.resultVariableRef.objectId];
+        // only dealing with one scenarion for no so getting the first scenario in the aggregated report
+        let aggregatedReport = this.resultVariable.aggregatedReport[this.selectedScenarioId];
+        aggregatedReport = aggregatedReport ? aggregatedReport : this.resultVariable.aggregatedReport[Object.keys(this.resultVariable.aggregatedReport)[0]];
+        this.hasData = Object.keys(this.resultVariable['aggregatedReport']).findIndex(key => key === this.selectedScenarioId) !== -1 && this.hasResults(this.resultVariable);
+
+        // turn the report object into an array
+        this.resultVariableReport = Object.keys(aggregatedReport).map(function(month) {
+            // get month result if its stored in a data field or on the month field
+            const data = aggregatedReport[month][dataType] ? aggregatedReport[month][dataType] : aggregatedReport[month];
+            return { month: month, data: data };
+        });
+
+        this.errorWarningProcessingElements$.subscribe(errorWarningPes => {
+            this.isErrorWarningPe = errorWarningPes.findIndex(el => el.objectId === this.resultVariable.ref) !== -1;
+        });
+    }
+
+    hasResults(node: any): boolean {
+        const aggregatedReportData = node ? node.aggregatedReport[this.selectedScenarioId] : null;
+        const aggregatedReportDataDataIndex = aggregatedReportData ? Object.keys(aggregatedReportData)[0] : null;
+        const dataContent = aggregatedReportData ? aggregatedReportData[aggregatedReportDataDataIndex][this.dataType] : null;
+        const sliceContent = dataContent ? dataContent.AVG : null;
+        const hasSlice = sliceContent && node.type === 'SLICE';
+        const isBreakdown = sliceContent && node.type === 'BREAKDOWN';
+        return dataContent && JSON.stringify(dataContent) !== '{}' || hasSlice || isBreakdown;
+    }
+
+    onVariableNameClicked(event: MouseEvent) {
+        if (event.ctrlKey || event.metaKey) {
+            this.rowCtrlClicked.emit({
+                objectId: this.resultVariableRef.objectId,
+                aggregationMethod: this.resultVariableRef.aggregationMethod,
+                dataType: this.dataType
+            });
+        } else if (event.shiftKey) {
+            this.rowShiftClicked.emit();
+        } else {
+            this.rowClicked.emit({
+                objectId: this.resultVariableRef.objectId,
+                aggregationMethod: this.resultVariableRef.aggregationMethod,
+                dataType: this.dataType
+            });
+        }
+    }
+
+    /**
+     * Emits information relating to the cell in the row that was clicked that can be used to determine
+     * the type of chart to display.
+     * @param month the month that the value belongs to
+     */
+    onValueClicked(month) {
+        this.cellClicked.emit({
+            month: month,
+            objectId: this.resultVariableRef.objectId,
+            aggregationMethod: this.resultVariableRef.aggregationMethod,
+            dataType: this.dataType
+        });
+    }
+
+    /**
+     * Determines if a specifed cell is currently selected
+     * @param month the month that the cell corresponds to
+     */
+    isSelectedCell(month) {
+        return (this.selectedCell !== undefined && this.selectedCell.month === month &&
+            this.selectedCell.objectId === this.resultVariableRef.objectId && this.selectedCell.dataType === this.dataType);
+    }
+
+    // TODO: We might not need this once we stop using a fixture,
+    onAggregationMethodChange(newAggMethod) {
+        // this.resultVariableRef.aggregationMethod = newAggMethod;
+        this.aggregationMethodChanged.emit({ ...this.resultVariableRef, aggregationMethod: newAggMethod });
+    }
+
+    get isAResponse() {
+        if (this.isResponse) {
+            return 'Response';
+        } else {
+            return 'Load';
+        }
+    }
+}

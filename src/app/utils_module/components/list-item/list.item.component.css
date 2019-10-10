@@ -1,0 +1,18 @@
+fa {
+    position: absolute;
+    right: 0;
+    top: 15px;
+    font-size: 18px;
+    margin-right: 20px;
+    cursor: pointer;
+    transition: all .1s ease-in;
+}
+
+fa:hover {
+    transform: scale(1.5);
+    color: red;
+}
+
+div.list-item:hover {
+    cursor: pointer;
+}

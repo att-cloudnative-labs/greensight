@@ -1,0 +1,14 @@
+<input class="spinner" style="-moz-appearance:textfield" #editInput [hidden]="!isEditing"
+       [(ngModel)]="inputValue"
+       (keydown)="handleKeyDown($event)"
+       (keyup)="handleKeyUp($event)"
+       (blur)="handleFocusOut()">
+
+<div *ngIf="!isEditing" id="subvariableInput">
+    <div class="displayValue" *ngIf="displayValue != ''" (click)="activateEdit()">
+        {{displayValue}}
+    </div>
+    <div class="value"  *ngIf="displayValue == ''" (click)="activateEdit()">
+        {{value}}
+    </div>
+</div>

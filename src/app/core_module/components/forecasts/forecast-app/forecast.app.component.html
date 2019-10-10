@@ -1,0 +1,54 @@
+<div class="horizontal-container row">
+    <div id="forecastSidebar" [ngClass]="{'left-panel': !isExpanded,  'left-panel-expanded': isExpanded}" data-testid="sidebar">
+        <button class="toggle-expansion-button" (click)="isSideBarExpanded()"><i [ngClass]="{'fa-angle-right': !isExpanded,  'fa-angle-left': isExpanded}" class="fa"></i></button>
+        <forecast-sidebar
+                [expanded]="isExpanded"
+                [hidden]="!isExpanded"
+                [uiProjections]="uiProjections"
+                [branchList]="branchList"
+                [currentBranch]="currentBranch"
+                [variableList]="forecastVariableList"
+                (datesInitialised)="setupDates($event)"
+                (startDateChange)="onStartDateChange($event)"
+                (endDateChange)="onEndDateChange($event)"
+                (exportForecastCSV)="onDownloadForecastCSV($event)"
+                (branchChange)="onBranchChanged($event)"
+                (displayChangesMade)="updateGraphDisplay()"
+                (toggleDisplayLines)="toggleDisplayLines($event)"></forecast-sidebar>
+        <progress-bar *ngIf="isSaving"></progress-bar>
+    </div>
+
+    <div class="right-panel vertical-container">
+        <as-split direction="vertical" #split>
+            <as-split-area size="{{spreadsheetSize}}">
+                    <spreadsheet-entry
+                            (onVariableCreate)="createVariable($event)"
+                            (onDeleteVariable)="deleteVariable($event)"
+                            (onUpdateVariable)="updateVariable($event)"
+                            (onUpsertActualValue)="upsertActualValue($event)"
+                            (onUpsertTimesegment)="upsertTimesegment($event)"
+                            (onUpsertSubframe)="upsertSubframe($event)"
+                            (onPaste)="handleSpreadsheetPaste($event)"
+                            [uiProjections]="uiProjections"
+                            [variableList]="forecastVariableList"
+                            [units]="units"
+                            [branchId]="selectedBranchId"
+                            [startDate]="startDate"
+                            [endDate]="endDate">
+                    </spreadsheet-entry>
+            </as-split-area>
+
+            <as-split-area size="{{graphSize}}">
+                <forecast-graph [hidden]="uiProjections.length == 0"
+                        [uiProjections]="uiProjections"
+                        [startDate]="startDate"
+                        [endDate]="endDate">
+                </forecast-graph>
+            </as-split-area>
+        </as-split>
+    </div>
+</div>
+<div id="editor-target" data-testid="editor-target">
+</div>
+<div id="autocomplete-target" data-testid="autocomplete-target">
+</div>

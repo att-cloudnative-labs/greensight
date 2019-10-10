@@ -1,0 +1,34 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "importHelpers": true,
+    "outDir": "./dist/out-tsc",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es2015",
+    "newLine": "LF",
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "module": "es2015",
+    "baseUrl": "./src",
+    "paths": {
+      "@app/*": ["./app/*"],
+      "@environments/*": ["./environments/*"],
+      "@system-models/*": ["./app/modules/system-models/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "node_modules/angular-font-awesome/angular-font-awesome.ts",
+    "node_modules/angular-font-awesome/index.ts",
+    "node_modules/angular-font-awesome/lib/angular-font-awesome.component.ts"
+  ]
+}

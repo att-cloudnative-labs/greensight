@@ -1,0 +1,3 @@
+<select [(ngModel)]="selectedType" (change)="handleTypeChange()" class="form-control custom-form-control">
+    <option *ngFor="let type of types" [value]="type">{{type}}</option>
+</select>

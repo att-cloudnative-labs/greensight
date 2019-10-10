@@ -1,0 +1,46 @@
+<ng-container>
+<h4><button (click)="handleExpandClick($event)">
+        <i class="fa fa-minus" *ngIf="isExpanded"></i>
+        <i class="fa fa-plus" *ngIf="!isExpanded"></i>
+    </button>
+    <button *ngIf="deleteDisabled" style="float: right" (click)="removeScenario($event)" title="Delete {{scenario.name}}">
+            <i class="fa fa-times"></i>
+    </button>
+    <label class="display-name" *ngIf="!showEdit" (click)="onEdit()" title="{{scenario.name}}">{{scenario.name}}</label>
+    <app-edit-in-place *ngIf="showEdit" [value]="scenario.name" (onSubmit)="onRenameScenario($event)" (onCancel)="onCancelRename()">{{scenario.name}}</app-edit-in-place></h4>
+    <div class="sim-scenario" *ngIf="isExpanded">
+    <table class="scenario-table">
+        <colgroup>
+            <col span="1" style="width: 40%;">
+            <col span="1" style="width: 15%;">
+            <col span="1" style="width: 30%;">
+            <col span="1" style="width: 15%;">
+        </colgroup>
+        <thead>
+            <tr>
+                <th>Input</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Unit</th>
+            </tr>
+        </thead>
+        <tbody *ngIf="scenarioInportIds.length">
+            <ng-container *ngFor="let inportId of scenarioInportIds">
+                    <tr *ngIf="selectedModel.processInterface.inports[inportId]" app-simulation-scenario-table-row
+                        [modelInport]="selectedModel.processInterface.inports[inportId]"
+                        [inportId]="inportId"
+                        [inport]="scenarioInports[inportId]"
+                        [scenarioId]="scenarioId"
+                        [simulationId]="simulation.id"></tr>
+            </ng-container>
+        </tbody>
+        <tbody *ngIf="!scenarioInportIds.length">
+            <tr>
+                <td class="no-inports" colspan="4">
+                    <span><i>Add inputs</i></span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</ng-container>

@@ -1,0 +1,50 @@
+:host {
+    display: block;
+    flex: 1;
+    padding: 8px;
+    background: #404040;
+    
+}
+
+@keyframes load {
+    0% { background-color:#404040; }
+    100% { background-color:#383838; }
+}
+
+:host.isLoading {
+    animation: load linear 0.75s infinite alternate;
+}
+
+.loading {
+    margin: 8px;
+    opacity: 0.25;
+}
+
+.restore {
+    color:black;
+    width:75px;
+    margin-right: 8px;
+    border: none;
+    text-align: center;
+}
+
+.restore:disabled {
+    cursor: not-allowed;
+    background-color: darkgray;
+}
+
+header {
+    display: flex;
+}
+
+app-trash-search-filter{
+    width:100%;
+    flex: 1;
+}
+
+app-trash-list{
+    display: flex;
+    margin-top: 20px;
+    flex-direction: column;
+    height:95%;
+}

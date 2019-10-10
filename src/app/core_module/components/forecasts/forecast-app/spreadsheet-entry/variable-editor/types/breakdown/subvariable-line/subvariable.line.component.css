@@ -1,0 +1,22 @@
+.line {
+    display: flex;
+}
+
+.name {
+    flex: 1;
+    max-width: 397px;
+}
+
+.percentage {
+    flex: 0 0 100px;
+}
+
+button {
+    border: 0;
+    background: none;
+}
+
+.trash {
+    float: right;
+    color: #555;
+}

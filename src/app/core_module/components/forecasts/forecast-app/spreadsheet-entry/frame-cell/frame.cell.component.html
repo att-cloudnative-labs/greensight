@@ -1,0 +1,42 @@
+<div
+    class="selection-rect"
+    [ngClass]= "{'breakdown': isBreakdown()}"
+    (click)="click()"
+    (dblclick)="doubleClick()"
+    matTooltip="{{toolTipAction()}}"
+></div>
+
+<div class="value-container-actuals" *ngIf="hasActual">
+    <div class="actual-value" [ngClass]="{'gt':frame.actualValue > frame.projectedValue}">
+        {{frame.actualValue | formatValue:variableType}}
+    </div>
+    <div class="projected-value">
+        {{frame.projectedValue | formatValue:variableType}}
+    </div>
+</div>
+<div class="value-container" *ngIf="!hasActual">
+    <div class="value">
+        {{frame.projectedValue | formatValue:variableType}}
+    </div>
+</div>
+<div class="indicator" *ngIf="timeSegment != undefined ">
+    <div
+        class="fa"
+        [ngClass]="indicatorType"
+    >
+    </div>
+</div>
+<div *ngIf="showEdit">
+    <frame-editor
+            class="frame-editor"
+            [editingActual]="editingActual"
+            [isPast]="isPast"
+            [timesegment]="timesegmentChangeset"
+            [frame] ="frame"
+            [variable]="variable"
+            [variableList]="variableList"
+            [fwdKeyEvent]="fwdKeyEvent"
+            (onSubmitActual)="saveActual($event)"
+            (onSubmitTimesegment)="saveTimesegment($event)"
+            (closeEditor)="onCloseEditor()"></frame-editor>
+</div>

@@ -1,0 +1,14 @@
+<div #userElement (mousedown)="selectUser()" style="display: flex;">
+    <div style="display: inline">
+        <i class="fa" [ngClass]="isUsergroup ? 'fa-users' : 'fa-user'"></i>
+    </div>
+    <div *ngIf="user.userGroupName" class="display-user">
+        {{user.userGroupName}}
+    </div>
+    <div *ngIf="user.username" class="display-user">
+        {{user.username}}
+    </div>
+    <div *ngIf="!user.username && !user.userGroupName" title="{{user}}" class="display-user">
+        {{user}}
+    </div>
+</div>

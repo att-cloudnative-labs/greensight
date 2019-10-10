@@ -1,0 +1,44 @@
+<ng-container>
+<div (contextmenu)="openContextMenu($event)" #simulationResultElement
+    (click)="onClick()"
+    (dblclick)="doubleClick()"
+    (mouseenter)='onMouseEnter()'
+    (mouseleave)="onMouseLeave()"
+    [class.highlighted]='isHighlighted'
+    [class.selected]="isSelected"
+    class="simulation-result-label">
+
+    <div class="simulation-result-name" style="display: inline;" *ngIf="isRename">
+        <div class="simulation-result-name-icon"><span class="far fa-chart-bar"></span></div>
+        <app-edit-in-place [value]="simulationResult.name" (onSubmit)="renameSimulationResult($event)" (onCancel)="onCancelRename()"></app-edit-in-place>
+        <div class="simulation-result-description" [title]="simulationResult.description" *ngIf="simulationResult.description">
+            <div class="simulation-result-name-label">{{simulationResult.description}}</div>
+        </div>
+
+    </div>
+    <div class="simulation-result-name" [title]="simulationResult.name" *ngIf="!isRename">
+        <div class="simulation-result-name-icon"><span class="far fa-chart-bar"></span></div>
+        <div class="simulation-result-name-label">{{simulationResult.name}}</div>
+        <div class="simulation-result-description" [title]="simulationResult.description" *ngIf="simulationResult.description">
+            <div class="simulation-result-name-label">{{simulationResult.description}}</div>
+        </div>
+    </div>
+
+
+    <div *ngIf="hovering && !isRename && userRoleId !== 'READ_ONLY'" class="pull-right simulation-result-options">
+        <button title="Open Simulation Result" (click)="doubleClick()" class="icon-button"><span style="position:relative"><i class="fa fa-external-link-alt"></i></span></button>
+        <div *appHasPermission="permissionsObj" class="more-simulation-result-options">
+            <button #optionsbutton [id]="'options-'+simulationResult.id" (click)="openContextMenu($event)" class="icon-button dropdown-button"><i class="fa fa-ellipsis-h"></i></button>
+        </div>
+    </div>
+</div>
+<ng-template #contextMenu let-close="close">
+    <app-library-simulation-result-menu
+        (closePopup)="close();"
+        (openModel)="doubleClick()"
+        (renameSimulationResult)="openSimulationResultRenameMode()"
+        [simulationResult]="simulationResult"
+        data-testid="library-simulation-result-pop-up-menu">
+    </app-library-simulation-result-menu>
+</ng-template>
+</ng-container>

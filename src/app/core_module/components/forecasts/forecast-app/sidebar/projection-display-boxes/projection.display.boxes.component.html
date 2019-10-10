@@ -1,0 +1,12 @@
+<div class="header">
+    <a
+        class="form-check-input select-all"
+        (click)="selectAllVariables()"
+        data-testid="showall-hideall"><u>{{button}}</u></a>
+    <input [(ngModel)]="searchTextCol1" (keyup)="searchVariable()" type="text" placeholder="Search" class="variable-search" data-testid="search-display-variables">
+</div>
+<ul>
+    <li *ngFor="let projection of uiSideBarProjections" data-testid="searched-variables">
+        <label><input type="checkbox" (click)="toggleSelection($event, projection)" [checked]="projection.display">{{projection.variable.content.title}}</label>
+    </li>
+</ul>

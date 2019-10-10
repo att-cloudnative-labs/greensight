@@ -1,0 +1,11 @@
+:host ::ng-deep .as-split-gutter {
+    background: transparent !important;
+}
+
+:host ::ng-deep .as-split-gutter:hover, :host ::ng-deep .as-split-gutter.is-dragged {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host ::ng-deep .as-split-gutter-icon {
+    display: none;
+}

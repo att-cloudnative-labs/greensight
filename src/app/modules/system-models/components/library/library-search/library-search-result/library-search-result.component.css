@@ -1,0 +1,32 @@
+.icon {
+    position: relative;
+}
+
+.fa-folder {
+    color:#82CFFD;
+    width: 14px;
+}
+
+.fa-cube, .fa-cubes, .fa-clock, .fa-chart-bar {
+    color: #999;
+    width: 14px;
+}
+
+.item-label {
+    white-space: nowrap;
+    padding: 2px 8px;
+}
+
+.item-name {
+    display: inline;
+    margin-left: 5px;
+}
+
+.fa-lock {
+    position: absolute;
+    bottom:0;
+    left: 8px;
+    font-size: 8px;
+    z-index: 5;
+    color:red;
+}

@@ -1,0 +1,9 @@
+<div class="item-label" (click)="itemClicked()" (dblclick)="itemDoubleClicked()">
+    <span class="icon">
+        <i class="fa" [ngClass]="{'fa-folder': isFolder, 'fa-cubes': isGraphModelTemplate, 'fa-cube': isGraphModel}"></i>
+        <i class="far" [ngClass]="{'fa-clock': isSimulation, 'fa-chart-bar': isSimulationResult}"></i>
+        <i *ngIf="showLock" class="fa fa-lock"></i>
+    </span>
+    <div class='item-name' [innerHTML]="nodeName | highlightSubstring : (searchString$ | async)"></div>
+</div>
+

@@ -1,0 +1,169 @@
+:host{
+  background: white;
+  display: block;
+  padding: 0.45em;
+  box-sizing: border-box;
+  width:100%;
+  height:100%;
+  line-height: initial;
+}
+
+:host.is-clickable{
+  cursor: pointer;
+}
+
+:host.is-past {
+  background: #fff8e6;
+}
+
+:host.is-past.has-actual {
+    padding: 0.2em;
+    font-size: 90%;
+    height: 2.7em;
+}
+
+/*:host.selected {*/
+/*    background: aliceblue;*/
+/*}*/
+
+:host.is-past .value {
+  color: rgba(0, 0, 0, 0.5);
+  font-style: italic;
+}
+
+:host.is-past.has-actual .actual-value{
+  color: #00a500;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+:host.is-past.has-actual .actual-value.gt{
+  color: #0062ff;
+}
+
+:host.is-past.has-actual .projected-value {
+  color: rgba(0, 0, 0, 0.5);
+  font-style: italic;
+}
+
+.selection-rect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+}
+
+:host.selected .selection-rect {
+    outline: var(--frame-outline);
+    outline-offset: var(--frame-outline-offset);
+}
+
+:host.selected .breakdown {
+    outline: var(--frame-outline);
+    outline-offset: var(--frame-outline-offset);
+}
+
+:host.highlight-error {
+  font-weight: bold;
+}
+
+:host.highlight-error .selection-rect {
+  border: 1px solid red;
+  box-shadow: rgba(255, 0, 0, 0.9) 0 0 8px;
+}
+
+.value-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items:center;
+    background: inherit;
+}
+
+.value-container-actuals {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    padding: 0.2em;
+}
+
+.value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  margin-top: 4px;
+  margin-bottom: 0px;
+  width: 100%;
+}
+
+.indicator {
+  position: absolute;
+  top: 0;
+  right: 0;
+  --color: #ccc;
+}
+
+.basic-g-d {
+  border-top: 2px solid var(--color);
+  transform: translateX(-15px) translateY(10px) rotate(135deg);
+  transform-origin: 100% 100%;
+  width: 10px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  filter: blur(1px);
+}
+
+.basic-g-nod {
+  border-top: 2px solid var(--color);
+  transform: translateX(-15px) translateY(10px) rotate(135deg);
+  transform-origin: 100% 100%;
+  width: 10px;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.basic-nog-d::before {
+  content: "\f111";
+  filter: blur(1px);
+  font-size: 8px;
+  margin-right: 5px;
+  color: var(--color);
+}
+
+.basic-nog-nod::before {
+  content: "\f111";
+  font-size: 7px;
+  margin-right: 5px;
+  color: var(--color);
+}
+
+.expression::before {
+  content: "=";
+  font-size: var(--default-font-size);
+  margin-right: 5px;
+  color: var(--color);
+}
+
+:host.is-warning .value{
+    color: red;
+}
+
+.frame-editor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+}

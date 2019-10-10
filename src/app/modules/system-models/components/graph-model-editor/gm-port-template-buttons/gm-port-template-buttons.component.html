@@ -1,0 +1,8 @@
+ <button
+    *ngFor="let template of filteredTemplates"
+    (click)="buttonClicked(template)"
+    (mousedown)="mouseTrap($event)"
+    title="{{template.description}}"
+>
+    <i class="fa fa-plus"></i> {{template.name}}
+</button>

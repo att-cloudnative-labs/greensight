@@ -1,0 +1,5 @@
+<div class="actual-projected-selector">
+    <button [disabled]="editingActual" (click)="click('actual')">Actual</button>
+    <button [disabled]="!editingActual" (click)="click('projected')">Projected</button>
+</div>
+    

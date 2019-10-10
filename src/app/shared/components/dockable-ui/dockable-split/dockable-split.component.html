@@ -1,0 +1,14 @@
+<as-split
+    direction="{{split.direction}}"
+    gutterSize="6"
+    (dragEnd)="onSplitDragEnd($event)"
+>
+    <as-split-area
+        *ngFor="let item of split.content; trackBy: trackById"
+        [ngSwitch]="item.kind"
+        size="{{item.size}}"
+    >
+        <app-dockable-split *ngSwitchCase="'split'" [split]="item" [parentId]="split.id"></app-dockable-split>
+        <app-dockable-stack *ngSwitchCase="'stack'" [stack]="item" [parentId]="split.id"></app-dockable-stack>
+    </as-split-area>
+</as-split>

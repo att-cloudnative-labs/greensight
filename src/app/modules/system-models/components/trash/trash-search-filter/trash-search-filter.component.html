@@ -1,0 +1,10 @@
+<div>
+     <input placeholder="Search"  [value]="searchString$ | async"
+    (keyup)="onSearchChange($event)"> 
+    <app-filter-dropdown 
+        [options]="filterOptions" 
+        labelKey="name"
+        [selections]="selectedTypes"
+        (selectionsUpdated)="setSelectedFilters($event)"
+      ></app-filter-dropdown>
+</div>

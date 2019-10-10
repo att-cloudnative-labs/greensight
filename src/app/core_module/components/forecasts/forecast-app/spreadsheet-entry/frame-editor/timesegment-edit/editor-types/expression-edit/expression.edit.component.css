@@ -1,0 +1,24 @@
+.invalid-expression {
+    outline: 2px solid red;
+}
+
+.invalid-dist-expression {
+    outline: 2px solid red;
+}
+
+.expression {
+    margin-top: 20px;
+}
+
+.expression-std-dev {
+    cursor: text;
+    border: solid 1px #a3a3a3;
+    height: 32px;
+}
+
+.expression-std-dev:focus {
+    cursor: text;
+    border: solid 2px green;
+}
+
+

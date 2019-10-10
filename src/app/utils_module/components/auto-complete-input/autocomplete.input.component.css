@@ -1,0 +1,89 @@
+:host {
+    display: block;
+}
+
+.suggestion-dropdown {
+    z-index: 23000;
+}
+
+.autocomplete {
+    /*background-color: white;*/
+    height: 100%;
+    padding-top: 0px;
+    padding-left: 5px;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.autocomplete-box {
+    height: 100%;
+    padding-top: 0px;
+    padding-left: 5px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+}
+
+.dist-expression {
+    height: 100%;
+    padding-left: 4px;
+    padding-top: 4px;
+}
+
+.suggestion-list {
+    margin-top: 0px;
+    margin-left: -5px;
+    font-size: var(--default-font-size);
+}
+
+.dist-suggestion-list {
+    margin-top: 1px;
+    margin-left: -5px;
+}
+
+.dist-suggestion-list, .suggestion-list {
+    width: 80px;
+    min-width: max-content;
+    display: block;
+    cursor: pointer;
+    border: 1px solid #333;
+    list-style: none;
+    padding: 5px;
+    background-color: white;
+    z-index: 23000;
+    position: absolute;
+    box-shadow: 8px 5px 15px -5px rgba(0,0,0,0.35);
+}
+
+.entryArea {
+    color: red;
+    width: 9px;
+    background: transparent
+}
+
+input, input:focus {
+    min-width: 5px;
+    border: none;
+    outline: none;
+}
+
+.hiddendiv {
+    width: auto;
+    display: inline-block;
+    visibility: hidden;
+    position: fixed;
+    overflow:auto;
+}
+
+.hovered-suggestion {
+    outline: solid 2px;
+    outline-color: blue;
+}
+
+.list-item {
+    margin-left: -5px;
+    margin-right: -5px;
+    padding: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

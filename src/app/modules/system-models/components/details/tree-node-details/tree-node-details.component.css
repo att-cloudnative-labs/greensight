@@ -1,0 +1,44 @@
+
+:host {
+  flex: 1;
+  padding: 12px 12px 12px 0;
+}
+
+header {
+  display: inline;
+}
+
+textarea {
+  background-color: rgb(64, 68, 71);
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  position: center;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(170, 170, 170);
+  box-sizing: border-box;
+  padding: 2px 4px;
+  padding: 12px;
+  border-radius:4px;
+}
+
+label {
+  font-weight: normal !important;
+}
+
+.owner-name {
+  background-color:  #4d4949e3;
+  color: rgb(214, 208, 208);
+  border-radius: 3px;
+  font-size: x-small;
+  padding: 2px 5px 0 2px;
+  font-weight: normal;
+  margin: 0 3px 0 1px;
+}
+
+.node-name {
+  font-size: large;
+    padding: 2px 2px 0 5px;
+    margin: 0 3px 0 3px;
+}

@@ -1,0 +1,17 @@
+<div class="tool-set">
+    <div class="btn-group pull-left">
+        <button  (click)="zoomIn()" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="Zoom In"><img src="assets/images/plus.png" alt=""></button>
+        <button  (click)="zoomOut()" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="Zoom Out"><img src="assets/images/minus.png" alt=""></button>
+        <button  *ngIf="showModifyButtons==true" (click)="setartSelectionForGroup()" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="Start creating group"><img [src]="pointerDisabled ? 'assets/images/cancel.png' : 'assets/images/pointer.png'" alt=""></button>
+        <button  *ngIf="showModifyButtons==true" [disabled]="groupDisabled" (click)="group()" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="Create group"><img src="assets/images/group.png" alt=""></button>
+        <button  *ngIf="showModifyButtons==true" [disabled]="ungroupDisabled" (click)="ungroup()" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="Ungroup selected group"><img src="assets/images/ungroup.png" alt=""></button>
+        <button  *ngIf="showModifyButtons==true" [disabled]="copyGroupDisabled" (click)="copyGroup()" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="Copy selected group"><img src="assets/images/copy.png" alt=""></button>
+        <button  *ngIf="showModifyButtons==true" [disabled]="deleteGroupDisabled" (click)="deleteGroup()" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="Delete selected group"><img src="assets/images/delete.png" alt=""></button>
+    </div>
+    <div class="btn-group pull-right">
+        <button [disabled]="exportDisabled" (click)="export($event)" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="export current model"><img src="assets/images/download.png" alt=""></button>
+        <button  *ngIf="showModifyButtons==true" (click)="save($event)" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="Save current model"><img src="assets/images/save.png" alt=""></button>
+        <button *ngIf="showModifyButtons==true" (click)="verify($event)" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="Verify current model"><img id="verify" src="assets/images/verify.png" alt=""></button>
+        <button *ngIf="showModifyButtons==false" (click)="verify()" type="button" class="btn btn-default" data-toggle="tooltip" data-trigger="hover" data-placement="top" title="Edit Model"><img src="assets/images/edit.png" alt=""></button>
+    </div>
+</div>

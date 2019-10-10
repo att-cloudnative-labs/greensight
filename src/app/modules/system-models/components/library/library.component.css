@@ -1,0 +1,85 @@
+:host {
+    display: block;
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+    padding: 0;
+    background: #404040;
+}
+
+@keyframes load {
+    0% { background-color:#404040; }
+    100% { background-color:#383838; }
+}
+
+:host.isLoading {
+    animation: load linear 0.75s infinite alternate;
+}
+
+.loading {
+    margin: 8px;
+    opacity: 0.25;
+}
+
+header {
+    display: flex;
+    margin: 8px;
+}
+
+app-search-filter {
+    flex: 1;
+}
+
+.create-folder-button {
+    flex: 0 0 32px;
+    border-radius: 4px;
+    margin-left: 8px;
+    font-size: 24px;
+    line-height: 1;
+    background: transparent;
+    border: none;
+}
+
+.create-folder-button:hover {
+    background: #606060;
+}
+
+.create-folder-button:focus {
+    outline: 0 none;
+}
+
+.library-contents {
+    margin-top: 12px;
+    height: calc(100% - 75px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.no-folders {
+    padding: 2px 8px;
+}
+
+ul {
+    list-style-type: none;
+    padding:0;
+}
+
+li {
+    cursor: pointer;
+}
+
+.trash {
+    margin-top: 3px;
+}
+
+.fa-trash{
+    margin-left: 5px;
+    margin-right: 7px;
+    color: #696969;
+    padding-left: 3px;
+}
+
+.trash:hover{
+    cursor: pointer;
+    background-color: #383838;
+}

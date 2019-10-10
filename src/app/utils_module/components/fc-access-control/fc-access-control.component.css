@@ -1,0 +1,63 @@
+:host {
+    display: block;
+    flex: 1;
+}
+
+.access-form {
+    padding: 12px;
+}
+
+table {
+    width: 100%;
+    position: center;
+    overflow-y: scroll;
+  }
+  tr:nth-of-type(even) {
+    width:100%;
+  }
+  th {
+    font-weight: bold;
+    padding: 6px;
+    border: 1px solid rgb(170, 170, 170);
+    text-align: justify;
+    width:50%;
+    vertical-align: top;
+  }
+  td {
+    border-top-color:  rgb(88, 87, 87) !important;
+    padding: 6px;
+    border: 1px solid rgb(170, 170, 170);
+    text-align: justify;
+    width:50%;
+    vertical-align: top;
+  }
+
+button {
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(88, 87, 87);
+    border-radius:4px;
+    color: rgb(29, 24, 24);
+    float: right;
+
+  }
+
+label {
+    font-weight: normal !important;
+}
+.add-access {
+    width: 100%;
+    height: 100%;
+}
+input {
+  border-style: none;
+  text-align: center;
+  color: black;
+  text-overflow: ellipsis;
+  outline-width: 0;
+  font-size: medium;
+}
+.fc-close-button-column {
+   border-left-style: hidden;
+   padding-right: 16px;
+   }

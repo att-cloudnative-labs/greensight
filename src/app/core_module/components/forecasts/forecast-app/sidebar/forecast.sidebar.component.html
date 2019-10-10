@@ -1,0 +1,65 @@
+<div class="controls" >
+    <div class="configuration">
+        <div class="group">
+            <div>
+                <label>Version</label>
+            </div>
+            <div class="version-export">
+                <div class="version">
+                    <app-core-branch-combo
+                            [isForecast]="isFC"
+                            [list]="branchList"
+                            item-type="Version"
+                            [selected-item]="currentBranch"
+                            (item-selected)=onBranchChanged($event)
+                            data-testid="branch-version-combobox"
+                    ></app-core-branch-combo>
+                </div>
+                <div class="export">
+                    <button class="btn btn-default" (click)="onExportForecast()" data-testid="excel-button" style="font-size: inherit;">
+                        <i class="fa fa-file-excel-o" aria-hidden="true"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div #groupDateRange class="group date-range">
+            <div class="date-picker">
+                <label>Start Date</label>
+                <dp-date-picker #startDateFc id="startDateFc"
+                                [config]="datePickerConfig"
+                                [(ngModel)]="startDate"
+                                mode="month"
+                                (click)="onStartDateChange($event)"
+                                [theme]="'dp-material dp-main'"
+                                data-testid="start-date"></dp-date-picker>
+            </div>
+            <div class="date-picker">
+                <label>End Date</label>
+                <dp-date-picker #endDateFc id="endDateFc"
+                                [config]="datePickerConfig"
+                                [(ngModel)]="endDate"
+                                mode="month"
+                                (click)="onEndDateChange($event)"
+                                [theme]="'dp-material dp-main'"
+                                data-testid="end-date"></dp-date-picker>
+            </div>
+        </div>
+    </div>
+    <hr/>
+    <div class="scrollable">
+        <div class="group display-options">
+            <graph-metrics
+                    (toggleDisplayLines)="toggleDisplayLines($event)">
+            </graph-metrics>
+        </div>
+        <div class="var-group" *ngIf="uiProjections.length > 0">
+            <label>Variable Filter</label>
+            <projection-display-boxes
+                    [uiProjections]="uiProjections"
+                    [variableList]="variableList"
+                    (displayChanged)="displayChanged()">
+            </projection-display-boxes>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,29 @@
+<div class="header">
+    <div class="tabs">
+        <div
+            *ngFor='let panel of panels'
+            class='tab'
+            (click)='onTabClick(panel)'
+            [class.active]='selectedPanel === panel'
+            [title]="panel.fullName"
+        >
+            <div class="name">
+                <i class="{{icon(panel.component)}}"></i>
+                {{panel.useFullName ? panel.fullName : panel.name}}
+            </div>
+            <button
+                *ngIf='panel.closeable'
+                class='close-tab-button'
+                (click)='onTabCloseClick(panel)'
+            >
+                <i class='fa fa-times'></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="panels">
+    <div *ngFor='let panel of panels' class='panels' [hidden]="panel != selectedPanel">
+        <app-dockable-panel [panel]='panel' [hidden]="panel != selectedPanel"></app-dockable-panel>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+<button #visibilityButton [ngClass]="{'is-open': isOpen}" id="filter-dropdown-button" (click)="toggleVisibilty()">
+    <span><i class="fa fa-eye"></i><i class="fa fa-caret-down"></i></span>
+</button>
+<div *ngIf="isOpen" class="filter-dropdown">
+        <div
+        *ngWormhole="'#folder-popup-target'"
+        appTether
+        [appTetherTarget]="visibilityButton"
+        [appTetherTargetAttachment]="'bottom right'"
+        [appTetherAttachment]="'top right'"
+        [appTetherOffset]="'0px 0px'"
+        [appTetherConstraintAttachment]="'together'">
+            <app-filter-dropdown-list
+                [labels]="labels"
+                [selections]="selections"
+                (dropdownClosed)="isOpen=false"
+                (selectionsUpdated)="onSelectionsUpdated($event)">
+            </app-filter-dropdown-list>
+        </div>
+</div>

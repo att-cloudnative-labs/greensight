@@ -1,0 +1,33 @@
+
+:host {
+    white-space: nowrap;
+    padding: 2px 8px;
+}
+
+:host:hover {
+    background-color:lightgray;
+}
+
+:host.active {
+    background-color:lightblue;
+}
+
+.icon{
+    position: relative;
+    width: 14px;
+}
+
+.item-name {
+    display: inline-flex;
+    width: 100%;
+}
+
+.item-name div {   
+    margin-left: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.disable-select {
+    text-decoration: line-through;
+}

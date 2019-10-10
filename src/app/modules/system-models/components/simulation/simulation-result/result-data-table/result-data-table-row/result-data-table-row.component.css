@@ -1,0 +1,37 @@
+:host.selected td {
+    background: rgb(56, 130, 165)
+}
+
+:host.selected .variable-name {
+    outline: 2px solid blue;
+    outline-offset: -1px;
+}
+
+
+td {
+    padding: 0;
+    height: 30px;
+    max-width: 100px;
+    box-sizing: border-box;
+    border-bottom: 1px solid black;
+    text-align: center;
+    border-right: 1px solid black;
+    -webkit-user-select: none;
+    -moz-user-select: none; 
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+}
+  
+td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1000;
+    max-width: 250px;
+    border-right: 1px solid black;
+}
+
+.variable-name {
+    background-color: #272727;
+    padding: 5px;
+}

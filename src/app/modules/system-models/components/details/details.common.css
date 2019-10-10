@@ -1,0 +1,17 @@
+input {
+  background-color: rgb(64, 68, 71);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(170, 170, 170);
+  padding: 2px 4px;
+  border-radius:4px;
+}
+
+select {
+    background-color: rgb(64, 68, 71);
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    padding: 2px 4px;
+    border-radius:4px;
+}

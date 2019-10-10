@@ -1,0 +1,55 @@
+<div [ngClass]="{'autocomplete': !isDistributionExpression, 'dist-expression': isDistributionExpression}"
+     id="auto-complete" #autoComplete>
+    <div #autocompletebox class="autocomplete-box">
+        <completed-word
+                [is-equals]="true"
+                title="="></completed-word>
+
+        <completed-word
+                (deleted)="onDelete(i)"
+                [is-operator]="word.type == 'operator'"
+                [is-const-value]="word.type == 'const'"
+                [is-equals]="word.type == 'equals'"
+                [wordIndex] = "i"
+                *ngFor="let word of preInsertionCompletedWords; let i = index;"
+                [title]="word.title"
+                (clicked)="onClick(i)"></completed-word>
+
+        <input class="entryArea" id="input-field" #input
+                [(ngModel)]="inputValue"
+                (input)="resizeInputField()"
+                [ngStyle]="{'width': inputWidth+'px'}"
+                (focus)="onFocus()"
+                (keydown)="onKeydown($event)"
+                type="text"
+                (keyup)="onKeyup($event)">
+
+        <div class="hiddendiv" #invisibleDiv></div>
+
+        <completed-word
+                (deleted)="onDelete(i)"
+                [is-operator]="word.type == 'operator'"
+                [is-const-value]="word.type == 'const'"
+                [wordIndex] = "i"
+                *ngFor="let word of postInsertionCompletedWords; let i = index;"
+                [title]="word.title"
+                (clicked)="onClick(i+this.preInsertionCompletedWords.length)"></completed-word>
+
+    </div>
+    <div class="suggestion-dropdown"
+        *ngWormhole="'#autocomplete-target'"
+         appTether
+         [appTetherTarget]="autocompletebox"
+         [appTetherTargetAttachment]="'bottom left'"
+         [appTetherAttachment]="'top left'"
+         [appTetherOffset]="'0px 0px'">
+        <ul id="suggestionList"
+            [ngClass]="{'suggestion-list': !isDistributionExpression, 'dist-suggestion-list': isDistributionExpression}"
+            (mouseover)="onHover()" (mouseleave)="outHover()" *ngIf="suggestions.length > 0">
+            <li class="list-item" id="suggestion" [ngClass]="{'hovered-suggestion': s === hoveredSuggestion}"
+                *ngFor="let s of suggestions" (mouseover)="onSuggestionHover(s)" (click)="selectWord(s)">
+                {{s.content.title}}
+            </li>
+        </ul>
+    </div>
+</div>

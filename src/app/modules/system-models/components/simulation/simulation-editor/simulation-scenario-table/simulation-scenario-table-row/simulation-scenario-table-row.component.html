@@ -1,0 +1,55 @@
+<td class="inport-name">{{modelInport.name}}</td>
+
+<td class="inport-type">
+    <ng-container *ngIf="newInport.type">
+        <select [(ngModel)]="newInport.type" (change)=valueChanged()>
+            <option *ngFor="let type of inportTypes">{{type}}</option>
+        </select>
+    </ng-container>
+</td>
+
+<td class="inport-type" [ngSwitch]="newInport.type">
+    <select *ngSwitchCase="'BOOLEAN'" [(ngModel)]="boolValue" (change)=valueChanged()>
+        <option [ngValue]="false">FALSE</option>
+        <option [ngValue]="true">TRUE</option>
+    </select>
+
+    <input #stringInput *ngSwitchCase="'STRING'" type="text" [(ngModel)]="strValue" (blur)=valueChanged() (keyup)="onStringKeyUp($event)">
+    <input *ngSwitchCase="'DATE'" type="month" [(ngModel)]="dateValue" (blur)=valueChanged()>
+
+    <input #numberInput *ngSwitchCase="'NUMBER'" type="number"  step="any" [(ngModel)]="numValue" (blur)=valueChanged() (keyup)="onKeyUp($event)">
+
+    <div *ngSwitchCase="'FORECAST_VAR_REF'">
+            <app-typeahead-combobox 
+            [title]="forecastVar?.searchKey"
+            placeholder="select a forecast variable" 
+            selectedKey="variableName"
+            [selectedItem]="forecastVar"
+            searchKey="searchKey"
+            [itemList]="forecastVariables"
+            (itemSelected)="onForecastVarSelected($event)"></app-typeahead-combobox>
+    </div>
+
+    <div *ngSwitchCase="'BREAKDOWN'">
+            <app-typeahead-combobox 
+            [title]="forecastVar?.searchKey"
+            placeholder="select a breakdown variable" 
+            selectedKey="variableName"
+            [selectedItem]="forecastVar"
+            searchKey="searchKey"
+            [itemList]="breakdownForecastVariables"
+            (itemSelected)="onForecastVarSelected($event)"></app-typeahead-combobox>
+    </div>
+</td>
+
+<td class="inport-unit"> 
+    <select (change)="unitChanged($event)" *ngIf="newInport.type === 'NUMBER'">
+        <option *ngFor="let unit of forecastUnits"
+            [value]="unit.title"
+            [selected]="selectedUnit === unit.title">{{unit.title}}</option>
+    </select>
+
+    <div *ngIf="newInport.type === 'FORECAST_VAR_REF'">
+        <span *ngIf="forecastVar">{{forecastVar.variableUnit}}</span>
+    </div>
+</td>

@@ -1,0 +1,45 @@
+<div class="modal" id="userGroup-modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">{{selectedUserGroup == null ? 'Add User Group' : 'Update User Group: ' + this.userGroupName}}</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="filters" data-testid="usergroup-name">
+                    <div class="col-md-12 row">
+                        <span class="fa fa-users"></span>
+                        <input type="text" [(ngModel)]="userGroupName" placeholder="User Group Name" class="input-search" >
+                    </div>
+
+                    <div class="col-md-12 row" data-testid="usergroup-username">
+                        <span class="fa fa-search"></span>
+                        <input [(ngModel)]="searchName" (keyup)="filterResult($event, 'searchName')" type="text" class="input-search" placeholder="Username">
+                        <div *ngFor="let u of filteredUsers" class="checkbox row list">
+                            <label>
+                                <input type="checkbox" (click)="setAccess($event, u)" [value]="u" [checked]="hasAccess(u)">{{u.username | slice:0:30}} {{u.username.length > 30 ? '&hellip;' : ''}}
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 row" data-testid="usergroup-role">
+                        <span class="fa fa-filter"></span>
+                        <div class="row list">
+                            <select class="form-control" [(ngModel)]="roleId" style="width: 95%">
+                                <option *ngFor="let role of roles" [ngValue]="role.id">{{role.roleName}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="modal-footer">
+                <div class="pull-right">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" (click)="onSave()">Save</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" (click)="cancel()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

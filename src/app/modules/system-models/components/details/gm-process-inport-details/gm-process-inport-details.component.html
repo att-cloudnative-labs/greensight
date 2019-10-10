@@ -1,0 +1,81 @@
+<header>
+    <i class="fa fa-circle"></i>
+    <div class="name">{{processInport.name}}</div>
+</header>
+<label *ngIf="processInport.description">
+    Description:
+    <div class="description">{{processInport.description}}</div>
+</label>
+
+<div *ngIf="!useDefault">  
+    <label>
+        Type:
+            <select (change)="handleParamTypeChange($event)">
+                <option>(no value)</option>
+                <option
+                    *ngFor="let paramType of paramTypes"
+                    [value]="paramType"
+                    [selected]="selectedParamType === paramType"
+                >
+                    {{paramType | titlecase}}
+                </option>
+            </select>
+        </label>
+            
+        <div [ngSwitch]="selectedParamType">
+            <label *ngSwitchCase="'NUMBER'">
+                Value:
+                <input
+                    type="number"
+                    [value]="processInport.param.value"
+                    (change)="saveParamValue($event)"
+                    #processInportElement
+                >
+            </label>
+            <label *ngSwitchCase="'BOOLEAN'">
+                Value:
+                <input
+                    type="checkbox"
+                    [checked]="processInport.param.value"
+                    (change)="saveParamValue($event)"
+                    #processInportElement
+                >
+            </label>
+            <label *ngSwitchCase="'STRING'">
+                Value:
+                <input
+                    type="text"
+                    [value]="processInport.param.value"
+                    (change)="saveParamValue($event)"
+                    #processInportElement
+                >
+            </label>
+            <label *ngSwitchCase="'DATE'">
+                Value:
+                <input
+                    type="month"
+                    [value]="paramValue"
+                    (change)="saveParamValue($event)"
+                    #processInportElement
+                >
+            </label>
+            <div *ngSwitchCase="'BREAKDOWN'">
+                <app-breakdown-editor
+                    [value]="paramValue"
+                    (onChange)="saveParamValue($event)"
+                >
+                </app-breakdown-editor>
+            </div>
+        </div>
+</div>
+<div *ngIf="processInport.defaultParam">
+    <input id="useDefault" type="checkbox" [checked]="useDefault" (change)="handleDefaultParamUseCheckboxChange($event)"><label style="padding: 2px" for="useDefault"> Use Default</label>
+    <div *ngIf="useDefault" class="default-param">
+        <label style="color: whitesmoke">
+            Type:
+            <label style="color:rgb(172, 169, 169)">{{processInport.defaultParam.type}}</label><br>
+            Value:
+            <label style="color:rgb(172, 169, 169)">{{defaultParamValue}}</label>
+        </label>
+    </div>
+</div>

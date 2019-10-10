@@ -1,0 +1,48 @@
+.loader-hidden {
+    visibility: hidden;
+}
+
+#dim-wrapper {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    background: rgba(192,192,192,0.2);
+}
+
+#loader-overlay {
+    border: 16px dotted #abd3ee; 
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    animation: borderScale 2s linear infinite;
+    color: white;
+    margin: 0 auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    -webkit-animation: borderScale 5s infinite;
+    transform: rotate(-90deg); 
+}
+
+@-webkit-keyframes borderScale {
+    25% {
+        border-right: 16px dotted #3498db;
+    }
+    50% {
+        border-bottom: 16px dotted #3498db;
+    }
+    75% {
+        border-left: 16px dotted #3498db;
+    }
+    90% { 
+        
+        border-top: 16px dotted #3498db;
+    }
+    100% {
+        transform: rotate(360deg);
+        border: 16px dotted #abd3ee;
+    }
+}

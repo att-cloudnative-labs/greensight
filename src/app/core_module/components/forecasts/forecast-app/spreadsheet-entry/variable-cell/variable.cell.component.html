@@ -1,0 +1,36 @@
+<div class="relative-container" id="varName">
+    <div *ngIf="isExpandable" class="toggle-expansion" (click)="onExpandToggle()">
+        <fa [name]='iconName'></fa>
+    </div>
+    
+    <div (click)="openNameEditor()" *ngIf="!editName" class="name">{{variable.content.title}}</div>
+    <app-edit-in-place 
+        *ngIf="editName" 
+        class="edit" 
+        style="flex: 1;"
+        [inputStyle]="editNameInputStyle"
+        [value]="originalTitle"
+        (onSubmit)="onUpdateVariableName($event)"
+        (onCancel)="editName=false" ></app-edit-in-place>
+    <button [class]="'toggle-edit custom-toggle-edit button'+variable.id" [id]="'button'+variable.id" (click)="toggleEdit()"><i class="fa fa-angle-down" [ngClass]="'button'+variable.id"></i> </button>
+
+    <div *ngIf="showEdit">
+        <variable-editor
+        *ngWormhole="'#editor-target'"
+        appTether
+        [appTetherTarget]="'#button'+variable.id"
+        [appTetherTargetAttachment]="'top right'"
+        [appTetherAttachment]="'top left'"
+        [appTetherOffset]="'0px 0px'"
+                class="edit"
+                [buttonId]="'button'+variable.id"
+                [variable]="variable"
+                [allVariables]="allVariables"
+                [units]="units"
+                [startDate]="startDate"
+                (onDelete)="onDeleteVariable($event)"
+                (onSubmit)="onUpdateVariable($event)"
+                (onEscape)="closeEdit()"
+                (onClose)="this.showEdit = false"></variable-editor>
+    </div>
+</div>

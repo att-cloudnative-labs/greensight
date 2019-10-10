@@ -1,0 +1,59 @@
+<div class="sim-panel">
+    <div class="sim-section">
+        <h3>Model</h3>
+        <input value="{{selectedModel?.name}}" title="{{selectedModel?.name}}" readonly>
+    </div>
+
+    <div *ngIf="selectedModel" class="sim-scenario-tables">
+        <h3>Scenarios</h3>
+            <app-simulation-scenario-table *ngFor="let scenarioId of scenarioIds"
+                [simulation]="simulation"
+                [selectedModel]="selectedModel"
+                [scenario]="scenarios[scenarioId]"
+                [scenarioId]="scenarioId"
+                [scenarioIds]="scenarioIds"
+                (onDeleteScenario)="removeScenario(scenarioId)"
+                (renameScenario)="renameScenario(scenarioId, $event)"></app-simulation-scenario-table>
+        <button class="add-scenario" (click)="addScenario()" title="Add scenario">Add Scenario</button>
+    </div>
+
+    <div class="sim-section">
+        <h3>Parameters</h3>
+        <app-simulation-timeline
+            [simulation]="simulation">
+        </app-simulation-timeline>
+        <h4>Monte Carlo Iterations</h4>
+        <input [(ngModel)]="monteCarloIterations"
+            (blur)="saveMonteCarlo()"
+            type="number" />
+    </div>
+    <div class="sim-section create">
+        <button
+            (click)="createSimulation()" [ngClass]="isNotClickable ? 'disable' : ''" [disabled]="isNotClickable">Create</button>
+    </div>
+    <h3>Results</h3>
+    <table class="result-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody *ngIf="(childNodes$ | async)?.length">
+            <ng-container *ngFor="let node of (childNodes$ | async)" [ngSwitch]="node.type">
+                <tr>
+                    <app-library-simulation-result
+                        *ngSwitchCase="'SIMULATIONRESULT'"
+                        [simulationResult]="node">
+                    </app-library-simulation-result>
+                </tr>
+            </ng-container>
+        </tbody>
+        <tbody *ngIf="!(childNodes$ | async)?.length">
+            <tr>
+                <td class="no-results" colspan="4">
+                    <span><i>Empty</i></span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

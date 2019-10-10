@@ -1,0 +1,32 @@
+
+:host {
+    white-space: nowrap;
+    padding: 2px 8px;
+    /* width: 200px; */
+}
+
+:host:hover {
+    /* background-color:lightgray; */
+    background: rgb(138, 138, 138);
+}
+
+:host.active {
+    /* background-color:rgb(149, 150, 146); */
+    background: #428bca;
+}
+.fa {
+    color: black;
+}
+
+.display-user {
+    flex-grow: 1;
+    color: black;
+    padding-left: 6px;
+    padding-right: 0px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.display-user span {   
+    margin-left: 4px;
+}

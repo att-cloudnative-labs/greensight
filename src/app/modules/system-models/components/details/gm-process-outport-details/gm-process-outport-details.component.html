@@ -1,0 +1,37 @@
+<header>
+    <div class="name">{{processOutport.name}}</div>
+    <i class="fa fa-circle"></i>
+</header>
+<label *ngIf="processOutport.description">
+    Description:
+    <div class="description">{{processOutport.description}}</div>
+</label>
+<div [ngSwitch]="processOutport.configType">
+    <label *ngSwitchCase="'NUMBER'">
+        Value:
+        <input
+            type="number"
+            [value]="configValue"
+            (blur)="saveConfig($event)"
+            #processOutportElement
+        >
+    </label>
+    <label *ngSwitchCase="'BOOLEAN'">
+        Value:
+        <input
+            type="checkbox"
+            [checked]="configValue"
+            (change)="saveConfig($event)"
+            #processOutportElement
+        >
+    </label>
+    <label *ngSwitchCase="'STRING'">
+        Value:
+        <input
+            type="text"
+            [value]="configValue"
+            (change)="saveConfig($event)"
+            #processOutportElement
+        >
+    </label>
+</div>

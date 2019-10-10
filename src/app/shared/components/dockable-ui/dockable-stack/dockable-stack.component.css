@@ -1,0 +1,69 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.header {
+    flex: 0 0 28px;
+    display: flex;
+    user-select: none;
+}
+
+.tabs {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.tab {
+    background: #454545;
+    padding: 3px 12px 0 8px;
+    margin-right: 2px;
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    flex-basis: auto;
+    max-width: 250px;
+    min-width: 80px;
+}
+
+.tab .name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+.tab:first-child {
+    margin-left: 8px;
+}
+
+.tab.active {
+    background: #606060;
+}
+
+ .close-tab-button {
+    border: 0;
+    background: 0;
+    color: #2e2e2e;
+    padding-left: 0px;
+    padding-right: 17px;
+    margin-right: -10px;
+    margin-left: 6px;
+    width: 10px;
+}
+
+.panels {
+    flex: 1;
+    background: #606060;
+    display: flex;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.fa-clock, .fa-chart-bar, .fa-cube {
+    margin-right: 1px;
+    margin-left: 6px;
+    color: #999;
+}

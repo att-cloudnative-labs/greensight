@@ -1,0 +1,26 @@
+<div class="dropdown">
+    <button href="#" class=" btn btn-default text-left"> <span class="fa fa-caret-down pull-right" ></span>{{(selectedItem !== null) ? selectedItem.title : null }}</button>
+    <ul class="dropdown-menu">
+        <li *ngIf="isForecast === true">
+            <a href=""
+                [routerLink]="['/branches-list', currentProjectId]"
+                [queryParams]="{addForecastVersion: 'true'}" >☩ Add New {{itemType}}</a>
+            </li>
+         <li>
+        <li *ngIf="isForecast === false">
+            <a href=""
+               [routerLink]="['/branches-list', currentProjectId]"
+               [queryParams]="{addModelVersion: 'true'}" >☩ Add New {{itemType}}</a>
+        </li>
+        <li>
+            <a href=""
+                [routerLink]="['/branches-list', currentProjectId]">🔍 Manage All {{itemType}}s </a>
+         </li>
+
+        <div class="divider dropdown-divider"></div>
+
+        <li *ngFor="let item of itemList" class="dropdown-item">
+            <a (click)="onItemSelected(item)" > <span [hidden]="!isSelectedItem(item.id)">✔ </span>{{item.title}}</a>
+        </li>
+    </ul>
+ </div>

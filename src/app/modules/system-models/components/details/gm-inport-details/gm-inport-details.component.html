@@ -1,0 +1,81 @@
+<header>
+    <i class="fa fa-circle"></i>
+    <div class="name">Model Input</div>
+</header>
+<label>
+  Name:
+  <input
+    type="text"
+    [value]="inport.name"
+    (blur)="saveName($event)"
+    (keydown.enter)="saveName($event)"
+    #inportElement
+  >
+</label>
+
+<div class="details-label">Allowed Types</div>
+<div
+  class="checkbox-group"
+  appElementResizeDetector
+  (onSizeChanged)="checkboxGroupSizeChanged($event)"
+>
+  <label *ngFor="let paramType of requiredTypeOptions">
+    <input
+      type="checkbox"
+      value="{{paramType}}"
+      [checked]="inport.requiredTypes.indexOf(paramType) > -1"
+      (change)="handleCheckboxChange($event)"
+    >
+    <span>{{paramType}}</span>
+  </label>
+</div>
+<!-- TODO: move out following in a separate component and use it in gm-process-inport.component and here to prevent duplicate code -->
+<div class="default-param">
+  <label>
+  Default:
+  <select (change)="handleDefaultParamTypeChange($event)">
+    <option>(no value)</option>
+    <option *ngFor="let defaultType of defaultTypes" 
+      [value]="defaultType"
+      [selected]="selectedDefaultType === defaultType">
+      {{defaultType | titlecase}}
+    </option>
+  </select>
+  </label><br>
+  <div [ngSwitch]="selectedDefaultType">
+    <label *ngSwitchCase="'NUMBER'">
+      Value:
+      <input 
+        type="number" 
+        [value]="inport.defaultParam.value" 
+        (blur)="saveDefaultParamValue($event)">
+    </label>
+    <label *ngSwitchCase="'BOOLEAN'">
+      Value:
+      <input 
+        type="checkbox" 
+        [checked]="inport.defaultParam.value" 
+        (change)="saveDefaultParamValue($event)">
+    </label>
+    <label *ngSwitchCase="'STRING'">
+      Value:
+      <input 
+        type="text" 
+        [value]="inport.defaultParam.value" 
+        (change)="saveDefaultParamValue($event)">
+    </label>
+    <label *ngSwitchCase="'DATE'">
+      Value:
+      <input 
+        type="month" 
+        [value]="defaultValue" 
+        (change)="saveDefaultParamValue($event)">
+    </label>
+    <div *ngSwitchCase="'BREAKDOWN'">
+      <app-breakdown-editor 
+        [value]="defaultValue" 
+        (onChange)="saveDefaultParamValue($event)">
+      </app-breakdown-editor>
+    </div>
+   </div>
+ </div>

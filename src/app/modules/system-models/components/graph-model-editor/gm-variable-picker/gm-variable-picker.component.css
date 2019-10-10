@@ -1,0 +1,25 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    background-color: #272727;
+    border: 1px solid grey;
+    padding: 5px 0;
+}
+
+button {
+    text-align: left;
+    border: 0;
+    background: transparent;
+    color: white;
+    padding: 5px 30px;
+}
+
+button:hover {
+    background-color: #1b1b1b;
+}
+
+hr {
+    border-color: grey;
+    margin: 5px 0;
+}
+

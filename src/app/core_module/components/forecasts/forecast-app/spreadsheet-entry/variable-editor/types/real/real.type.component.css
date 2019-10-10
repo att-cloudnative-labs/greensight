@@ -1,0 +1,16 @@
+.form-control.custom-form-control {
+    font-size: inherit;
+    width: unset;
+    height: 2em;
+    padding: 0px 5px;
+}
+
+.group.unit {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.group.associate-breakdown-variables {
+    max-width: 300px;
+}

@@ -1,0 +1,52 @@
+<div class="access-form" *ngIf="displayAccess">
+    <div *ngFor="let access of this.availableAccessControlModes">
+        <input id="{{access}}" type="radio" name="folder-access" value="{{access}}" [checked]="accessControlMode === access" (change)="setAccessControlMode(access)"><label
+            for="{{access}}">{{controlModeNames(access)}}</label>
+        <br></div>
+    <div *ngIf="accessControlMode === 'ADVANCED'">
+        <table>
+            <th>User or Group</th>
+            <th>Access</th>
+            <th class="fc-close-button-column"></th>
+            <tr>
+                <td style=" color: rgb(182, 181, 181);"><i class="fa fa-user"></i> Owner ( {{node.ownerName}} )</td>
+                <td style=" color: rgb(182, 181, 181);"> Full control</td>
+                <th class="fc-close-button-column"></th>
+            </tr>
+            <tr>
+                <td style=" color: rgb(182, 181, 181);"><i class="fa fa-users"></i> Anyone</td>
+                <td>
+                    <fc-permission-select [permission]="anyonePermissions" [showNoAccess]="true"
+                         (onUpdatePermission)="updateAnyonePermissions($event)">
+                    </fc-permission-select>
+                </td>
+                <th class="fc-close-button-column"></th>
+            </tr>
+        </table>
+        <div *ngFor="let aclEntry of entityAclEntries">
+            <fc-access-control-row
+                (onUpdateAccessControl)="updateAccessControlEntry($event)"
+                (onRemoveAccess)="removeAccessRow($event)"
+                [omit]="omit"
+                [users$]="users$"
+                [usergroups$]="usergroups$"
+                [aclEntry]="aclEntry"
+                >
+            </fc-access-control-row>
+        </div>
+        <table>
+            <tr>
+                <td>
+                    <input style="width: 100%" readonly
+                        style="width: 100%;"
+                        (click)="addAccessControlRow()"
+                        readonly placeholder="Click to add">
+                </td>
+                <td>
+                    <input style="width: 100%" readonly>
+                </td>
+                <td class="fc-close-button-column"></td>
+            </tr>
+        </table>
+    </div>
+</div>

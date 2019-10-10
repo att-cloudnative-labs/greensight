@@ -1,0 +1,18 @@
+:host {
+    flex: 1;
+    display: flex;
+    background: #272727;
+    color: white;
+    /* FIXME: This makes the gutters for the first child look weird. */
+    padding: 6px;
+    overflow: hidden;
+}
+
+/*
+* our first child must be flexing regardless of direction!
+* angular-split takes care of the deeper children
+*/
+app-dockable-split {
+    flex: 1;
+    overflow: hidden;
+}

@@ -1,0 +1,6 @@
+<div class="container-fluid">
+    <div class="row content">
+        <a class="link" (click)="navigate('/forecast_graphical')" data-toggle="tooltip" [title]='showTooltip("forecast")' data-testid="home-forecast"><img class="img" src="assets/images/ic_forecasts.svg" alt=""><h3>Forecasts</h3></a>
+        <a (click)="navigate('/system-models')" data-toggle="tooltip" [title]='showTooltip("system-model")' data-testid="home-system-model"><img class="img" src="assets/images/ic_system_models.svg" alt="" id="sim"><h3>System Models</h3></a>
+    </div>
+</div>

@@ -1,0 +1,14 @@
+<ng-container *ngIf="originPortType === 'source'">
+    <button (click)="addNamedVariable()">Add Named Variable</button>
+    <button (click)="addBroadcastVariable()">Add Broadcast Variable</button>
+</ng-container>
+
+<ng-container *ngIf="availableVariables.length > 0">
+    <hr *ngIf="originPortType === 'source'">
+    <button
+        *ngFor="let variable of availableVariables"
+        (click)="linkTo(variable)"
+    >
+        Link to: {{variable.label}}
+    </button>
+</ng-container>

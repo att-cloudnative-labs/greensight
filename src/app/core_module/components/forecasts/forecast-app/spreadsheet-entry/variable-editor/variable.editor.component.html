@@ -1,0 +1,29 @@
+<div class="editor">
+    <div class="title-bar">
+        <div class="name">{{variable.content.title}}</div>
+
+        <button (click)="handleDeleteClick(variable)" class="trash">
+            <fa size="lg" name="trash"></fa>
+        </button>
+    </div>
+    <div class="content">
+        <div class="common">
+            <div class="group type">
+                <label>Type:&nbsp;&nbsp;</label>
+                <type-select
+                        [selected]="type"
+                        [reload]="trigger"
+                        (typeChange)="handleTypeChange($event)"></type-select>
+            </div>
+        </div>
+        <div class="type-specific">
+            <div #typeContainer></div>
+        </div>
+        <div class="common">
+            <div class="group description">
+                <label>Description</label>
+                <textarea class="form-control custom-form-control" [(ngModel)]="variable.content.description" (blur)="saveVariable()"></textarea>
+            </div>
+        </div>
+    </div>
+</div>

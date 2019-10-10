@@ -1,0 +1,5 @@
+<div class="role-list">
+    <select  (change)="onChangeAnyonePermission()" [(ngModel)]="selectedAnyonePermission">
+        <option *ngFor="let permission of permissionsList">{{permission}}</option>
+    </select>
+</div>

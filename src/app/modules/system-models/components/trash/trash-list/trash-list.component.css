@@ -1,0 +1,52 @@
+:host {
+    display: block;
+    flex: 1;
+    padding: 0;
+    background: #404040;
+    overflow: hidden;
+}
+.trash-table{   
+    overflow: auto; 
+}
+table{
+    width:100%;
+    border:1px solid rgb(170, 170, 170);
+}
+
+tbody{
+    overflow-y: auto;
+}
+
+tbody:hover {
+    cursor: pointer;
+}
+
+tr:nth-child(even) {
+    background-color: #4C4C4C;
+}
+
+th,td{
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+
+th{
+    background-color: #272727;
+    width:50%;
+}
+
+table td + td, th + th { 
+    border-left: 1px solid rgb(170, 170, 170);; 
+}
+
+.name{
+    display: inline;
+}
+
+.fa, .far {
+    margin-right:5px;
+}
+
+.selected td {
+    background-color:  #428bca;
+}

@@ -1,0 +1,18 @@
+<input #searchField [(ngModel)] ="searchString"
+        (keydown)="navigateList($event)"
+        (blur)="closeSearchDisplay($event)" 
+        (keyup)="searchList($event)" />
+<div class='search-results'>
+    <div *ngIf="!searchResults.length" class="no-results">
+        No results matching '{{searchString}}'
+    </div>
+                    
+    <ul>
+        <li *ngFor="let result of searchResults"
+            app-typeahead-search-result 
+            [item]="result"
+            [itemNameKey]="searchKey"
+            (resultSelected)="onSelectResult($event)">
+        </li>
+    </ul>
+</div>

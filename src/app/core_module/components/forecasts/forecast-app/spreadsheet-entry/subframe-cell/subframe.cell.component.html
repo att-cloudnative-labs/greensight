@@ -1,0 +1,17 @@
+<div class="relative-container" (click)="click()" (dblclick)="doubleClick(undefined)">
+    <div *ngIf="hasTimesegment">
+        <!--Using dot indicator for now, might change to another symbol-->
+        <i class="fa fa-circle"></i>
+    </div>
+    <div *ngIf="!showEdit" class="value" title='{{value}}' style=' overflow:hidden; text-overflow: ellipsis; padding-right: 6px;'>
+        {{value | formatValue:variableType}}
+    </div>
+    <div *ngIf="showEdit" style='padding-right: 6px;'>
+        <subframe-editor
+            (onEscape)="onEscape()"
+            (onEnter)="saveSubframe($event)"
+            [value]="value"
+            [fwdKeyEvent]="fwdKeyEvent">
+        </subframe-editor>
+    </div>
+</div>

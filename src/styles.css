@@ -1,0 +1,141 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import '~bootstrap/dist/css/bootstrap.css';
+@import '~font-awesome/css/font-awesome.css';
+@import 'assets/css/navbar-fixed-side.css';
+@import '~text-security/dist/text-security.css';
+@import 'assets/css/nv.d3.css';
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+
+:root {
+    --default-font-size: 12px;
+    --large-font-size: 14px;
+    --small-font-size: 10px;
+    --default-font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    --frame-outline: 3px solid rgb(28, 79, 255);
+    --frame-outline-offset: -2px;
+    --frame-outline-invalid: 3px solid red;
+    --frame-outline-invalid-offset: -2px;
+}
+
+body {
+    overscroll-behavior: none;
+}
+
+ .mat-tab-label-content{
+     width: 100%;
+     height: 100%;
+ }
+
+ .mat-tab-labels .mat-tab-label {
+     padding-left: 10px;
+ }
+
+.mat-progress-spinner circle, .mat-spinner circle {
+    stroke: rgba(0,155,0,0.75);
+}
+
+.app-button {
+    height: 40px;
+    width: 140px;
+    background-color: #f2f2f2;
+    border-radius: 2px;
+    color: #323330;
+    margin-bottom: 20px;
+}
+
+.app-select {
+    height: 34px;
+    padding: 6px 12px;
+    line-height: 1.4em;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+dp-date-picker.dp-material .dp-picker-input {
+    max-width: 120px !important;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding-left: 12px;
+}
+
+.dashed {
+    stroke-dasharray: 10,10;
+}
+
+.dotted {
+    stroke-dasharray: 2,5;
+}
+
+.dotted_1 {
+    stroke-width: 2;
+    stroke-dasharray: 10, 5;
+}
+
+.dotted_2 {
+    stroke-width: 4;
+    stroke-dasharray: 15, 10, 5, 10, 15;
+}
+
+.dotted_3 {
+    stroke-width: 6;
+    stroke-dasharray: 5, 1;
+}
+.space_lg {
+    margin-left:237px;
+}
+
+.space_sm {
+    margin-left:11px;
+    margin-top:4px;
+}
+
+
+.search {
+    position: relative;
+    color: #aaa;
+}
+
+.input-search {
+    text-indent: 29px;
+}
+
+.search .fa-search {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+}
+
+.editingVar {
+    stroke-width: 5px !important;
+}
+
+.otherVar {
+    stroke-width: 0.5px !important;
+    stroke-opacity: 0.3 !important;
+}
+
+.modelCombo .dropdown {
+    padding-left: 5px !important;
+}
+
+.modal-body{
+    word-wrap: break-word;
+}
+
+.nvd3 text {
+    font-weight: normal;
+    font-size: var(--default-font-size);
+    font-family: var(--default-font-family);
+}
+
+.nvd3 .title {
+    font-weight: bold;
+    font-size: var(--large-font-size);
+    font-family: var(--default-font-family);
+}
+
+[hidden] { display: none !important;}

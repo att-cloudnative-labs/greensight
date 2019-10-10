@@ -1,0 +1,30 @@
+<div class="trash-table">
+    <table *ngIf="trashedNodes?.length; else noTrashedNodes" >
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Owner</th>
+                <th>Date deleted</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let node of trashedNodes"
+                [ngSwitch]="node.type"
+                [class.selected]="(selected$ | async) == node"
+                (click)="selectTrashedNode(node)">
+                <td>
+                <span *ngSwitchCase="'FOLDER'" class="fa fa-folder"></span>
+                <span *ngSwitchCase="'MODEL'" class="fa fa-cube"></span>
+                <span *ngSwitchCase="'MODELTEMPLATE'" class="fa fa-cubes"></span>
+                <span *ngSwitchCase="'SIMULATION'" class="far fa-clock"></span>
+                <span *ngSwitchCase="'SIMULATIONRESULT'" class="far fa-chart-bar"></span>
+                <div class="name" [innerHTML]="node.name | highlightSubstring : (searchString$ | async)"></div></td>
+                <td>{{node.ownerName}}</td>
+                <td>{{node.trashedDate}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <ng-template #noTrashedNodes>
+        <div style="width:100%; text-align: center">No Trashed Items Found</div>
+    </ng-template>
+</div>

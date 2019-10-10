@@ -1,0 +1,117 @@
+.fa-clock {
+    margin-right: 1px;
+    margin-left: 6px;
+    color: #999;
+}
+
+.simulation-label {
+    user-select: none;
+    white-space: nowrap;
+    padding: 2px 0 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    width: 100%;
+    justify-content: space-between;
+    padding-right: 4px;
+    padding-left: 22px;
+}
+
+.highlighted{
+    cursor: pointer;
+    background-color: #383838;
+}
+
+.selected {
+    background-color: #428bca;
+}
+
+.selected > .far {
+    color: white;
+}
+
+.selected > * .icon-button {
+    color: white;
+}
+
+.simulation-name {
+    display: inline-flex;
+    user-select: none;
+    min-width: 0px;
+    overflow: hidden;
+}
+
+.simulation-name-icon {
+    min-width: min-content;
+    overflow: hidden;
+    display: inline;
+}
+
+.simulation-name-label {
+    min-width: 0px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline;
+    padding-left: 4px;
+}
+
+app-edit-in-place {
+    display: inline-block;
+    margin-top: -3px;
+}
+
+app-edit-in-place input {
+    padding: 2px 4px;
+    box-sizing: border-box;
+}
+
+.icon-button:hover{
+    background-color:#606060;
+}
+
+.icon-button {
+    color: #999;
+    height:100%;
+    padding: 0;
+    border:none;
+    background:none;
+    padding-right: 3px;
+    padding-left: 3px;
+}
+
+.icon-button:focus{
+    outline: 0;
+}
+
+.highlighted .simulation-options{
+    display: block;
+}
+
+.more-simulation-options{
+    display: inline;
+}
+
+.simulation-options {
+    margin-right: 2px;
+    margin-top: -2px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+li {
+    margin: 2px 0 3px 0;
+}
+
+.empty {
+    padding: 0 0 0 44px;
+    color:#A8A8A8;
+    cursor: default;
+}
+
+.isInClipboard {
+    color: grey;
+}

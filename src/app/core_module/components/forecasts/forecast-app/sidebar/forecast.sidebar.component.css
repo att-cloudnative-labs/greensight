@@ -1,0 +1,66 @@
+.controls {
+    padding: 15px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    font-size: var(--default-font-size);
+}
+
+.scrollable {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.group {
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.display-options {
+    margin-top: 12px;
+    margin-bottom: 25px;
+}
+
+.version-export {
+    display: flex;
+}
+
+.version {
+    width: 100%;
+}
+
+.export {
+    padding-left: 8px;
+}
+
+.group.date-range {
+    display: flex;
+    justify-content: space-between;
+}
+
+.date-picker {
+    width: fit-content;
+    max-width: max-content;
+}
+
+.var-group {
+    flex: 1;
+    overflow: hidden;
+    padding-bottom: 5px; /* TODO: Determine where this 5px comes from */
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+    font-size: 110%;
+}
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.4);
+    margin: 1em 0;
+    padding: 0;
+}

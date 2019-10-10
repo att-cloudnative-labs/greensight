@@ -1,0 +1,9 @@
+.form-control.custom-form-control {
+    font-size: inherit;
+    width: unset;
+    height: 2em;
+}
+
+select.form-control.custom-form-control {
+    padding: 0px 5px;
+}

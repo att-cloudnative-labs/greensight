@@ -1,0 +1,47 @@
+<div *ngIf="selectedUser === undefined"> 
+    <input autofocus 
+           #userSearch 
+           [(ngModel)]="searchResult"
+           placeholder="Select a user/group" 
+           (focusout)="closeList()" 
+           (keydown)="navigateList($event)"
+           (keyup)="searchUsers($event)">
+   
+    <div class="user-list" *ngIf="searchResult !== undefined && showSearchResults"
+        appTether
+        [appTetherTarget]="userSearch"
+        [appTetherTargetAttachment]="'bottom left'"
+        [appTetherAttachment]="'top left'"
+        [appTetherOffset]="'0px 0px'">
+        
+        <div *ngIf="!usersList.length" class="no-user">
+            No user or group found
+        </div>
+        <ul>
+            <li *ngFor="let usr of usersList"
+                app-user-picker-search
+                [user]="usr" 
+                (userSelected)="updateAccess($event)">
+            </li>
+        </ul>
+    </div> 
+</div>
+<div *ngIf="selectedUser">
+    <!-- <label
+        app-user-picker-search
+        [user]="selectedUser">{{selectedUser}}
+    </label> -->
+    <span *ngIf="selectedUser.userGroupName">
+        <i class="fa fa-users"></i>
+        &nbsp;{{user.userGroupName}}
+    </span>
+    <span *ngIf="selectedUser.username">
+        <i class="fa fa-user"></i>
+        &nbsp;{{user.username}}
+    </span>
+    <span *ngIf="!selectedUser.username && !selectedUser.userGroupName" title="{{selectedUser}}">
+        <i class="fa fa-user"></i>
+        &nbsp;{{user}}
+    </span>
+</div>
+   

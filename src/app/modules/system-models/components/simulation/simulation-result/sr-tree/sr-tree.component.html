@@ -1,0 +1,21 @@
+<div *ngFor="let node of flatNodes">
+<app-sr-tree-node
+    *ngIf="node.visible"
+    appDragItem
+    (appDragStarted)="handleDragStarted(node)"
+    [appDragItemData]="selection"
+    [result]="node.result"
+    [expandable]="node.expandable"
+    [expanded]="node.expanded"
+    [level]="node.level"
+    [style.display]="shouldRender(node) ? 'flex' : 'none'"
+    (expanderClick)="handleExpanderClick($event, node)"
+    (click)="handleNodeClick($event, node)"
+    [class.selected]="selection.indexOf(node) > -1 && hasResults(node)"
+    [class.hasResults]="hasResults(node)"
+>
+    <div style="background: red; border-radius: 15px; padding: 0.25em 0.5em 0.25em; color: white; font-weight: bold; line-height: 1;" *appDragPreview>
+        {{ selection.length > 0 ? selection.length : 1 }}
+    </div>
+</app-sr-tree-node>
+</div>

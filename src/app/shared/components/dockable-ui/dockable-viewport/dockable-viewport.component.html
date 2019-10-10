@@ -1,0 +1,4 @@
+<ng-container *ngFor="let item of layout.content; trackBy: trackById" [ngSwitch]="item.kind">
+    <app-dockable-split *ngSwitchCase="'split'" [split]="item" data-testid="system-model-dockable-app">column</app-dockable-split>
+    <app-dockable-stack *ngSwitchCase="'stack'" [stack]="item">stack</app-dockable-stack>
+</ng-container>

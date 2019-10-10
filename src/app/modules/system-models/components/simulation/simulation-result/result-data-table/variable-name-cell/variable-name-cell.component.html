@@ -1,0 +1,17 @@
+<div class="relative-container">
+    <div class="icon">
+        <i *ngIf="!isErrorWarning && !isResponse" class="icon fa {{ICONS[resultVariable.type]}}"></i>
+        <i *ngIf="isResponse" class="icon fa fa-backward"></i>
+        <i *ngIf="isErrorWarning" class="icon fa {{errorWarningIcon}}"></i>
+    </div>
+    <div [title]="fullPathName" class=name>
+        {{name}} 
+    </div>
+    <select *ngIf="!isErrorWarning && this.hasAggMethod"
+        (click)="onAggregationClick($event)" 
+        [(ngModel)]="aggregationMethod"
+        (change)="onAggregationChange($event)">
+        <option *ngFor="let method of aggregationMethodsMap | keyvalue" 
+             value="{{method.key}}">{{method.value}}</option>
+    </select>
+</div>

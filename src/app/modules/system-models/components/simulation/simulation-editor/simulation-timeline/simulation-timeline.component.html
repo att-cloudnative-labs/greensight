@@ -1,0 +1,22 @@
+<div class="group date-range">
+    <div class="control">
+        <h4>Start</h4>
+        <dp-date-picker #startDateSim id="startDateSim"
+            [config]="datePickerConfig"
+            [(ngModel)]="startDate"
+             mode="month"
+            (click)="onStartDateChange($event)"
+            [theme]="'dp-material dp-main'"
+            ></dp-date-picker>
+    </div>
+    <div style="padding-left: 25px;" class="control">
+        <h4>End</h4>
+        <dp-date-picker #endDateSim id="endDateSim"
+            [config]="datePickerConfig"
+            [(ngModel)]="endDate"
+            mode="month"
+            [theme]="'dp-material dp-main'"
+            (click)="onEndDateChange($event)"
+            ></dp-date-picker>
+    </div>
+</div>

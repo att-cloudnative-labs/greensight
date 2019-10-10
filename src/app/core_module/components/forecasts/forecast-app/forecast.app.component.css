@@ -1,0 +1,70 @@
+.horizontal-container {
+    overflow: hidden;
+    display: flex;
+    height: calc(100vh - 71px);
+}
+.height-adjustment{
+    height: 100%;
+
+}
+.horizontal-container>.vertical-divider {
+    flex: 0 0 10px;
+    border-right: 1px solid rgba(0, 0, 0, 0.5);
+    border-left: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.horizontal-container>.right-panel {
+    flex: 1;
+    overflow: hidden;
+}
+
+.left-panel {
+    transition: flex 0.5s;
+    flex: 0 0 35px;
+    height: 100%;
+    background: white;
+    box-shadow: inset -9px 1px 42px -21px rgba(0, 0, 0, 0.5);
+    border-right: 2px solid rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.left-panel-expanded {
+    transition: flex 0.5s;
+    flex: 0 0 280px;
+    height: 100%;
+    background: white;
+    box-shadow: inset -9px 1px 42px -21px rgba(0, 0, 0, 0.5);
+    border-right: 2px solid rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.toggle-expansion-button {
+    width: 25px;
+    padding: 3px 0;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
+.vertical-divider, .horizontal-divider {
+    background: #eee;
+}
+
+.vertical-divider {
+    height: 100%;
+    width: 10px;
+}
+
+.horizontal-divider {
+    width: 100%;
+    height: 10px;
+    position: relative;
+    cursor: row-resize;
+}
+
+.horizontal-divider>img {
+    position: absolute;
+    left: 50%;
+    margin-left: -15px;
+    margin-top: 2px;
+}

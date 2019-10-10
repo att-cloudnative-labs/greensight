@@ -1,0 +1,19 @@
+<ul *appHasPermission="modifyPermissionsObj">
+    <div *appHasPermission="createPermissionsObj">
+        <li (click)="onNewModel($event)">New Model</li>
+        <!--<li (click)="onNewTemplate()">New Template</li>-->
+        <hr>
+    </div>
+
+    <li (click)="onRename()">Rename</li>
+    <!-- <li (click)="onDuplicate()">Duplicate</li> -->
+    <li (click)="onPasteModel()" [ngClass]="!hasClipboard ? 'disabled' : ''">Paste</li>
+    <hr>
+    <li (click)="onMakePrivate()" [class.disabled]="folder.accessControl === 'PRIVATE'">Make Private</li>
+    <li (click)="onMakePublic()" [class.disabled]="folder.accessControl !== 'PRIVATE'">Make Public (read only)</li>
+    
+    <div *appHasPermission="deletePermissionsObj">
+        <hr>
+        <li (click)="onTrashFolder()">Send to Trash</li>
+    </div>
+</ul>      

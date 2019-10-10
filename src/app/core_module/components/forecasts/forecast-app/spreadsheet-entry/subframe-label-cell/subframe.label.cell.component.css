@@ -1,0 +1,10 @@
+.relative-container {
+    position: relative;  
+    padding: 3px;
+    text-align: left;
+    vertical-align: center;
+    padding-left: 35px;
+    background: rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

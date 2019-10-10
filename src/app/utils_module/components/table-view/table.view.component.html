@@ -1,0 +1,119 @@
+<div class="table-output">
+    <div id= "overflow-container">
+        <table class="table table-hover table-bordered table-striped col-md-12">
+            <thead>
+                <tr *ngIf="deleteRequired || editRequired">
+                    <th *ngFor="let col of cols"
+                        class="header-column"
+                        [class]="col.colWidth" >
+                        <div class="search">
+                            <span class="fa fa-search"></span>
+                            <input
+                                    (keyup)="filterResult($event, col)"
+                                    type="text"
+                                    class="input-search"
+                                    [placeholder]="col.placeHolder">
+                        </div>
+                    </th>
+                    <th></th>
+                </tr>
+
+                <tr *ngIf="!deleteRequired && !editRequired">
+                    <th *ngFor="let col of cols"
+                        class="header-column"
+                        [class]="col.colWidth" type="text">{{col.placeHolder}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <ng-container *ngFor="let row of filteredRows">
+                    <!--Rows that display the data in a non-editable state-->
+                    <tr *ngIf="editRowID !== row.id">
+                        <td *ngFor="let col of row.columns;"  (click)="onClick(row)" (dblclick)="onDoubleClick(row)">
+                            <div *ngIf="row.isPrivate">
+                                <div *ngIf="(!col.isDelete && !col.isEdit) && (!getUserAccess(row.usersWithAccess))" style="opacity: 0.5" class="column-data">
+                                    <div class="column-value">{{col.value}}</div>
+                                </div>
+
+                                <div *ngIf="(!col.isDelete && !col.isEdit) && (getUserAccess(row.usersWithAccess))" class="column-data">
+                                    <div class="column-value">{{col.value}}</div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="!col.isDelete && !col.isEdit" class="column-data">
+                                <div *ngIf="col.columnName !== 'ownerName' || location !== 'project' || (col.columnName === 'ownerName' && isNotAdmin())" class="column-value">{{col.value}}</div>
+                                <select class="ownerSelect" *ngIf="col.columnName === 'ownerName' && location === 'project' && !isNotAdmin()" [(ngModel)]="col.value" (click)="$event.stopPropagation();" (change)="onChangeOwnerProject(row)" [disabled]='true' >
+                                    <option *ngFor="let user of userList" [selected]="user.username === col.value" [value]="user.username">{{user.username}}</option>
+                                </select>
+                            </div>
+                        </td>
+
+                        <td class="col-md-1 text-center" *ngIf="(deleteRequired || editRequired) && (userRole != null && userRole != 'ROLE_Read-only')">
+                            <div *ngIf="!row.isPrivate">
+                                <div *ngIf="row.columns[0].value === 'Master' && location !== 'project'">
+                                    <fa name="trash" class="btn btn-danger" *ngIf="deleteRequired" disabled></fa>
+                                </div>
+                                <div *ngIf="row.columns[0].value !== 'Master' || location === 'project'">
+                                    <fa name="pen" class="row-action-button btn btn-success " (click)="onDoubleClick(row)"></fa>
+                                    <fa name="trash" class="row-action-button btn btn-danger" *ngIf="deleteRequired" (click)="onDeleteRow(row.id)"></fa>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="col-md-1 text-center" *ngIf="(deleteRequired || editRequired) && (userRole == null || userRole == 'ROLE_Read-only')" style="opacity:0.5;">
+                            <fa name="trash" class="btn btn-danger" *ngIf="deleteRequired" disabled></fa>
+                        </td>
+                    </tr>
+
+                    <!--Rows to be displayed when a row data is to be editied-->
+                    <tr *ngIf="editRowID === row.id">
+                        <td *ngFor="let col of row.columns">
+                            <div *ngIf="col.columnName !== 'access' && col.columnName !== 'ownerName'">
+                                <td>
+                                    <input class="editingColumn" [name]="col.placeHolder+i" [placeholder]="col.columnName" [(ngModel)]="editedRow[col.columnName]" [value]="col.value"type="text" >
+                                </td>
+                            </div>
+                            <select style="width:100%" *ngIf="col.columnName === 'ownerName'" [(ngModel)]="editedRow[col.columnName]" [disabled]='true'>
+                                <option *ngFor="let user of userList" [selected]="user.username === col.value" [value]="user.username">{{user.username}}</option>
+                            </select>
+                                <div *ngIf="col.columnName === 'access'">
+                                        <fc-access-control [node]="row.treeNode" (onUpdatedAccessControl)="updateRowAccessControl(row, $event)">
+                                            </fc-access-control>
+                                </div>
+                            </td>
+                            <td class="col-md-1 text-center">
+                                <fa name="check"  (click)="onSaveRowChanges()" class="row-action-button btn btn-success"></fa>
+                                <fa name="ban" (click)="editRowID=null" class="row-action-button btn btn-danger" ></fa>
+                            </td>
+                    </tr>
+                </ng-container>
+
+                <!--Display form for adding a new row of data-->
+                <tr *ngIf="addRowMode">
+                    <td *ngFor="let col of cols; let i=index">
+                        <div *ngIf="col.title !== 'access' && col.title !== 'ownerName'">
+                            <td>
+                                <input [name]="col.placeHolder+i" [placeholder]="col.placeHolder" type="text" [(ngModel)]="newRow[col.title]" #projectName>
+                            </td>
+                        </div>
+                        <select style="width:100%" *ngIf="col.title === 'ownerName'" [(ngModel)]="ownerName" [disabled]=isNotAdmin() >
+                            <option *ngFor="let user of userList" [value]="user.username">{{user.username}}</option>
+                        </select>
+                        <div *ngIf="col.title == 'access'" [class]="col.colWidth">
+
+                        </div>
+                    </td>
+                    <td class="col-md-1 text-center">
+                        <fa name="check"  (click)=" onSaveNewRow()"class="row-action-button btn btn-success"></fa>
+                        <fa name="ban" (click)="onClearInputRow()" class="row-action-button btn btn-danger" ></fa>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="margin-top:10px; padding-bottom:10px">
+        <button [disabled]=addRowMode class="btn btn-primary pull-left" (click)="onAddRow()">  Add {{location}} </button>
+    </div>
+</div>
+
+
+

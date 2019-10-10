@@ -1,0 +1,5 @@
+<ul>
+    <li *ngFor="let label of labels">
+        <label><input type="checkbox" [checked]="selections.includes(label)" (click)="toggleSelection($event, label)">{{label}}</label>
+    </li>
+</ul>

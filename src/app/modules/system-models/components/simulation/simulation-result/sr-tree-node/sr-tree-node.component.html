@@ -1,0 +1,28 @@
+<ng-container *ngFor="let level of levels">
+    <div class="level">
+        <ng-container [ngTemplateOutlet]="this[level]"></ng-container>
+    </div>
+</ng-container>
+
+<div class="level">
+    <i class="icon fa {{ICONS[result.type]}}"></i>
+</div>
+
+<div class="name" [title]="result.name">
+    {{result.name}}
+</div>
+
+<ng-template #expander>
+    <button class="expander-button" (click)="handleExpanderClick($event)">
+        <i class="fa fa-angle-down" *ngIf="expanded"></i>
+        <i class="fa fa-angle-right" *ngIf="!expanded"></i>
+    </button>
+</ng-template>
+
+<ng-template #line>
+    <div class="line"></div>
+</ng-template>
+
+<ng-template #dot>
+    <div class="dot"></div>
+</ng-template>

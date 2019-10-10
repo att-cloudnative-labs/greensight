@@ -1,0 +1,17 @@
+<div *ngIf="errorWarningNodes.length === 0; else list" style="text-align: center; padding-top: 10px;">
+    No errors or warnings in results
+</div>
+<ng-template #list>
+    <app-sr-error-warning-item 
+        *ngFor="let node of errorWarningNodes"
+        appDragItem
+        (appDragStarted)="handleDragStarted(node)"
+        [appDragItemData]="selection"
+        [result]="node.result"
+        (click)="handleNodeClick($event, node)"
+        [class.selected]="selection.indexOf(node) > -1">
+        <div style="background: red; border-radius: 15px; padding: 0.25em 0.5em 0.25em; color: white; font-weight: bold; line-height: 1;" *appDragPreview>
+                {{ selection.length > 0 ? selection.length : 1 }}
+        </div>
+    </app-sr-error-warning-item>
+</ng-template>

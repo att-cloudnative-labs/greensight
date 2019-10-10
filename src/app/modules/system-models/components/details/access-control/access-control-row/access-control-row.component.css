@@ -1,0 +1,40 @@
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    border-radius:4px;
+    position: center; 
+    overflow-y: scroll;
+  } 
+  tr:nth-of-type(even) { 
+    background: #333;
+    width:100%
+  }
+  td{ 
+    padding: 6px; 
+    border: 1px solid rgb(170, 170, 170);
+    text-align: left; 
+    width:50%;
+    vertical-align: top;
+    border-top-color:  rgb(88, 87, 87) !important;
+
+  }
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    background-color: lightgrey;
+    color: black;
+    padding: 8px;
+    width:100%;
+    font: bold;
+  }
+  input {
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius:4px;
+    background-color: lightgrey;
+    text-align: center;
+    color: black;
+    text-overflow: ellipsis;
+}

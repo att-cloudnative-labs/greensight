@@ -1,0 +1,11 @@
+:host.selected {
+    background: rgb(56, 130, 165);
+    outline: 2px solid blue;
+    outline-offset: -1px;
+}
+
+div {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
