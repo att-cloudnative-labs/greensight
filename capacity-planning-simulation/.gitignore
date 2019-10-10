@@ -1,0 +1,12 @@
+dist
+node_modules
+.tscache
+*.class
+.idea
+node
+target
+src/main/resources/dist-js/
+.npmrc
+lib
+*.sublime-project
+*.sublime-workspace

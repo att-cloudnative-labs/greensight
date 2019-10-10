@@ -1,0 +1,8 @@
+src
+tsconfig.json
+tslint.json
+test
+demo-client
+.npmrc
+lib/demo_graph_model.js
+lib/demo_graph_model.d.ts

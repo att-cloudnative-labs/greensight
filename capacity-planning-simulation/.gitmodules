@@ -1,0 +1,3 @@
+[submodule "capacity-planning-projection"]
+	path = capacity-planning-projection
+	url = 	url = git@github.com:att-cloudnative-labs/capacity-planning-projection.git

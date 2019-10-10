@@ -1,0 +1,24 @@
+{
+  "name": "@cpt/capacity-planning-simulation-node-integration",
+  "version": "0.0.1",
+  "description": "simulation node integration",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^3.3.3"
+  },
+  "dependencies": {
+    "@cpt/capacity-planning-simulation": "file:../",
+    "@cpt/capacity-planning-simulation-pe-repository": "file:../pe-repository",
+    "@cpt/capacity-planning-simulation-types": "file:../types",
+    "@types/node": "^11.11.7",
+    "@types/request-promise-native": "^1.0.15",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
+    "rxjs": "^6.4.0"
+  }
+}

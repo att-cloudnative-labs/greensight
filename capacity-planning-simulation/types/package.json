@@ -1,0 +1,14 @@
+{
+  "name": "@cpt/capacity-planning-simulation-types",
+  "version": "0.0.650",
+  "description": "All CPT Simulation Types",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^3.3.3"
+  }
+}

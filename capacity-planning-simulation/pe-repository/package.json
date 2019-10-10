@@ -1,0 +1,15 @@
+{
+  "name": "@cpt/capacity-planning-simulation-pe-repository",
+  "version": "0.0.650",
+  "description": "A Repository for CPT Processing Elements",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@cpt/capacity-planning-simulation-types": "file:../types",
+    "typescript": "^3.3.3"
+  }
+}

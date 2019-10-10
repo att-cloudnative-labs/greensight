@@ -1,0 +1,33 @@
+{
+  "name": "@cpt/capacity-planning-simulation-service",
+  "version": "0.0.690",
+  "description": "A Service for running CPT Simulations",
+  "main": "lib/index.js",
+  "dependencies": {
+    "@cpt/capacity-planning-simulation": "file:../",
+    "@cpt/capacity-planning-simulation-types": "file:../types",
+    "express": "^4.16.4",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/express": "^4.16.1",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^11.13.4",
+    "@types/request-promise-native": "^1.0.15",
+    "@types/uuid": "^3.4.4",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.3.3"
+  },
+  "scripts": {
+    "test": "mocha --require ts-node/register test/**/*spec.ts",
+    "build": "tsc",
+    "start": "node --experimental-worker www.js"
+  },
+  "author": "",
+  "license": "ISC"
+}

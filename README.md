@@ -67,7 +67,7 @@ For Development / Deployment infrastructure:
 			* cd ../
 				** npm i
 				** tsc
-			* cd ../node-service
+			* cd ./node-service
 				** npm i
 				** npm run-script build
 	2- building frontend:
