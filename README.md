@@ -46,7 +46,7 @@ For Development / Deployment infrastructure:
 	- Schal, Pete
 
 ## Build locally:
-	1- preparing databse
+	1- preparing database
 		* start mongoDB server
 			** add 'cpt' db
 		 	** cd capacity-planning-backend-model/scripts
@@ -58,7 +58,7 @@ For Development / Deployment infrastructure:
 		* cd capacity-planning-backend-model
 			** mvn clean install -DskipTests spring-boot:run
 
-	3- preparing fromtend modules:
+	3- preparing frontend modules:
 		cd ./capacity-planning-simulation/
 			* cd capacity-planning-projection
 				** npm i
