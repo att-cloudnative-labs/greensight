@@ -1,0 +1,10 @@
+{
+  "metadata": "testmeta",
+  "modelRef": "testmodel1",
+  "modelVersion": "3",
+  "monteCarloIterations": 1,
+  "stepStart": "2019-01-01",
+  "stepLast": "2019-02-02",
+  "reportType": "AGGREGATED",
+  "scenarios": {}
+}

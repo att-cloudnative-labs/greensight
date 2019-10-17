@@ -1,0 +1,99 @@
+{
+  "metadata": {},
+  "inports": {
+    "da28dd6e-8d0f-4d72-816f-635cd26d4285": {
+      "name": "Inport",
+      "requiredTypes": [],
+      "generatesResponse": "PASSTHROUGH",
+      "metadata": {
+        "x": 48,
+        "y": 160
+      }
+    },
+    "d7d139be-b037-42ef-903e-8402466fe61b": {
+      "name": "Inport",
+      "requiredTypes": [],
+      "generatesResponse": "PASSTHROUGH",
+      "metadata": {
+        "x": 11,
+        "y": 318
+      }
+    }
+  },
+  "outports": {
+    "ffea764b-9d1e-439c-aea4-2756ccd5b418": {
+      "name": "Outport",
+      "requiredTypes": [],
+      "generatesResponse": "PASSTHROUGH",
+      "metadata": {
+        "x": 710,
+        "y": 139
+      }
+    }
+  },
+  "processes": {
+    "068533bd-f6e9-4c01-83f3-bdb5739d546e": {
+      "type": "PROCESSING_ELEMENT",
+      "ref": "Add Aspect",
+      "inports": {
+        "e107a637-8dfe-49dd-9469-5e3ade846dac": {
+          "ref": "301d502f-d421-44c5-a917-864c19b0f008"
+        },
+        "fe3fd96b-d772-474a-a2a0-8ced542c0698": {
+          "ref": "d5490871-414c-4b80-8502-5e39721e8feb"
+        }
+      },
+      "outports": {
+        "932c60fc-aa5e-4d34-a500-2d407b1f9cb4": {
+          "ref": "b93ad313-aea6-4acb-8162-d5338274a92b"
+        }
+      },
+      "metadata": {
+        "x": 200,
+        "y": 100
+      }
+    },
+    "bab052d6-6532-43d1-88f0-9fe732cc9342": {
+      "type": "PROCESSING_ELEMENT",
+      "ref": "Add Latency",
+      "inports": {
+        "9e06b41e-574b-4b40-b659-77f10ab2f6f1": {
+          "ref": "fd8cf9bd-0390-4152-9db2-f3c63bee2124"
+        },
+        "38d4b352-5224-4357-b80b-d9de52c7040e": {
+          "ref": "edc9a0e8-2ed1-4a8d-9944-b4b11a95ddd4"
+        },
+        "dc89470e-bcae-409f-b84e-edec15bf25d7": {
+          "ref": "38563813-210b-4458-8172-4138186966a8"
+        }
+      },
+      "outports": {
+        "b0ed5c2a-c0be-4adb-99ce-f2101027896e": {
+          "ref": "8421bb7b-908b-44e6-879e-b3b32c8815d3"
+        }
+      },
+      "metadata": {
+        "x": 454,
+        "y": 96
+      }
+    }
+  },
+  "connections": {
+    "697cde55-ae03-47c1-90f4-c0bee2f7a71a": {
+      "source": "d7d139be-b037-42ef-903e-8402466fe61b",
+      "destination": "fe3fd96b-d772-474a-a2a0-8ced542c0698"
+    },
+    "25689bef-27aa-4fa3-93ac-2a534358bf00": {
+      "source": "da28dd6e-8d0f-4d72-816f-635cd26d4285",
+      "destination": "e107a637-8dfe-49dd-9469-5e3ade846dac"
+    },
+    "d61d0397-468b-40d8-8214-5b0888897431": {
+      "source": "932c60fc-aa5e-4d34-a500-2d407b1f9cb4",
+      "destination": "9e06b41e-574b-4b40-b659-77f10ab2f6f1"
+    },
+    "b8bdb948-953c-4b93-bb2f-3ba8b3333b1b": {
+      "source": "b0ed5c2a-c0be-4adb-99ce-f2101027896e",
+      "destination": "ffea764b-9d1e-439c-aea4-2756ccd5b418"
+    }
+  }
+}

@@ -36,8 +36,6 @@ Not a service
 run the service locally:
 
 	* cd capacity-planning-projection
-		** git submodule init
-		** git submodule update
 		** npm i
 		** tsc
 	* cd ../types
@@ -49,7 +47,7 @@ run the service locally:
 	* cd ../
 		** npm i
 		** tsc
-	* cd ../node-service
+	* cd ./node-service
 		** npm i
 		** npm run-script build
 		** npm start

@@ -1,3 +1,0 @@
-[submodule "capacity-planning-simulation"]
-	path = capacity-planning-simulation
-	url = git@github.com:att-cloudnative-labs/capacity-planning-simulation.git

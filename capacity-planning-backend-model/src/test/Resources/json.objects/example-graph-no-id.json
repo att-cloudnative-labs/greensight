@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "projectId": "5c000216a0f5990f46b5bf75"
+  },
+  "properties": {
+    "name": "Graph Prime",
+    "icon": "cog"
+  },
+  "inports": {
+    "inport-1": {
+      "port": "Request",
+      "type": "Request",
+      "metadata": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    "inport-2": {
+      "port": "Number",
+      "type": "Number",
+      "metadata": {
+        "x": 100,
+        "y": 150
+      }
+    }
+  },
+  "outports": {
+    "outport-1": {
+      "port": "Request",
+      "type": "Request",
+      "metadata": {
+        "x": 800,
+        "y": 100
+      }
+    },
+    "outport-2": {
+      "port": "Number",
+      "type": "Number",
+      "metadata": {
+        "x": 800,
+        "y": 150
+      }
+    }
+  },
+  "processes": {
+    "process-1": {
+      "component": "ProcessingTime",
+      "metadata": {
+        "x": 200,
+        "y": 100
+      }
+    },
+    "process-2": {
+      "component": "ProcessingTime",
+      "metadata": {
+        "x": 200,
+        "y": 150
+      }
+    },
+    "process-3": {
+      "component": "RequestRouter",
+      "metadata": {
+        "x": 200,
+        "y": 200
+      }
+    },
+    "process-4": {
+      "graph": "graph-2",
+      "metadata": {
+        "x": 300,
+        "y": 100
+      }
+    },
+    "process-5": {
+      "graph": "graph-3",
+      "metadata": {
+        "x": 300,
+        "y": 150
+      }
+    },
+    "process-6": {
+      "graph": "graph-4",
+      "metadata": {
+        "x": 300,
+        "y": 200
+      }
+    }
+  },
+  "connections": [
+    {
+      "src": {
+        "inport": "inport-1",
+        "port": "Request"
+      },
+      "tgt": {
+        "process": "process-2",
+        "port": "Request"
+      }
+    },
+    {
+      "src": {
+        "process": "process-2",
+        "port": "Request"
+      },
+      "tgt": {
+        "process": "process-3",
+        "port": "Request"
+      }
+    },
+    {
+      "src": {
+        "process": "process-3",
+        "port": "getAuthToken"
+      },
+      "tgt": {
+        "process": "process-4",
+        "port": "Request"
+      }
+    },
+    {
+      "src": {
+        "process": "process-4",
+        "port": "Request"
+      },
+      "tgt": {
+        "process": "process-5",
+        "port": "Request"
+      }
+    },
+    {
+      "src": {
+        "process": "process-5",
+        "port": "Request"
+      },
+      "tgt": {
+        "outport": "outport-1",
+        "port": "Request"
+      }
+    }
+  ]
+}

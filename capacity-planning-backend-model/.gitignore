@@ -1,0 +1,12 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# compiled output
+/target
+/logs
+
+# IDEs and editors
+.idea
+.settings
+.project
+model.backend.iml
+

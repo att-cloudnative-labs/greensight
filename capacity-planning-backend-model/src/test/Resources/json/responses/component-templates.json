@@ -1,0 +1,214 @@
+[
+  {
+    "id": "CptMicroserviceComponent",
+    "hooks": {
+      "hookReceiveLoad": {
+        "parameters": [
+          "sinkIf",
+          "load"
+        ]
+      },
+      "hookSimulationInit": {},
+      "hookSimulationRun": {},
+      "hookSimulationStop": {},
+      "hookSimulationPostProcess": {
+        "parameters": [
+          "myOutput",
+          "simulationOutput"
+        ]
+      },
+      "hookSeriesPostProcess": {
+        "parameters": [
+          "myOutputs",
+          "simulationOutputs"
+        ]
+      },
+      "hookGetOutput": {
+        "parameters": [
+          "output"
+        ]
+      },
+      "hookAdjustLatency": {
+        "parameters": [
+          "load",
+          "latency"
+        ]
+      }
+    },
+    "attributes": {
+      "tpsPerPod": {
+        "default": null
+      },
+      "version": {
+        "default": null
+      },
+      "location": {
+        "default": null
+      },
+      "namespace": {
+        "default": null
+      },
+      "vCpuPerInst": {
+        "default": null
+      },
+      "ramPerInst": {
+        "default": null
+      },
+      "minReplicas": {
+        "default": null
+      },
+      "maxReplicas": {
+        "default": null
+      },
+      "tpsWarningThreshold": {
+        "default": null
+      },
+      "tpsErrorThreshold": {
+        "default": null
+      }
+    },
+    "ifAttributes": {
+      "internalLatency": {
+        "default": 10
+      },
+      "latencyStdDeviation": {},
+      "tpsPerInst": {},
+      "ifTpsWarningThreshold": {},
+      "ifTpsErrorThreshold": {},
+      "ifLatWarningThreshold": {},
+      "ifLatErrorThreshold": {}
+    },
+    "description": "A Generic MicroService"
+  },
+  {
+    "id": "CptInputVariableComponent",
+    "hooks": {
+      "hookReceiveLoad": {
+        "parameters": [
+          "sinkIf",
+          "load"
+        ]
+      },
+      "hookSimulationInit": {},
+      "hookSimulationRun": {},
+      "hookSimulationStop": {},
+      "hookSimulationPostProcess": {
+        "parameters": [
+          "myOutput",
+          "simulationOutput"
+        ]
+      },
+      "hookSeriesPostProcess": {
+        "parameters": [
+          "myOutputs",
+          "simulationOutputs"
+        ]
+      },
+      "hookGetOutput": {
+        "parameters": [
+          "output"
+        ]
+      },
+      "hookAdjustLatency": {
+        "parameters": [
+          "load",
+          "latency"
+        ]
+      }
+    },
+    "attributes": {},
+    "ifAttributes": {},
+    "description": "Input Variable"
+  },
+  {
+    "id": "CptKubernetesComponent",
+    "hooks": {
+      "hookReceiveLoad": {
+        "parameters": [
+          "sinkIf",
+          "load"
+        ]
+      },
+      "hookSimulationInit": {},
+      "hookSimulationRun": {},
+      "hookSimulationStop": {},
+      "hookSimulationPostProcess": {
+        "parameters": [
+          "myOutput",
+          "simulationOutput"
+        ]
+      },
+      "hookSeriesPostProcess": {
+        "parameters": [
+          "myOutputs",
+          "simulationOutputs"
+        ]
+      },
+      "hookGetOutput": {
+        "parameters": [
+          "output"
+        ]
+      },
+      "hookAdjustLatency": {
+        "parameters": [
+          "load",
+          "latency"
+        ]
+      }
+    },
+    "attributes": {
+      "podsPerInstance": {
+        "default": null
+      },
+      "ec2InstanceType": {
+        "default": null
+      }
+    },
+    "ifAttributes": {},
+    "description": "Kubernetes"
+  },
+  {
+    "id": "CptLoadbalancerComponent",
+    "hooks": {
+      "hookReceiveLoad": {
+        "parameters": [
+          "sinkIf",
+          "load"
+        ]
+      },
+      "hookSimulationInit": {},
+      "hookSimulationRun": {},
+      "hookSimulationStop": {},
+      "hookSimulationPostProcess": {
+        "parameters": [
+          "myOutput",
+          "simulationOutput"
+        ]
+      },
+      "hookSeriesPostProcess": {
+        "parameters": [
+          "myOutputs",
+          "simulationOutputs"
+        ]
+      },
+      "hookGetOutput": {
+        "parameters": [
+          "output"
+        ]
+      },
+      "hookAdjustLatency": {
+        "parameters": [
+          "load",
+          "latency"
+        ]
+      }
+    },
+    "attributes": {
+      "lbType": {
+        "default": null
+      }
+    },
+    "ifAttributes": {},
+    "description": "AWS Loadbalancer"
+  }
+]

@@ -16,8 +16,6 @@ http://SERVERHOSTNAME:4200
 ## Dependencies & Prerequisites
 The following additional decoupled in-house developed backend components are required for operation & development (each of which are contained in a separate source repository):
 
-	capacity-planning-backend
-	capacity-planning-backend-common
 	capacity-planning-backend-model
 	capacity-planning-simulation
 
@@ -48,14 +46,21 @@ For Development / Deployment infrastructure:
 	- Schal, Pete
 
 ## Build locally:
+	1- preparing databse
+		* start mongoDB server
+			** add 'cpt' db
+		 	** cd capacity-planning-backend-model/scripts
+			 	*** 01-create-admin-user.py
+				*** 02-create-root-tree-node.py
+				*** 03-create-forecast-root-node.py
 
-	1- preparing modules:
+	2- build backend service
+		* cd capacity-planning-backend-model
+			** mvn clean install -DskipTests spring-boot:run
+
+	3- preparing fromtend modules:
 		cd ./capacity-planning-simulation/
-			* git submodule init
-			* git submodule update
 			* cd capacity-planning-projection
-				** git submodule init
-				** git submodule update
 				** npm i
 				** tsc
 			* cd ../types
@@ -70,7 +75,8 @@ For Development / Deployment infrastructure:
 			* cd ./node-service
 				** npm i
 				** npm run-script build
-	2- building frontend:
+
+	4- building frontend:
 			* cd ../../
 			* rm package-lock.json
 			* npm i
