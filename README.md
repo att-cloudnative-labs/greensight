@@ -55,28 +55,32 @@ For Development / Deployment infrastructure:
 				*** 03-create-forecast-root-node.py
 
 	2- build backend service
-		* cd capacity-planning-backend-model
+		* open a terminal & cd capacity-planning-backend-model
 			** mvn clean install -DskipTests spring-boot:run
 
-	3- preparing frontend modules:
-		cd ./capacity-planning-simulation/
-			* cd capacity-planning-projection
-				** npm i
-				** tsc
-			* cd ../types
-				** npm i
-				** tsc
-			* cd ../pe-repository
-				** npm i
-				** tsc
-			* cd ../
-				** npm i
-				** tsc
-			* cd ./node-service
-				** npm i
-				** npm run-script build
+	3- build simulation service:
+		* open another terminal & cd capacity-planning-simulation/
+		* follow capacity-planning-simulation/README.md instruction
 
-	4- building frontend:
+	4- preparing frontend modules:
+		* open separate terminal & cd ./capacity-planning-simulation/
+			** cd capacity-planning-projection
+				*** npm i
+				*** tsc
+			** cd ../types
+				*** npm i
+				*** tsc
+			** cd ../pe-repository
+				*** npm i
+				*** tsc
+			** cd ../
+				*** npm i
+				*** tsc
+			** cd ./node-service
+				*** npm i
+				*** npm run-script build
+
+	5- building frontend:
 			* cd ../../
 			* rm package-lock.json
 			* npm i
