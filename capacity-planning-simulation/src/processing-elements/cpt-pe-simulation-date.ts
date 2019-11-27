@@ -5,6 +5,7 @@ import { CptSimulationProcessIf } from '../cpt-object';
 export var CptPeSimulationDateDescription: ProcessInterfaceDescription = {
     objectId: '595fddc9-5684-4a4a-a71e-14ed9885b995',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Simulation Date',
     inports: {},
     outports: {

@@ -11,7 +11,7 @@ interface VariableNode {
 
 export function fetchBranchVariables(branchId: string): Promise<Variable[]> {
     let beFcHost: string = process.env.BACKEND_FC_HOST || "127.0.0.1";
-    let beFcPort: number = parseInt(process.env.BACKEN_FC_PORT || "8443");
+    let beFcPort: number = parseInt(process.env.BACKEN_FC_PORT || "8080");
     let authToken = process.env.AUTH_TOKEN;
 
     let p = new Promise<Variable[]>((resolve, reject) => {

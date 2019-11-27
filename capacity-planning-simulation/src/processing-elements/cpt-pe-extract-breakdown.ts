@@ -5,6 +5,7 @@ import { CptSimulationProcessIf } from '../cpt-object';
 export var CptPeExtractBreakdownDescription: ProcessInterfaceDescription = {
     objectId: "ebf77855-9624-46a6-a1d9-7eb756343c66",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Extract Breakdown',
     inports: {
         'ce00c1e2-0677-4c3e-8e58-e7bce8c1b088': {

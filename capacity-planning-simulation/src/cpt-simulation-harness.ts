@@ -9,7 +9,7 @@ import { isLatencyResponse, responseHistogramAggregation, mergeResponseAspect, f
 import { CptDataAggregation } from './cpt-data-aggregation';
 
 import { genMonths } from './cpt-date-ops';
-import { map, reduce, switchMap, zip, concatAll } from 'rxjs/operators';
+import { map, reduce, switchMap, zip, concatAll, mergeMap } from 'rxjs/operators';
 import { from, Subject, Observable, Observer, of } from 'rxjs';
 import { SampleStat } from 'essy-stats';
 
@@ -119,13 +119,9 @@ export class CptSimulationHarness implements CptEnvironmentIf {
     }
 
     private getBranchVariables(fcBranchId: string): Observable<CptBranchVariableTuple> {
-        let o$ = Observable.create((obs: Observer<CptBranchVariableTuple>) => {
-            this.fetchBranchVariables(fcBranchId).then(vars => {
-                obs.next({ branch: fcBranchId, variables: vars });
-                obs.complete();
-            }).catch(err => { obs.error(err); })
-        });
-        return o$;
+
+        return from(this.fetchBranchVariables(fcBranchId)).pipe(map<Variable[], CptBranchVariableTuple>(v => { return { branch: fcBranchId, variables: v }; }));
+
     }
 
     private projectBranches(bvs: CptBranchVariableSet, stepStart: string, stepLast: string): { [branchId: string]: VariableProjections } {
@@ -152,7 +148,15 @@ export class CptSimulationHarness implements CptEnvironmentIf {
             for (let frame of varFrames) {
                 if (frame.date === date) {
                     if (frame.distributionCalculationError === undefined && frame.frameDependencyError === undefined && frame.projectionCalculationError === undefined) {
-                        if (variable.variableType === VariableType.Breakdown) {
+                        if (frame.actualValue === undefined && frame.projectedValue === undefined) {
+                            return {
+                                type: 'ASPECT_NUMBER',
+                                unit: frame.unit,
+                                value: 0,
+                                stdDev: 0,
+                                aspects: []
+                            };
+                        } else if (variable.variableType === VariableType.Breakdown) {
                             let aspectParam: AspectParam = {
                                 type: 'ASPECT',
                                 value: {
@@ -215,7 +219,7 @@ export class CptSimulationHarness implements CptEnvironmentIf {
         let months = genMonths(stepStart, stepLast);
         let o$ = Observable.create((obs: Observer<CptSimulationInportValueSet>) => {
             from(this.getNeededBranchIds(scenario)).pipe(
-                switchMap(branchId => this.getBranchVariables(branchId)),
+                mergeMap(branchId => this.getBranchVariables(branchId)),
                 reduce<CptBranchVariableTuple, CptBranchVariableSet>((acc, next) => { acc[next.branch] = next.variables; return acc }, {})
             ).subscribe(bvs => {
                 let sivs: CptSimulationInportValueSet = {};

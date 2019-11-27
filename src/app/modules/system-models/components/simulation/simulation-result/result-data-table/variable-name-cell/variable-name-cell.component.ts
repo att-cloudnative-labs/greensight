@@ -1,15 +1,17 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { SimulationResult, SimulationNode } from '@cpt/capacity-planning-simulation-types';
+import { getPreviousOrParentTNode } from '@angular/core/src/render3/state';
 
 @Component({
     selector: 'app-variable-name-cell',
     templateUrl: './variable-name-cell.component.html',
     styleUrls: ['./variable-name-cell.component.css']
 })
-export class VariableNameCellComponent implements OnInit {
+export class VariableNameCellComponent implements OnInit, OnChanges {
     @Input() aggregationMethod: string;
+    @Input() availableAggregationMethods: string[];
     @Input() resultVariable;
-    @Input() simResult;
+    @Input() simResult: SimulationResult;
     @Input() isErrorWarning = false;
     @Input() isResponse = false;
     @Output() aggregationChanged = new EventEmitter();
@@ -42,44 +44,46 @@ export class VariableNameCellComponent implements OnInit {
     };
 
     ngOnInit() {
+
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        this.aggregationMethodsMap = {
+            'AVG': 'AVG',
+            'MIN': 'MIN',
+            'MAX': 'MAX',
+            'NINETIETH': 'P90',
+            'NINETIEFIFTH': 'P95',
+            'NINETIENINTH': 'P99'
+        };
         this.getSelectableAggMethods();
-        this.traceVariableName(this.resultVariable.objectId);
-        this.getVariableFullPathName(this.resultVariable.objectId);
+        this.name = this.getNodeName(this.resultVariable.objectId, false);
+        this.fullPathName = this.getNodeName(this.resultVariable.objectId, true);
         if (this.isErrorWarning) {
             this._getErrorWarningIcon();
         }
         this.hasAggMethod = (Object.keys(this.aggregationMethodsMap).length !== 0);
     }
 
-    traceVariableName(id: string) {
+    getNodeName(id: string, withRoot: boolean): string {
         const parentId = this.simResult.nodes[id].parentInstanceId;
         const parentVariable = this.simResult.nodes[parentId];
-        if (parentVariable.type === 'BREAKDOWN') {
-            this.name = parentVariable.name || parentVariable.ref;
-            this.traceVariableName(parentId);
-        } else if (parentVariable.processNodeId === 'root') {
-            this.name = this.resultVariable.name || this.resultVariable.ref;
-        } else {
-            this.name = this.name !== undefined ?
-                (parentVariable.name || parentVariable.ref) + '.' + this.name + '.' + (this.resultVariable.name || this.resultVariable.ref) :
-                (parentVariable.name || parentVariable.ref) + '.' + (this.resultVariable.name || this.resultVariable.ref);
-        }
-    }
+        const currentVariable = this.simResult.nodes[id];
+        const thisVariableName = currentVariable.name || currentVariable.ref;
+        if (parentVariable && currentVariable) {
+            if (parentVariable.processNodeId !== 'root') {
+                return this.getNodeName(parentId, withRoot) + "." + thisVariableName;
+            } else {
+                if (withRoot) {
+                    return (parentVariable.name || parentVariable.ref) + "." + thisVariableName;
+                } else {
+                    return thisVariableName;
+                }
 
-    getVariableFullPathName(id: string) {
-        const parentId = this.simResult.nodes[id].parentInstanceId;
-        const parentVariable = this.simResult.nodes[parentId];
-        if (parentVariable.processNodeId !== 'root') {
-            this.fullPathName = this.fullPathName !== undefined ?
-                (parentVariable.name || parentVariable.ref) + '.' + this.fullPathName :
-                (parentVariable.name || parentVariable.ref);
-            this.getVariableFullPathName(parentId);
+            }
         } else {
-            this.fullPathName = this.fullPathName !== undefined ?
-                (parentVariable.name || parentVariable.ref) + '.' + this.fullPathName + '.' + (this.resultVariable.name || this.resultVariable.ref) :
-                (parentVariable.name || parentVariable.ref) + '.' + (this.resultVariable.name || this.resultVariable.ref);
+            return "";
         }
-
     }
 
     // To stop the row from being selected when the aggregation dropdown is clicked
@@ -98,7 +102,7 @@ export class VariableNameCellComponent implements OnInit {
      * aggregation methods that are not relevant to the datatable
      */
     getSelectableAggMethods() {
-        this.aggregationOptions = this.resultVariable.aggregationMethods.filter(method => method !== 'HISTOGRAM' && method !== 'ASPECTS');
+        this.aggregationOptions = this.availableAggregationMethods.filter(method => method !== 'HISTOGRAM' && method !== 'ASPECTS');
         Object.keys(this.aggregationMethodsMap).forEach(k => {
             const index = this.aggregationOptions.findIndex(x => x === k);
             if (index === -1) {

@@ -17,7 +17,7 @@ export class AnyonePermissionSelectComponent implements OnInit, OnChanges {
     constructor() { }
 
     ngOnInit() {
-        this.permissionsList = ['No Access', 'Read Only', 'Read/Modify', 'Read/Create/Modify', 'Read/Create/Modify/Delete', 'Read/Create/Modify own', 'Read/Create/Modify own/Delete own'];
+        this.permissionsList = ['No Access', 'Read Only', 'Read/Modify', 'Read/Create/Modify', 'Read/Create/Modify/Delete'];
     }
 
     ngOnChanges() {

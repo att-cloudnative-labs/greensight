@@ -5,6 +5,7 @@ import { CptSimulationProcessIf, CptInformationPackage } from '../cpt-object';
 export var CptPeErrorDescription: ProcessInterfaceDescription = {
     objectId: "41c22bcb-f966-406a-8814-a7b8e187b508",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Error',
     inports: {
         '694dacf2-7a7c-4bbb-89eb-6bb3a7461677': {

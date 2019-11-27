@@ -9,18 +9,7 @@ export class VersionService {
         private http: Http,
         private loaderService: LoaderService) { }
 
-    public getForecastBackendVersion() {
-        this.loaderService.show();
-        const url = Utils.createUrl(Utils.routeForecastVersion);
-        return this.http
-            .get(url, Utils.getRequestOptions())
-            .map(result => {
-                this.loaderService.hide();
-                return result.json();
-            });
-    }
-
-    public getModelBackendVersion() {
+    public getBackendVersion() {
         this.loaderService.show();
         const url = Utils.createModelUrl(Utils.routeModelVersion);
         return this.http

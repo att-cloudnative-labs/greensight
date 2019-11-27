@@ -121,24 +121,11 @@ export class UsergroupsComponent implements OnInit {
 
     // create usergroup
     onSave() {
-        // TODO - remove this once backend bug fixed
-        const updatedUsersWithAccess = Object.assign([], this.usersWithAccess);
-        for (const user of updatedUsersWithAccess) {
-            user.grantedAuthorities = null;
-            user.authorities = null;
-        }
-
         if (this.userGroupName.length === 0) {
             this.modal.alert()
                 .title('Warning')
                 .body('Please enter a usergroupname')
                 .open();
-            // }
-            // else if (this.usersWithAccess.length == 0) {
-            //     this.modal.alert()
-            //         .title('Warning')
-            //         .body('Please select a user')
-            //         .open();
         } else {
             if (this.selectedUserGroup != null) {
                 this.adjustUserRole(this.selectedUserGroup);
@@ -157,7 +144,7 @@ export class UsergroupsComponent implements OnInit {
                 } else {
                     // update existing
                     this.usergroupService
-                        .updateUsergroup(this.selectedUserGroup.id, this.userGroupName, updatedUsersWithAccess, this.roleId)
+                        .updateUsergroup(this.selectedUserGroup.id, this.userGroupName, this.usersWithAccess, this.roleId)
                         .subscribe(result => {
                             console.log('result of update', result);
                             if (result.status === 'UNPROCESSABLE_ENTITY') {
@@ -196,7 +183,7 @@ export class UsergroupsComponent implements OnInit {
                     this.usergroupName = this.userGroupName;
                     console.log('user group name is : ' + this.usergroupName);
                     this.usergroupService
-                        .createUsergroup(this.userGroupName, updatedUsersWithAccess, this.roleId)
+                        .createUsergroup(this.userGroupName, this.usersWithAccess, this.roleId)
                         .subscribe(result => {
                             console.log('result', result);
 

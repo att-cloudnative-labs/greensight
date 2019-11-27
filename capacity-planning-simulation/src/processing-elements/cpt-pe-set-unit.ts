@@ -6,6 +6,7 @@ import { isString, isNumber } from '../cpt-load-ops';
 export var CptPeSetUnitDescription: ProcessInterfaceDescription = {
     objectId: 'bf195969-ca1a-4924-91ce-57fbe6da371f',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Set Unit',
     inports: {
         'df042fe4-b146-4725-ae1c-d4f6c5a4dc6f': {

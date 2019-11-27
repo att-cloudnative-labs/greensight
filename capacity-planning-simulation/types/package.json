@@ -1,6 +1,6 @@
 {
   "name": "@cpt/capacity-planning-simulation-types",
-  "version": "0.0.650",
+  "version": "0.0.721",
   "description": "All CPT Simulation Types",
   "main": "lib/index.js",
   "scripts": {

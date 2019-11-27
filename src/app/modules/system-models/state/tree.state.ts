@@ -15,18 +15,26 @@ import * as gmProcessOutportDetailsActions from './gm-process-outport-details.ac
 import * as gmVariablePickerActions from './gm-variable-picker.actions';
 import * as gmVariableReferenceDetailsActions from '@system-models/state/gm-variable-reference-details.actions';
 import { TreeService } from '@app/core_module/service/tree.service';
-import { TreeNode, TreeNodeType, buildPatch, generatePid } from '@app/core_module/interfaces/tree-node';
+import { TreeNode, TreeNodeType, buildPatch, hasDependencies } from '@app/core_module/interfaces/tree-node';
 import { asapScheduler, of, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Utils } from '@app/utils_module/utils';
 import produce from 'immer';
 import { v4 as uuid } from 'uuid';
-import { ALL_PARAM_TYPES, GraphParam, ParamType } from '@system-models/interfaces/graph.interface';
+import { ALL_PARAM_TYPES, GraphParam, ParamType } from '@cpt/capacity-planning-simulation-types';
 import * as moment from 'moment';
 import * as clipboardActions from '@system-models/state/clipboard.actions';
 import { Inport, Outport, GraphModel, SimulationConfiguration, Process } from '@cpt/capacity-planning-simulation-types';
 import { detailedDiff } from 'deep-object-diff';
-
+import { pidFromGraphModelNode } from '@system-models/models/graph-model.model';
+import { ProcessingElementState } from '@system-models/state/processing-element.state';
+import { NodeTypes, SimulationResult } from '@cpt/capacity-planning-simulation-types/lib';
+import { UpdatedGraphModel, UpdatedGraphModelName } from '@system-models/state/processing-element.actions';
+import { BranchService } from '@app/core_module/service/branch.service';
+import { ForecastVariableService } from '@app/core_module/service/variable.service';
+import { Moment, unix } from 'moment';
+import { Simulation } from '@system-models/models/simulation';
+import { SRSDatatableProperties } from '@system-models/models/srs-datatable-properties';
 
 export class TreeStateModel {
     public nodes: TreeNode[];
@@ -191,9 +199,9 @@ export class TreeState {
         // don't overwrite the existing nodes with sparse nodes
         if (getState().nodes.length === 0) {
             patchState({ loading: true, loaded: false });
-            return this.treeService.getTree2('root', true, 4).subscribe(nodes => {
+            return this.treeService.getTree3('root').subscribe(nodes => {
                 patchState({
-                    nodes: nodes,
+                    nodes: [...nodes, ...getState().nodes],
                     loaded: true,
                     loading: false
                 });
@@ -201,65 +209,110 @@ export class TreeState {
         }
     }
 
-    /* load the content of the simulation result node
-     * also check if there are any meta nodes that hold
-     * the data table configuration.
-     * create the meta nodes if it can't be found.
-     */
     @Action(treeActions.LoadSimulationResultContent)
     @Action(simulationResultScreenActions.RefreshButtonClicked)
-    loadSimulationResultContent(ctx: StateContext<TreeStateModel>,
+    loadSimulationResultNodeContent(ctx: StateContext<TreeStateModel>,
         { payload }: treeActions.LoadSimulationResultContent) {
-        const state = ctx.getState();
-        if (payload && payload.content === null) {
-            return this.treeService.getTree2(payload.id).pipe(map(nodes => {
-                const metaResponseIndex = nodes.findIndex(node => node.type === 'META');
-                const simulationResponseIndex = nodes.findIndex(node => node.id === payload.id);
-                ctx.setState(patch({ nodes: updateItem<TreeNode>(tn => tn.id === payload.id, nodes[simulationResponseIndex]) }));
-                if (metaResponseIndex > -1) {
-                    ctx.dispatch(new simulationResultScreenActions.UpdateSimulationResultMetaState(payload.id, nodes[metaResponseIndex].content));
-                    ctx.setState(patch({ nodes: updateItem<TreeNode>(tn => tn.type === 'META' && tn.parentId === payload.id, nodes[metaResponseIndex]) }));
-
-                } else if (Utils.getUserRoleId() === 'READ_ONLY') {
-                    // read only users are not allowed to create nodes on the BE. so we just fake it.
-                    const fakeMetaNode: TreeNode = { accessControl: 'PRIVATE', name: 'meta', parentId: payload.id, type: 'META', id: uuid() };
-                    ctx.setState(patch({ nodes: append([fakeMetaNode]) }));
-
-
-                } else {
-                    this.treeService.createTreeNode2({ accessControl: 'PRIVATE', name: 'meta', parentId: payload.id, type: 'META' }).subscribe(newMetaNode => {
-                        ctx.setState(patch({ nodes: append([newMetaNode]) }));
-                    });
-                }
-
-            }));
-        }
+        return this.loadNodeContent(ctx, 'SIMULATIONRESULT', payload);
     }
 
-    // as everything is just in sparse form after the initial load
-    // the actual content of data nodes will be fetched when instructed
-    // through this action
+
     @Action(treeActions.LoadGraphModelContent)
+    loadGraphModelNodeContent(ctx: StateContext<TreeStateModel>,
+        { payload }: treeActions.LoadSimulationContent) {
+        return this.loadNodeContent(ctx, 'MODEL', payload);
+    }
+
     @Action(treeActions.LoadSimulationContent)
-    loadNodeContent(ctx: StateContext<TreeStateModel>,
-        { payload }: treeActions.LoadSimulationResultContent) {
+    loadSimulationNodeContent(ctx: StateContext<TreeStateModel>,
+        { payload }: treeActions.LoadSimulationContent) {
+        return this.loadNodeContent(ctx, 'SIMULATION', payload);
+    }
+
+    loadNodeContent(ctx: StateContext<TreeStateModel>, mainNodeType: TreeNodeType,
+        payload: { id: string }) {
         const catchTrashError = catchError(e => {
 
             if (e.status === 410) {
-                this.store.dispatch(new treeActions.TreeNodeTrashed({ trashedNode: payload }));
+                this.store.dispatch(new treeActions.TreeNodeTrashed(payload));
                 return of('dispatched trashed handler');
             }
             return throwError('failed to patch');
         });
 
-        if (payload && payload.content === null) {
-            return this.treeService.getTree2(payload.id).pipe(
-                tap<TreeNode[]>(nodes => {
-                    const resultResponseIndex = nodes.findIndex(node => node.id === payload.id);
-                    ctx.setState(patch({ nodes: updateItem<TreeNode>(tn => tn.id === payload.id, nodes[resultResponseIndex]) }));
-                }), catchTrashError
-            );
+        const currentNodes = ctx.getState().nodes;
+
+        const updateOrAppend = (node: TreeNode) => {
+            if (ctx.getState().nodes.findIndex(n => n.id === node.id) > -1) {
+                ctx.setState(patch<TreeStateModel>({ nodes: updateItem<TreeNode>(tn => tn.id === node.id, node) }));
+            } else {
+                ctx.setState(patch({ nodes: append([node]) }));
+            }
+        };
+
+        const sparseChildren: boolean = mainNodeType !== 'SIMULATIONRESULT';
+        const currentNode = currentNodes.find(n => n.id === payload.id);
+        let forceSparse = false;
+        // don't reload if all the data is already available
+        if (currentNode && currentNode.content) {
+            if (mainNodeType === 'SIMULATIONRESULT') {
+                const simResult: SimulationResult = currentNode.content;
+                if (simResult.state === 'DONE') {
+                    forceSparse = true;
+                }
+            } else {
+                return;
+            }
         }
+
+        return this.treeService.getTree3(payload.id, forceSparse, true, sparseChildren).pipe(
+            tap<TreeNode[]>(nodes => {
+                let gotMeta = false;
+                let mainNode: TreeNode = nodes.find(n => n.id === payload.id);
+                if (!forceSparse) {
+                    updateOrAppend(mainNode);
+                } else {
+                    mainNode = currentNode;
+                }
+
+                const initialProps: SRSDatatableProperties = {
+                    tableEntries: [],
+                    selectedRows: [],
+                    selectedScenario: mainNode.type === 'SIMULATIONRESULT' ? Object.keys((mainNode.content as SimulationResult).scenarios)[0] : "",
+                    expansionStateVariables: {}
+                };
+
+
+                for (let i = 0; i < nodes.length; i++) {
+                    const node = nodes[i];
+                    if (node.id !== payload.id) {
+                        updateOrAppend(node);
+                        if (node.type === 'META' && mainNodeType === 'SIMULATIONRESULT') {
+                            gotMeta = true;
+                            const loadedProps = node.content as SRSDatatableProperties;
+                            if (loadedProps && loadedProps.selectedScenario) {
+                                ctx.dispatch(new simulationResultScreenActions.UpdateSimulationResultMetaState(payload.id, loadedProps));
+                            } else {
+                                ctx.dispatch(new simulationResultScreenActions.UpdateSimulationResultMetaState(payload.id, initialProps));
+                            }
+                        }
+                    }
+
+                }
+                if (!gotMeta && mainNodeType === 'SIMULATIONRESULT') {
+                    ctx.dispatch(new simulationResultScreenActions.UpdateSimulationResultMetaState(payload.id, initialProps));
+                    if (Utils.getUserRoleId() === 'READ_ONLY') {
+                        // read only users are not allowed to create nodes on the BE. so we just fake it.
+                        const fakeMetaNode: TreeNode = { accessControl: 'PRIVATE', name: 'meta', parentId: payload.id, type: 'META', id: uuid(), content: initialProps };
+                        ctx.setState(patch({ nodes: append([fakeMetaNode]) }));
+                    } else {
+                        this.treeService.createTreeNode2({ accessControl: 'PRIVATE', name: 'meta', parentId: payload.id, type: 'META', content: initialProps }).subscribe(newMetaNode => {
+                            ctx.setState(patch({ nodes: append([newMetaNode]) }));
+                        });
+                    }
+                }
+            }),
+            catchTrashError);
     }
 
     @Action(treeActions.CreateTreeNode)
@@ -273,7 +326,7 @@ export class TreeState {
         const newTreeNode: TreeNode = {
             id: id,
             accessControl: payload.type === 'FOLDER' ? 'PRIVATE' : 'INHERIT',
-            version: 1,
+            version: 0,
             currentUserAccessPermissions: ['READ', 'CREATE', 'MODIFY', 'DELETE'],
             ...payload,
             name: TreeState.getUniqueNameInScope(state, payload.parentId, payload.name),
@@ -291,7 +344,14 @@ export class TreeState {
                 connections: {},
                 variables: {}
             } as GraphModel;
-            newTreeNode.processInterface = generatePid(newTreeNode);
+            newTreeNode.processDependencies = [];
+            newTreeNode.processInterface = pidFromGraphModelNode(newTreeNode);
+            const newPid = pidFromGraphModelNode(newTreeNode);
+            const parentNode = state.nodes.find(n => n.id === payload.parentId);
+            if (parentNode) {
+                newPid.pathName = parentNode.name;
+            }
+            this.store.dispatch(new UpdatedGraphModel(newPid));
         } else if (payload.type === 'MODELTEMPLATE') {
             newTreeNode.content = {
                 objectId: newTreeNode.id,
@@ -304,10 +364,12 @@ export class TreeState {
                 variables: {}
             };
         } else if (payload.type === 'SIMULATION') {
-            const graphModel = getState().nodes.find(node => node.id === payload.modelRef);
+            const processInterfaceDescriptions = this.store.selectSnapshot(ProcessingElementState.pids);
+
+            const graphModel = processInterfaceDescriptions.find(node => node.objectId === payload.modelRef);
             const inports = {};
-            for (const inportId of Object.keys(graphModel.processInterface.inports)) {
-                inports[inportId] = this.getScenarioInitialInportValue(graphModel.processInterface.inports[inportId]);
+            for (const inportId of Object.keys(graphModel.inports)) {
+                inports[inportId] = this.getScenarioInitialInportValue(graphModel.inports[inportId]);
             }
             const newScenarioId = uuid();
 
@@ -330,6 +392,9 @@ export class TreeState {
                 stepLast: moment().add(6, 'M').format('YYYY-MM'),
             } as SimulationConfiguration;
             newTreeNode.content.scenarios[newScenarioId] = scenarioObject;
+            newTreeNode.processDependencies = [payload.modelRef];
+            // this was hackishly added and shall not be passed to the backend
+            delete newTreeNode['modelRef'];
         }
 
         patchState({
@@ -385,6 +450,18 @@ export class TreeState {
         }, true);
     }
 
+    // fixme: find a way to check if the folder content
+    // actually was updated before loading it over the network
+    @Action(libraryActions.FolderAccessed)
+    @Action(libraryActions.FolderClicked)
+    loadFolderChildren(ctx: StateContext<TreeStateModel>, payload: libraryActions.FolderAccessed) {
+        return this.treeService.getTree3(payload.treeNode.id).subscribe(nodes => {
+            const newNodes = nodes.filter(n => n.id !== payload.treeNode.id);
+            const otherNodes = ctx.getState().nodes.filter(n => !newNodes.find(nn => nn.id === n.id));
+            ctx.setState(patch({ nodes: [...newNodes, ...otherNodes] }));
+        });
+    }
+
     @Action(treeActions.DescriptionChanged)
     updateDescription(ctx: StateContext<TreeStateModel>, { payload: { nodeId, newDescription } }: treeActions.DescriptionChanged) {
         return this.updateTreeNodeSparse(ctx, nodeId, draftNode => {
@@ -426,7 +503,7 @@ export class TreeState {
                         ]);
                         return of('dispatched conflict handler');
                     } else if (error.status === 410) {
-                        this.store.dispatch(new treeActions.TreeNodeTrashed({ trashedNode: trashNode }));
+                        this.store.dispatch(new treeActions.TreeNodeTrashed({ id: trashNode.id }));
                         return of('dispatched trashed handler');
                     } else if (error.status === 424) {
                         this.store.dispatch(new treeActions.TreeNodeFailedDependency());
@@ -447,13 +524,11 @@ export class TreeState {
             loading: true
         });
         return this.treeService
-            .recoverTreeNode(trashNode.id)
+            .recoverTreeNode(trashNode.id, String(trashNode.version))
             .pipe(
                 map(() => {
                     patchState({ loading: false, loaded: true });
-                    if (trashNode.type === 'FOLDER' || trashNode.type === 'SIMULATION') {
-                        dispatch(new treeActions.GetTreeNode(trashNode.id));
-                    }
+                    dispatch(new treeActions.GetTreeNode(trashNode.id));
                 }),
                 catchError(error =>
                     of(
@@ -473,11 +548,11 @@ export class TreeState {
         const state = ctx.getState();
         const oldState = ctx.getState();
         return this.treeService
-            .getTreeNode(payload)
+            .getTree3(payload, false, true)
             .pipe(
-                map((response: any) => {
-                    const nodesData = response.data;
-                    if (nodesData[0].type === 'FOLDER' || nodesData[0].type === 'SIMULATION') {
+                map((nodesData: TreeNode[]) => {
+                    const mainNode = nodesData.find(n => n.id === payload);
+                    if (mainNode.type === 'FOLDER' || mainNode.type === 'SIMULATION') {
                         const children = nodesData.filter(node => node.parentId === payload);
                         ctx.patchState({ nodes: [...state.nodes, ...children] });
                     } else {
@@ -534,7 +609,7 @@ export class TreeState {
 
         const treeNode = newState.nodes.find(node => node.id === nodeId);
         return this.treeService
-            .updateTreeNode(treeNode)
+            .updateTreeNode2(treeNode, treeNode.version.toString(), false)
             .pipe(
                 tap(n => {
                     if (updateState) {
@@ -573,7 +648,7 @@ export class TreeState {
                 this.store.dispatch(new treeActions.TreeNodeConflicted({ orgNode: oldNode, conflictedNode: updatedNode }));
                 return of('dispatched conflict handler');
             } else if (e.status === 410) {
-                this.store.dispatch(new treeActions.TreeNodeTrashed({ trashedNode: oldNode }));
+                this.store.dispatch(new treeActions.TreeNodeTrashed({ id: oldNode.id }));
                 return of('dispatched trashed handler');
             }
             return throwError('failed to update');
@@ -585,10 +660,13 @@ export class TreeState {
             }
         });
 
-        const version = ignoreVersionConflict ? undefined : String(oldNode.version);
+        const version = String(oldNode.version);
         // update the state instantly so the user doesnt have to wait for the network op
         // to complete
         ctx.setState(patch<TreeStateModel>({ nodes: updateItem<TreeNode>(tn => tn.id === nodeId, { ...updatedNode, version: updatedNode.version + 1, content: oldNode.content }) }));
+        if (updatedNode.type === 'MODEL') {
+            this.store.dispatch(new UpdatedGraphModelName({ objectId: updatedNode.id, name: updatedNode.name }));
+        }
         return this.treeService.updateTreeNode2({ ...updatedNode, content: null }, version, true).pipe(updateToReturnedVersion, rollbackAndCatchTrashError);
     }
 
@@ -602,7 +680,7 @@ export class TreeState {
         }
         const oldNode = oldState.nodes[oldNodeIdx];
         const editedNode = produce(oldNode, fn);
-        const updatedNode = produce(editedNode, t => { t.processInterface = generatePid(t); });
+        const updatedNode = produce(editedNode, t => { t.processInterface = pidFromGraphModelNode(t); });
         if (!updatedNode) {
             throw new Error('tried to update treenode without supplying data');
         }
@@ -615,19 +693,22 @@ export class TreeState {
         // update the state instantly so the user doesnt have to wait for the network op
         // to complete
         ctx.setState(patch<TreeStateModel>({ nodes: updateItem<TreeNode>(tn => tn.id === nodeId, { ...updatedNode, version: oldNode.version + 1 }) }));
-
+        if (updatedNode.type === 'MODEL') {
+            this.store.dispatch(new UpdatedGraphModel(pidFromGraphModelNode(updatedNode)));
+        }
 
         const rollbackAndThrow = catchError(e => {
             // roll back changes first
             asapScheduler.schedule(() => {
                 ctx.setState(patch({ nodes: updateItem<TreeNode>(tn => tn.id === nodeId, oldNode) }));
+                this.store.dispatch(new UpdatedGraphModel(pidFromGraphModelNode(oldNode)));
             });
             // if it was a version conflict inform the user about it
             if (e.status === 409) {
                 this.store.dispatch(new treeActions.TreeNodeConflicted({ orgNode: oldNode, conflictedNode: updatedNode }));
                 return of('dispatched conflict handler');
             } else if (e.status === 410) {
-                this.store.dispatch(new treeActions.TreeNodeTrashed({ trashedNode: oldNode }));
+                this.store.dispatch(new treeActions.TreeNodeTrashed({ id: oldNode.id }));
                 return of('dispatched trashed handler');
             } else if (e.status === 424) {
                 this.store.dispatch(new treeActions.TreeNodeFailedDependency());
@@ -728,7 +809,7 @@ export class TreeState {
         return {
             objectId: uuid(),
             objectType: 'PROCESS',
-            type: 'PROCESSING_ELEMENT',
+            type: pe.implementation,
             ref: pe.objectId,
             inports,
             outports,
@@ -739,37 +820,22 @@ export class TreeState {
         } as Process;
     }
 
-    private graphModelToProcess(graphModel) {
-        const inports = this.serializePorts(graphModel.processInterface.inports);
-        const outports = this.serializePorts(graphModel.processInterface.outports);
-        return {
-            objectId: uuid(),
-            objectType: 'PROCESS',
-            type: 'GRAPH_MODEL',
-            ref: graphModel.id,
-            inports,
-            outports,
-            metadata: {
-                x: 200,
-                y: 100
-            },
-        } as Process;
-    }
-
     @Action(graphControlBarActions.ProcessingElementSearchResultSelected)
     processingElementSearchResultSelected(
         ctx: StateContext<TreeStateModel>,
         { payload: { graphModelId, graphModelOrProcessInterface, position, label } }: graphControlBarActions.ProcessingElementSearchResultSelected
     ) {
         return this.updateTreeNodeContent(ctx, graphModelId, draftNode => {
-            const serializer = graphModelOrProcessInterface.type === 'MODEL' ? this.graphModelToProcess.bind(this) : this.processingElementToProcess.bind(this);
-            const processData = serializer(graphModelOrProcessInterface);
+            const processData = this.processingElementToProcess(graphModelOrProcessInterface);
             draftNode.content.processes[processData.objectId] = processData;
             draftNode.content.processes[processData.objectId].label = label;
             draftNode.content.processes[processData.objectId].metadata = {
                 x: position.x,
                 y: position.y
             };
+            if (graphModelOrProcessInterface.implementation === 'GRAPH_MODEL') {
+                draftNode.processDependencies.push(graphModelOrProcessInterface.objectId);
+            }
         });
     }
 
@@ -1378,16 +1444,16 @@ export class TreeState {
         }
         const nodeId = simulationId;
         return this.updateTreeNodeContent(ctx, nodeId, simulation => {
-            const graphModel = ctx.getState().nodes.find(node => node.id === graphModelId);
-
+            const processInterfaceDescriptions = this.store.selectSnapshot(ProcessingElementState.pids);
+            const graphPid = processInterfaceDescriptions.find(pid => pid.objectId === graphModelId);
             if (Object.keys(simulation.content.scenarios).length !== 0) {
                 for (const key of Object.keys(simulation.content.scenarios)) {
                     const scenario = simulation.content.scenarios[key];
 
                     // Add any graph inports to the scenario inports if not found
-                    Object.keys(graphModel.processInterface.inports).forEach(inportId => {
+                    Object.keys(graphPid.inports).forEach(inportId => {
                         if (!scenario.inports[inportId]) {
-                            const requiredTypes = graphModel.processInterface.inports[inportId].requiredTypes;
+                            const requiredTypes = graphPid.inports[inportId].requiredTypes;
                             const inportValue = this.getDefaultScenarioInportValue(requiredTypes[0]);
 
                             scenario.inports[inportId] = {
@@ -1398,10 +1464,10 @@ export class TreeState {
                     });
 
                     // Update existing scenario inports
-                    Object.keys(graphModel.processInterface.inports).forEach(inportId => {
+                    Object.keys(graphPid.inports).forEach(inportId => {
                         let requiredTypes = [];
-                        if (graphModel.processInterface.inports[inportId].requiredTypes.length) {
-                            requiredTypes = graphModel.processInterface.inports[inportId].requiredTypes;
+                        if (graphPid.inports[inportId].requiredTypes.length) {
+                            requiredTypes = graphPid.inports[inportId].requiredTypes;
                         } else {
                             requiredTypes = ALL_PARAM_TYPES;
                         }
@@ -1445,7 +1511,7 @@ export class TreeState {
 
                     // Remove any scenario inports if not found in graph model inports
                     Object.keys(scenario.inports).forEach(scenarioInportId => {
-                        if (!graphModel.processInterface.inports[scenarioInportId]) {
+                        if (!graphPid.inports[scenarioInportId]) {
                             delete scenario.inports[scenarioInportId];
                         }
                     });
@@ -1490,7 +1556,7 @@ export class TreeState {
                 value: inport.defaultParam.value
             } as GraphParam;
         } else {
-            let initialType = allowedTypes[0];
+            const initialType = allowedTypes[0];
             switch (initialType) {
                 case 'NUMBER':
                     return { type: 'NUMBER', value: 0 };
@@ -1501,7 +1567,7 @@ export class TreeState {
                 case 'BREAKDOWN':
                     return { type: 'ASPECT', value: { type: 'BREAKDOWN', name: '', slices: {} } };
                 case 'DATE': {
-                    return { type: 'DATE', value: new Date() };
+                    return { type: 'DATE', value: new Date().toString() };
                 }
             }
         }
@@ -1633,13 +1699,13 @@ export class TreeState {
         if (storedNodeIdx > -1) {
             const updatedNode = this.updateTreeNodeDeferred(ctx, metaStateNode.id, draftState => {
                 const metaNode = Object.assign({}, metaStateNode);
+                metaNode.version = -1;
                 metaNode.content = {
                     tableEntries: props.tableEntries ? props.tableEntries : [],
                     expansionStateVariables: props.expansionStateVariables ? props.expansionStateVariables : {},
                     selectedScenario: props.selectedScenario
                 };
-                const updatedNodes = Object.assign([...state.nodes], { [storedNodeIdx]: metaNode });
-                draftState.nodes = updatedNodes;
+                draftState.nodes = Object.assign([...state.nodes], { [storedNodeIdx]: metaNode });
             }, updateState);
             if (updatedNode) {
                 updatedNode.pipe(catchError(e => of('failed to persist meta node'))).subscribe();
@@ -1654,14 +1720,19 @@ export class TreeState {
     ) {
         const state = ctx.getState();
         const targetNode = state.nodes.find(node => node.id === targetNodeId);
+        const iDsMap = {};
         // handle pasting with cut and copy action on library and graph editor
         if (clipboardData.action === 'CUT' && clipboardData.selections[0].context === 'Library') {
             // handle cut/paste action on library
             const nodeId = clipboardData.selections[0].id;
-            return this.updateTreeNodeSparse(ctx, nodeId, draftNode => {
-                draftNode.parentId = targetNodeId;
-                draftNode.name = TreeState.getUniqueNameInScope(state, targetNodeId, draftNode.name);
-            });
+            const node = ctx.getState().nodes.find(n => n.id === nodeId);
+            return this.treeService.moveNode(node.id, node.version.toString(), targetNodeId).pipe(
+                tap(r => {
+                    if (r.status === 'OK') {
+                        ctx.setState(patch<TreeStateModel>({ nodes: updateItem<TreeNode>(tn => tn.id === node.id, { ...node, version: node.version + 1, parentId: targetNodeId }) }));
+                    }
+                })
+            );
         } else if (clipboardData.action === 'COPY' && clipboardData.selections[0].context === 'Library') {
             // handle copy/paste action on library
             const nodeId = clipboardData.selections[0].id;
@@ -1670,11 +1741,12 @@ export class TreeState {
                 return this.treeService
                     .getSingleTreeNode(nodeToCopy.id)
                     .pipe(map(copiedNodeWithContent => {
-                        return this.createACopyNode(ctx, copiedNodeWithContent, targetNode);
+                        return this.createACopyNode(ctx, copiedNodeWithContent, targetNode, iDsMap, false);
                     }));
             } else {
-                return this.createACopyNode(ctx, nodeToCopy, targetNode);
+                return this.createACopyNode(ctx, nodeToCopy, targetNode, iDsMap, false);
             }
+
         } else if (clipboardData.selections[0].context !== 'Library') {
             // handle copy/paste action on Graph editor
             const sourceGraphModel = state.nodes.find(node => node.id === clipboardData.selections[0].context);
@@ -1802,75 +1874,174 @@ export class TreeState {
     }
 
     /**
+     * Calculate the nodes creation order based on process dependencies
+     * @param nodes
+     */
+    calculateExecutionOrder(nodes: TreeNode[]): TreeNode[] {
+        const lNodes: TreeNode[] = [];
+        const sNodes = nodes.filter(n => !hasDependencies(n));
+        let n = sNodes.pop();
+        while (n !== undefined) {
+            lNodes.push(n);
+            for (const checkNode of nodes) {
+                const nodeId = n.id;
+                if (checkNode.processDependencies && checkNode.processDependencies.indexOf(nodeId) > -1) {
+                    // the node is prob r/o. so create a copy
+                    const clone = Object.assign({}, checkNode);
+                    clone.processDependencies = checkNode.processDependencies.filter(d => d !== nodeId);
+                    if (clone.processDependencies.length === 0) {
+                        sNodes.push(clone);
+                    }
+                }
+            }
+            n = sNodes.pop();
+        }
+        return lNodes;
+    }
+
+    /**
      * Create a new node with cloned data of copied node
      * @param getState
      * @param patchState
      * @param nodeToCopy
      * @param targetNode
      */
-    createACopyNode({ getState, patchState }: StateContext<TreeStateModel>, nodeToCopy, targetNode) {
-        const state = getState();
+    createACopyNode(ctx: StateContext<TreeStateModel>, nodeToCopy, targetNode, iDsMap: {}, updateModelRef?) {
+        const state = ctx.getState();
         // creating a new treeNode with cloned properties
         const newTreeNode: TreeNode = Object.assign({}, nodeToCopy);
         newTreeNode.id = uuid();
-        newTreeNode.parentId = targetNode.id;
-        newTreeNode.ownerId = targetNode.ownerId;
-        newTreeNode.ownerName = targetNode.ownerName;
-        newTreeNode.name = TreeState.getUniqueNameInScope(state, targetNode.id, nodeToCopy.name);
+        newTreeNode.parentId = nodeToCopy.type === 'FOLDER' ? 'root' : targetNode.id;
+        newTreeNode.ownerId = nodeToCopy.type === 'FOLDER' ? Utils.getUserId() : targetNode.ownerId;
+        newTreeNode.ownerName = nodeToCopy.type === 'FOLDER' ? Utils.getUserName() : targetNode.ownerName;
+        newTreeNode.name = TreeState.getUniqueNameInScope(state, newTreeNode.parentId, nodeToCopy.name);
         newTreeNode.content = Object.assign({}, nodeToCopy.content);
-        newTreeNode.version = 1;
+        newTreeNode.version = 0;
+        iDsMap[nodeToCopy.id] = newTreeNode.id;
 
-        if (nodeToCopy.type === 'MODEL') {
-            const newConns = this.cloneProperty(nodeToCopy.content.connections);
-            const newInports = this.cloneProperty(nodeToCopy.content.inports, newConns);
-            const newOutports = this.cloneProperty(nodeToCopy.content.outports, newConns);
-            const newVariables = this.cloneProperty(nodeToCopy.content.variables, newConns);
-            const newProcesses = this.cloneProperty(nodeToCopy.content.processes);
 
-            // it will re-generate uuid for inports and outports in processes
-            Object.values(newProcesses).forEach(proc => {
-                const process: any = Object.assign({}, proc);
-                const newProcessInports: any = {};
-                const newProcessOutports: any = {};
-                Object.keys(process.inports).forEach(inportId => {
-                    const newInportId = uuid();
-                    newProcessInports[newInportId] = process.inports[inportId];
-                    // edit connection source and destination
-                    if (newConns) {
-                        this.editConnectionProperties(newConns, inportId, newInportId);
+        if (nodeToCopy.type === 'FOLDER') {
+            const simulationNodes = state.nodes.filter(node => node.parentId === nodeToCopy.id && node.type === 'SIMULATION');
+            ctx.setState(patch({ nodes: append([newTreeNode]) }));
+            this.treeService.createTreeNode(newTreeNode).subscribe(() => {
+                const childNodesGraphModel = ctx.getState().nodes.filter(node => node.type === 'MODEL');
+                // process copying graph models
+                this.handleCopyNode(ctx, this.calculateExecutionOrder(childNodesGraphModel), newTreeNode, iDsMap);
+                // process copying simulation nodes
+                this.handleCopyNode(ctx, simulationNodes, newTreeNode, iDsMap);
+            }),
+                catchError(error =>
+                    of(
+                        asapScheduler.schedule(() => {
+                            console.error(error);
+                            ctx.patchState({ nodes: state.nodes, loading: false, loaded: true });
+                        })
+                    )
+                );
+        } else {
+            if (nodeToCopy.type === 'MODEL') {
+                const newConns = this.cloneProperty(nodeToCopy.content.connections);
+                const newInports = this.cloneProperty(nodeToCopy.content.inports, newConns);
+                const newOutports = this.cloneProperty(nodeToCopy.content.outports, newConns);
+                const newVariables = this.cloneProperty(nodeToCopy.content.variables, newConns);
+                const newProcesses = this.cloneProperty(nodeToCopy.content.processes);
+
+                // it will re-generate uuid for inports and outports in processes
+                Object.values(newProcesses).forEach(proc => {
+                    const process: any = Object.assign({}, proc);
+                    if (updateModelRef) {
+                        const modelNodes = ctx.getState().nodes.filter(node => node.parentId === targetNode.id && node.type === 'MODEL');
+                        const originalModel = ctx.getState().nodes.filter(node => node.id === process.ref);
+                        if (originalModel[0]) {
+                            const newModelRef = modelNodes.filter(node => node.id === iDsMap[originalModel[0].id]);
+                            newProcesses[process.objectId].ref = newModelRef[0] ? newModelRef[0].id : originalModel[0].id;
+                            newTreeNode.processDependencies.splice(nodeToCopy.processDependencies.findIndex(d => d === originalModel[0].id), 1);
+                            newTreeNode.processDependencies.push(iDsMap[originalModel[0].id]);
+                        }
                     }
+                    const newProcessInports: any = {};
+                    const newProcessOutports: any = {};
+                    Object.keys(process.inports).forEach(inportId => {
+                        const newInportId = uuid();
+                        newProcessInports[newInportId] = process.inports[inportId];
+                        // edit connection source and destination
+                        if (newConns) {
+                            this.editConnectionProperties(newConns, inportId, newInportId);
+                        }
+                    });
+                    Object.keys(process.outports).forEach(outportId => {
+                        const newOutportId = uuid();
+                        newProcessOutports[newOutportId] = process.outports[outportId];
+                        // edit connection source and destination
+                        if (newConns) {
+                            this.editConnectionProperties(newConns, outportId, newOutportId);
+                        }
+                    });
+                    newProcesses[process.objectId].inports = newProcessInports;
+                    newProcesses[process.objectId].outports = newProcessOutports;
                 });
-                Object.keys(process.outports).forEach(outportId => {
-                    const newOutportId = uuid();
-                    newProcessOutports[newOutportId] = process.outports[outportId];
-                    // edit connection source and destination
-                    if (newConns) {
-                        this.editConnectionProperties(newConns, outportId, newOutportId);
-                    }
-                });
-                newProcesses[process.objectId].inports = newProcessInports;
-                newProcesses[process.objectId].outports = newProcessOutports;
-            });
-            newTreeNode.content.objectId = newTreeNode.id;
-            newTreeNode.content.inports = newInports;
-            newTreeNode.content.outports = newOutports;
-            newTreeNode.content.processes = newProcesses;
-            newTreeNode.content.connections = newConns;
-            newTreeNode.content.variables = newVariables;
-        } else if (nodeToCopy.type === 'SIMULATION') {
-            const newScenarios = this.cloneProperty(nodeToCopy.content.scenarios);
-            newTreeNode.content.objectId = newTreeNode.id;
-            newTreeNode.content.scenarios = newScenarios;
+                newTreeNode.content.objectId = newTreeNode.id;
+                newTreeNode.content.inports = newInports;
+                newTreeNode.content.outports = newOutports;
+                newTreeNode.content.processes = newProcesses;
+                newTreeNode.content.connections = newConns;
+                newTreeNode.content.variables = newVariables;
+                this.store.dispatch(new UpdatedGraphModel(pidFromGraphModelNode(newTreeNode)));
+
+            } else if (nodeToCopy.type === 'SIMULATION') {
+                if (updateModelRef) {
+                    const modelNodes = ctx.getState().nodes.filter(node => node.parentId === targetNode.id && node.type === 'MODEL');
+                    const modelRef = ctx.getState().nodes.filter(node => nodeToCopy.content.modelRef === node.id);
+                    const modelRefId = modelNodes.filter(node => node.id === iDsMap[modelRef[0].id]);
+                    newTreeNode.content.modelRef = modelRefId[0] ? modelRefId[0].id : modelRef[0].id;
+                }
+                const newScenarios = this.cloneProperty(nodeToCopy.content.scenarios);
+                newTreeNode.content.scenarios = newScenarios;
+            }
+            ctx.setState(patch({ nodes: append([newTreeNode]) }));
+            return this.treeService
+                .createTreeNode(newTreeNode)
+                .subscribe(() => {
+                    ctx.patchState({ loading: false, loaded: true });
+                }),
+                catchError(error =>
+                    of(
+                        asapScheduler.schedule(() => {
+                            console.error(error);
+                            ctx.patchState({ nodes: state.nodes, loading: false, loaded: true });
+                        })
+                    )
+                );
         }
+    }
 
-        const newState = { nodes: [...state.nodes, newTreeNode], loaded: true, loading: false };
-        patchState(newState);
-
-        return this.treeService
-            .createTreeNode(newTreeNode)
-            .subscribe(() => {
-                patchState({ loading: false, loaded: true });
-            });
+    /**
+ * handle copy/ paste on library
+ * @param ctx
+ * @param nodeList: list of nodes to process
+ * @param targetNode: folder node to copy nodes under
+ */
+    handleCopyNode(ctx: StateContext<TreeStateModel>, nodesList: TreeNode[], targetNode: TreeNode, iDsMap: {}) {
+        nodesList.filter(node => {
+            if (node && node.content === null) {
+                this.treeService
+                    .getSingleTreeNode(node.id)
+                    .subscribe(copiedNodeWithContent => {
+                        this.createACopyNode(ctx, copiedNodeWithContent, targetNode, iDsMap, true);
+                    }),
+                    catchError(error =>
+                        of(
+                            asapScheduler.schedule(() => {
+                                console.error(error);
+                                ctx.patchState({ nodes: ctx.getState().nodes, loading: false, loaded: true });
+                            })
+                        )
+                    );
+            } else {
+                this.createACopyNode(ctx, node, targetNode, iDsMap, true);
+            }
+            ctx.patchState({ loading: false, loaded: true });
+        });
     }
 
     /**

@@ -9,6 +9,7 @@ import { hasUnavailableExpressions } from '@cpt/capacity-planning-projection/lib
 export var CptPeMaxWeightedDescription: ProcessInterfaceDescription = {
     objectId: 'f7bc3e3e-7719-4662-93ba-fbc7f79481e1',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Max (Weighted)',
     inports: {
         '98af41f8-7cd6-4f98-8e2c-97acdce1db82': {

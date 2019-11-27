@@ -132,4 +132,10 @@ export class LibraryFolderPopupMenuComponent implements OnDestroy, OnInit {
         this.store.dispatch(new clipboardActions.NodesPasted(this.folder.id));
         this.closePopup.emit();
     }
+
+    onCopyFolder() {
+        const actions: any[] = [new libraryActions.GraphModelClicked(this.folder), new clipboardActions.NodesCopied()];
+        this.store.dispatch(actions);
+        this.closePopup.emit();
+    }
 }

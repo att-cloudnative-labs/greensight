@@ -44,20 +44,16 @@
                     </div>
                     <div class="data-table">
                         <app-result-data-table
-                            [simResult]="simulationResult.content"
-                            [simResultId]="simulationResult.id"
+                            [simulationResult]="simulationResult.content"
                             (cellSelectionUpdated)="onCellSelectionUpdate($event)"
                             (rowSelectionUpdated)="onRowSelectionUpdate($event)"
                             [aggregatedReportIndex]="aggregatedReportIndex"
-                            [selectedScenarioId]="selectedScenarioId"></app-result-data-table>
+                            ></app-result-data-table>
                     </div>
                     <div class="data-chart">
                         <app-sr-visualization
                             [isDisplayedRelativeValues]="isDisplayedRelativeValues"
-                            [simulationResult]="simulationResult"
-                            [simResultId]="simulationResult.id"
-                            [aggregatedReportIndex]="aggregatedReportIndex"
-                            [selectedScenarioId]="selectedScenarioId"></app-sr-visualization>
+                            [simulationResult]="simulationResult.content"></app-sr-visualization>
                     </div>
                 </div>
             </div>

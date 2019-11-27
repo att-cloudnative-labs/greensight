@@ -5,6 +5,7 @@ import { CptSimulationProcessIf, CptInformationPackage } from '../cpt-object';
 export var CptPeRemoveResponseDescription: ProcessInterfaceDescription = {
     objectId: "a6b4b5d8-5175-4ae5-8e14-af439a4d6fc9",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Remove Response',
     inports: {
         '5408de79-a9c5-4ccb-b322-ce3d6b6a1a86': {

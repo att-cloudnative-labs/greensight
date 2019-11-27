@@ -1,8 +1,9 @@
 <ng-container *ngIf="hasData">
 <td oncontextmenu="return false;" (click)="onVariableNameClicked($event)" class="variable-name">
-    <app-variable-name-cell 
-            [resultVariable]="resultVariable" 
-            [aggregationMethod]="resultVariableRef.aggregationMethod"
+    <app-variable-name-cell
+            [resultVariable]="resultVariable"
+            [aggregationMethod]="selectedAggregationMethod"
+            [availableAggregationMethods]="usableAggregationMethods"
             [isErrorWarning]="isErrorWarningPe"
             [isResponse]="isResponse"
             (aggregationChanged)="onAggregationMethodChange($event)"
@@ -10,13 +11,13 @@
     </app-variable-name-cell>
 </td>
 <td [hidden]="true">{{isAResponse}}</td>
-<td [hidden]="true">{{resultVariableRef.aggregationMethod}}</td>
+<td [hidden]="true">{{selectedAggregationMethod}}</td>
 <td [hidden]="true"><span *ngIf="resultVariableReport[0].data.AVG">{{resultVariableReport[0].data.AVG.unit}}</span></td>
 <td (click)="onValueClicked(monthReport.month)"
     class="variable-value"
     *ngFor="let monthReport of resultVariableReport; let i=index"
     app-result-value-cell
-    [resultData]="monthReport.data[resultVariableRef.aggregationMethod]"
+    [resultData]="monthReport.data[selectedAggregationMethod]"
     [selected]="isSelectedCell(monthReport.month)">
 </td>
 </ng-container>

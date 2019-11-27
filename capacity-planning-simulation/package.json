@@ -1,6 +1,6 @@
 {
   "name": "@cpt/capacity-planning-simulation",
-  "version": "0.0.690",
+  "version": "0.0.720",
   "description": "A Library for System Simulation",
   "main": "lib/index.js",
   "scripts": {

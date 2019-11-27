@@ -6,6 +6,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "acbb16d9-1c4c-4930-a3b4-28a7c33b54e4": {
         "objectId": "acbb16d9-1c4c-4930-a3b4-28a7c33b54e4",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Add Latency",
         "inports": {
             "38563813-210b-4458-8172-4138186966a8": {
@@ -61,6 +62,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "51c9c02a-21ce-45f6-be6c-512f01aa0d32": {
         "objectId": "51c9c02a-21ce-45f6-be6c-512f01aa0d32",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Parallel Execution",
         "description": "Forward load downstream. Select max latency response.",
         "inports": {
@@ -124,6 +126,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "bd96eec1-483b-44fe-a07b-11bb9141f02f": {
         "objectId": "bd96eec1-483b-44fe-a07b-11bb9141f02f",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Sum",
         "inports": {
             "f37c3cf8-881d-46ba-8715-de76904365c5": {
@@ -165,7 +168,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
                 "name": "Summand",
                 "objectId": "8be3030f-50b1-4a5a-9a51-417d205974bb",
                 "objectType": "PROCESS_PORT_TEMPLATE",
-                "description": "Add an additional Summand Inport.",
+                "description": "Add an additional summand inport.",
                 "inportTemplates": {
                     "ca210892-da31-4066-8657-55786ffb3642": {
                         "name": "Summand",
@@ -186,6 +189,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "5a615ab0-8960-42e7-a99c-78e5c548bfda": {
         "objectId": "5a615ab0-8960-42e7-a99c-78e5c548bfda",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Add Aspect",
         "description": "Add an aspect (breakdown or tag) to a load. Input has to be a number for this to work.",
         "inports": {
@@ -232,6 +236,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "c6a9bfed-4949-4692-b5c3-3906f48bc9ad": {
         "objectId": "c6a9bfed-4949-4692-b5c3-3906f48bc9ad",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Split By Aspect",
         "inports": {
             "07638ad0-7e36-4392-82e0-e90b5898dede": {
@@ -293,6 +298,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "59b677a7-ac5d-40cf-acd5-16a97db17719": {
         "objectId": "59b677a7-ac5d-40cf-acd5-16a97db17719",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Multiply",
         "inports": {
             "92665c3d-9dde-471d-9413-8e59ca17f383": {
@@ -365,6 +371,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "43ec72f1-14a9-4434-916c-a12c2e230947": {
         "objectId": "43ec72f1-14a9-4434-916c-a12c2e230947",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Not",
         "inports": {
             "a3714110-1fba-4b01-a1b7-8a8ed7310384": {
@@ -395,6 +402,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "e3cc50a9-795c-4a47-8643-6d0aee39b49c": {
         "objectId": "e3cc50a9-795c-4a47-8643-6d0aee39b49c",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Warning",
         "inports": {
             "a3cbcc81-fb06-4bd2-87cd-31c6665de9ce": {
@@ -414,6 +422,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "41c22bcb-f966-406a-8814-a7b8e187b508": {
         "objectId": "41c22bcb-f966-406a-8814-a7b8e187b508",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Error",
         "inports": {
             "694dacf2-7a7c-4bbb-89eb-6bb3a7461677": {
@@ -433,6 +442,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "26ec17f3-cce9-4854-a139-49d65ed6dc0e": {
         "objectId": "26ec17f3-cce9-4854-a139-49d65ed6dc0e",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Divide and Round Up",
         "inports": {
             "6634faf4-9d9f-4ec8-be06-fa1e65ce05ff": {
@@ -494,6 +504,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "bdc9e038-2d18-40a4-ae71-4a707e1f08c7": {
         "objectId": "bdc9e038-2d18-40a4-ae71-4a707e1f08c7",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Remove Unit",
         "inports": {
             "30f50f34-e265-4add-98d8-0142be665d9d": {
@@ -520,6 +531,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "a6b4b5d8-5175-4ae5-8e14-af439a4d6fc9": {
         "objectId": "a6b4b5d8-5175-4ae5-8e14-af439a4d6fc9",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Remove Response",
         "inports": {
             "5408de79-a9c5-4ccb-b322-ce3d6b6a1a86": {
@@ -546,6 +558,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "bda55420-1bd1-4e4e-bceb-da993d3040cc": {
         "objectId": "bda55420-1bd1-4e4e-bceb-da993d3040cc",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Remove Aspect",
         "inports": {
             "dba4d0fa-2717-4c67-8357-0a1351ad278d": {
@@ -572,6 +585,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "ebf77855-9624-46a6-a1d9-7eb756343c66": {
         "objectId": "ebf77855-9624-46a6-a1d9-7eb756343c66",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Extract Breakdown",
         "inports": {
             "ce00c1e2-0677-4c3e-8e58-e7bce8c1b088": {
@@ -613,6 +627,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "afe75ba2-2530-4fa7-82e6-a2e0bdc3f5d6": {
         "objectId": "afe75ba2-2530-4fa7-82e6-a2e0bdc3f5d6",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Max",
         "inports": {
             "cfad3400-064a-47eb-a18b-2e325161e43b": {
@@ -675,6 +690,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "f7bc3e3e-7719-4662-93ba-fbc7f79481e1": {
         "objectId": "f7bc3e3e-7719-4662-93ba-fbc7f79481e1",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Max (Weighted)",
         "inports": {
             "98af41f8-7cd6-4f98-8e2c-97acdce1db82": {
@@ -737,6 +753,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "4642ea8a-1c77-4b08-96a8-73eb8d204ae2": {
         "objectId": "4642ea8a-1c77-4b08-96a8-73eb8d204ae2",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Min",
         "inports": {
             "3e2b3e71-b36e-4a28-9264-4d1d833f3a71": {
@@ -799,6 +816,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "bf195969-ca1a-4924-91ce-57fbe6da371f": {
         "objectId": "bf195969-ca1a-4924-91ce-57fbe6da371f",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Set Unit",
         "inports": {
             "df042fe4-b146-4725-ae1c-d4f6c5a4dc6f": {
@@ -838,6 +856,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "752583fd-bc36-4604-9d5f-a276e9974c46": {
         "objectId": "752583fd-bc36-4604-9d5f-a276e9974c46",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Test Same Unit",
         "inports": {
             "92f778c4-4004-4c27-999a-b5964eee5911": {
@@ -894,6 +913,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "b06160a3-1573-4568-93f1-6e4473efcd9b": {
         "objectId": "b06160a3-1573-4568-93f1-6e4473efcd9b",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Test Greater Than",
         "inports": {
             "f7ab1ebe-0869-4738-ac23-6eecb41072ff": {
@@ -935,6 +955,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "1bc3082b-a2b2-4192-9016-4ad1177130b5": {
         "objectId": "1bc3082b-a2b2-4192-9016-4ad1177130b5",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Conditional",
         "inports": {
             "ed1ce2ff-0121-49f4-8ec1-f26be3566d83": {
@@ -981,6 +1002,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "595fddc9-5684-4a4a-a71e-14ed9885b995": {
         "objectId": "595fddc9-5684-4a4a-a71e-14ed9885b995",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Simulation Date",
         "inports": {},
         "outports": {
@@ -1008,6 +1030,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "498a73a6-a046-43bf-9f59-3847daa52296": {
         "objectId": "498a73a6-a046-43bf-9f59-3847daa52296",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Simulation Interval",
         "inports": {},
         "outports": {
@@ -1053,6 +1076,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "7cd08bf0-da46-4a51-9e3e-61a81921f1a7": {
         "objectId": "7cd08bf0-da46-4a51-9e3e-61a81921f1a7",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Replace Aspect",
         "inports": {
             "7f31dd1c-855e-4bb4-9868-8f083c1beb57": {
@@ -1096,6 +1120,7 @@ export const ProcessingElementRepository: ProcessInterfaceDescriptionRepository 
     "23b4f3ff-1e7c-4fb9-b8b0-a98611f58573": {
         "objectId": "23b4f3ff-1e7c-4fb9-b8b0-a98611f58573",
         "objectType": "PROCESS_INTERFACE_DESCRIPTION",
+        "implementation": "PROCESSING_ELEMENT",
         "name": "Serial Execution",
         "description": "Forward load downstream. Add up responses.",
         "inports": {

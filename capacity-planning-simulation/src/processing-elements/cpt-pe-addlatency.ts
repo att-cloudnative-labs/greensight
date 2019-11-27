@@ -11,6 +11,7 @@ import * as MersenneTwister from 'mersenne-twister';
 export var CptPeAddLatencyDescription: ProcessInterfaceDescription = {
     objectId: "acbb16d9-1c4c-4930-a3b4-28a7c33b54e4",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Add Latency',
     inports: {
         '38563813-210b-4458-8172-4138186966a8': {

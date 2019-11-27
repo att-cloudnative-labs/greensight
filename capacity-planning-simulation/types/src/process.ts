@@ -33,6 +33,11 @@ export interface ProcessInterfaceDescription extends UidObject {
     // dynamic ports
     portTemplates: { [id: string]: ProcessPortTemplate };
     visualizationHint?: string;
+
+    implementation: ProcessTypes;
+    dependencies?: string[];
+    parentId?: string;
+    pathName?: string;
 }
 
 export type ProcessInterfaceDescriptionRepository = { [id: string]: ProcessInterfaceDescription }

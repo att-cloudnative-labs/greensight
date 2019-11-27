@@ -21,7 +21,7 @@ export class GraphControlBarComponent {
             x: offsetParent.offsetLeft + 100,
             y: offsetParent.offsetTop + 200
         });
-        const label = selectedItem.type === 'MODEL' ? this.checkDuplicateModel(selectedItem) : null;
+        const label = selectedItem.implementation === 'GRAPH_MODEL' ? this.checkDuplicateModel(selectedItem) : null;
         this.store.dispatch(new graphControlBarActions.ProcessingElementSearchResultSelected({
             graphModelId: this.graphModel.id,
             graphModelOrProcessInterface: selectedItem,

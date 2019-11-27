@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, HostBinding, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { ALL_PARAM_TYPES } from '@system-models/interfaces/graph.interface';
+import { ALL_PARAM_TYPES } from '@cpt/capacity-planning-simulation-types';
 import * as gmInportDetailsActions from '@system-models/state/gm-inport-details.actions';
 import * as moment from 'moment';
 

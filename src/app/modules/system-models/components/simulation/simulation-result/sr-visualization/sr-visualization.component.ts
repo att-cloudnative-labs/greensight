@@ -1,19 +1,29 @@
-import { Component, Input, OnInit, OnDestroy, OnChanges } from '@angular/core';
-import { Select } from '@ngxs/store';
+import { Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { Select, Store } from '@ngxs/store';
 import { ProcessingElementState } from '@app/modules/system-models/state/processing-element.state';
 import { Observable } from 'rxjs';
-import { TreeNode } from '@app/core_module/interfaces/tree-node';
-import { Store } from '@ngxs/store';
 import { SRSState } from '@system-models/state/simulation-result-screen.state';
 import { map } from 'rxjs/operators';
 import { untilDestroyed } from 'ngx-take-until-destroy';
+import {
+    Aggregate,
+    AggregationMethods,
+    SimulationNode,
+    SimulationNodeAggregatedReport,
+    SimulationNodeDataAggregate,
+    SimulationResult
+} from '@cpt/capacity-planning-simulation-types/lib';
+import { SelectedRowProperties, SRSDatatableProperties } from '@system-models/models/srs-datatable-properties';
 
-export interface Selection {
-    objectId: string;
-    aggregationMethod?: string;
-    month?: string;
-    dataType?: string;
+export interface ResultNodeDataSet {
+    data: { [date: string]: SimulationNodeDataAggregate };
+    mainData: { [date: string]: Aggregate };
+    aggregationMethod: AggregationMethods;
+    date?: string;
+    title: string;
+    unit: string;
 }
+
 
 enum ChartType {
     BREAKDOWN = 'BREAKDOWN',
@@ -29,33 +39,80 @@ enum ChartType {
     styleUrls: ['./sr-visualization.component.css']
 })
 export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
-    @Input() simulationResult: TreeNode;
-    @Input() simResultId: string;
-    @Input() selectedScenarioId;
+    @Input() simulationResult: SimulationResult;
     @Input() isDisplayedRelativeValues;
-    @Input() aggregatedReportIndex;
     @Select(ProcessingElementState.errorWarningProcessingElements) errorWarningProcessingElements$: Observable<any[]>;
     errorWarningPes = [];
-    title;
-    chartType;
-    id;
-    ids = [];
-    message;
-    resultVariable;
-    hasData: boolean;
-    simulationResultProperties$: Observable<any>;
+    title: string;
+    chartType: ChartType;
 
-    selections: Selection[];
+    allSelectedNodeIds: string[] = [];
+    message: string;
+    selectedNode: SimulationNode;
+    selectedNodeId: string;
+    hasData: boolean;
+    simulationResultProperties$: Observable<SRSDatatableProperties>;
+    selectedScenarioId: string;
+
+    selections: SelectedRowProperties[];
+    mainSelection: SelectedRowProperties;
+
+    selectedNodeDataSets: ResultNodeDataSet[] = [];
+    maindNodeDataSet: ResultNodeDataSet;
 
     constructor(private store: Store) { }
 
     ngOnInit() {
-        this.simulationResultProperties$ = this.store.select(SRSState.resultById).pipe(map(byId => byId(this.simResultId)));
+        this.simulationResultProperties$ = this.store.select(SRSState.resultById).pipe(map(byId => byId((this.simulationResult.objectId))));
         this.simulationResultProperties$.pipe(untilDestroyed(this)).subscribe(simulationResultProperties => {
             if (simulationResultProperties) {
                 this.selections = simulationResultProperties.selectedRows;
-                this.hasData = this.selections.length !== 0;
-                this.handleGraphSelections();
+                this.selectedScenarioId = simulationResultProperties.selectedScenario;
+                this.hasData = false;
+                if (this.selections && this.selections.length > 0) {
+                    this.allSelectedNodeIds = this.selections.map(s => s.objectId);
+                    this.mainSelection = this.selections[0];
+                    this.selectedNodeId = this.mainSelection.objectId;
+                    this.selectedNode = this.simulationResult.nodes[this.selectedNodeId];
+                    this.hasData = this.hasResults(this.selectedNode, this.mainSelection.dataType as 'data' | 'response');
+                    this.handleGraphSelections();
+                    this.selectedNodeDataSets = this.selections.map(selection => {
+                        const node = this.simulationResult.nodes[selection.objectId];
+                        const nodeReports: { [date: string]: SimulationNodeAggregatedReport } = node.aggregatedReport[this.selectedScenarioId];
+                        if (!nodeReports) {
+                            return null;
+                        }
+                        const reportData: { [date: string]: SimulationNodeDataAggregate } = {};
+                        const mainReportData: { [date: string]: Aggregate } = {};
+                        const availableAggregationMethods = this.availableAggregationMethods(node, selection.dataType as "data" | "response");
+                        let aggregationMethod = selection.aggregationMethod as AggregationMethods;
+                        if (!availableAggregationMethods.includes(aggregationMethod) && availableAggregationMethods.length > 0) {
+                            aggregationMethod = availableAggregationMethods[0]
+                        }
+                        let dataSelection = aggregationMethod;
+                        if (this.chartType === 'HISTOGRAM') {
+                            dataSelection = 'HISTOGRAM';
+                        }
+                        Object.keys(nodeReports).forEach(date => {
+                            const report = nodeReports[date];
+                            mainReportData[date] = report[selection.dataType as 'response' | 'data'][dataSelection];
+                            reportData[date] = report[selection.dataType as 'response' | 'data'];
+                        });
+                        const firstMonthAggregate = mainReportData[Object.keys(reportData)[0]];
+                        const unit = this.getUnit(firstMonthAggregate);
+                        const rds: ResultNodeDataSet = {
+                            date: selection.month,
+                            mainData: mainReportData,
+                            data: reportData,
+                            aggregationMethod: aggregationMethod,
+                            title: this.getChartTitle(selection.objectId),
+                            unit: unit
+                        };
+                        return rds;
+                    });
+
+                }
+
             }
         });
         this.errorWarningProcessingElements$.subscribe(errorWarningPes => {
@@ -63,27 +120,34 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
         });
     }
 
-    ngOnChanges() {
-        this.hasData = this.selections !== undefined;
-        if (this.selections && this.selections.length > 0) {
-            this.selections.forEach(node => {
-                const nodeId = node.objectId;
-                this.resultVariable = this.simulationResult.content.nodes[nodeId];
-                this.hasData = Object.keys(this.resultVariable['aggregatedReport']).findIndex(key => key === this.selectedScenarioId) !== -1 && this.hasResults(this.resultVariable);
-            });
+    getUnit(a: Aggregate | null): string {
+        if (a && a.hasOwnProperty('unit')) {
+            return (a as any).unit as string;
         }
+        return 'undefined';
+    }
+
+    ngOnChanges() {
+
     }
 
     ngOnDestroy() { }
 
-    hasResults(node: any): boolean {
-        const aggregatedReportData = node ? node.aggregatedReport[this.selectedScenarioId] : null;
-        const aggregatedReportDataDataIndex = aggregatedReportData ? Object.keys(aggregatedReportData)[0] : null;
-        const dataContent = aggregatedReportData ? aggregatedReportData[aggregatedReportDataDataIndex].data : null;
-        const sliceContent = aggregatedReportData ? aggregatedReportData[aggregatedReportDataDataIndex].AVG : null;
-        const hasSlice = sliceContent && node.type === 'SLICE';
-        const isBreakdown = sliceContent && node.type === 'BREAKDOWN';
-        return dataContent && JSON.stringify(dataContent) !== '{}' || hasSlice || isBreakdown;
+    hasResults(node: SimulationNode, dataType: 'data' | 'response'): boolean {
+        const aggregatedReport = node ? node.aggregatedReport[this.selectedScenarioId] : null;
+        const firstMonthReport = aggregatedReport ? aggregatedReport[Object.keys(aggregatedReport)[0]] : null;
+        const firstMonthContent = firstMonthReport ? firstMonthReport[dataType] : null;
+        const sliceContent = firstMonthContent ? firstMonthContent.AVG : null;
+        const hasSlice: boolean = sliceContent && node.type === 'SLICE';
+        const isBreakdown: boolean = sliceContent && node.type === 'BREAKDOWN';
+        return firstMonthContent && JSON.stringify(firstMonthContent) !== '{}' || hasSlice || isBreakdown;
+    }
+
+    availableAggregationMethods(node: SimulationNode, dataType: 'data' | 'response'): AggregationMethods[] {
+        const aggregatedReport = node ? node.aggregatedReport[this.selectedScenarioId] : null;
+        const firstMonthReport = aggregatedReport ? aggregatedReport[Object.keys(aggregatedReport)[0]] : null;
+        const firstMonthContent = firstMonthReport ? firstMonthReport[dataType] : null;
+        return firstMonthContent ? Object.keys(firstMonthContent) as AggregationMethods[] : [];
     }
 
     handleGraphSelections() {
@@ -106,10 +170,10 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
 
     /**
      * Determines the chart that should be displayed based on the types of rows
-     * that are selected. If there is no corresponding chart for a paricular selection, a message
+     * that are selected. If there is no corresponding chart for a particular selection, a message
      * is displayed instead
      */
-    _getRowChartType(rowSelections) {
+    _getRowChartType(rowSelections: SelectedRowProperties[]) {
         // cannot have more that 2 rows selected at the moment
         if (rowSelections.length > 2) {
             this.chartType = undefined;
@@ -117,16 +181,10 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
         } else if (rowSelections.length > 1 && this._hasBreakdownSelected(rowSelections)) {
             // cannot have a breakdown in a multi selection
             this.chartType = undefined;
-            this.message = 'cannot include breakdowns in multiselection';
+            this.message = 'cannot include breakdowns in multi selection';
         } else {
-            this.ids = [];
-            for (const row of rowSelections) {
-                this.ids.push(row.objectId);
-            }
-            this.id = this.ids[0];
-            this.resultVariable = this.simulationResult.content.nodes[this.ids[0]];
-            this._defineChartTitle(this.id);
-            if (this.resultVariable.type === 'BREAKDOWN') {
+            this.title = this.getChartTitle(this.selectedNodeId);
+            if (this.selectedNode.type === 'BREAKDOWN') {
                 this.chartType = ChartType.STACKED;
             } else {
                 this.chartType = ChartType.LINE;
@@ -138,17 +196,16 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
     * Determines the chart that should be displayed based on the types of cell
     * that is selected.
     */
-    _getCellChartType(selectedCell) {
-        this.id = selectedCell.objectId;
-        this.resultVariable = this.simulationResult.content.nodes[this.id];
-        this._defineChartTitle(this.id);
-        if (this.resultVariable.type === 'BREAKDOWN') {
+    _getCellChartType(selectedCell: SelectedRowProperties) {
+        this.title = this.getChartTitle(this.selectedNodeId);
+        if (this.selectedNode.type === 'BREAKDOWN') {
             this.chartType = ChartType.BREAKDOWN;
-        } else if (this._isErrorWarningPe(this.resultVariable)) {
+        } else if (this._isErrorWarningPe(this.selectedNode)) {
             this.chartType = ChartType.VALUE;
         } else {
             // other types are time series which will display a histogram if included in the report
-            if (this.resultVariable.aggregationMethods.includes('HISTOGRAM')) {
+            const availableAggMethods = this.availableAggregationMethods(this.selectedNode, selectedCell.dataType as 'data' | 'response')
+            if (availableAggMethods.includes('HISTOGRAM')) {
                 this.chartType = ChartType.HISTOGRAM;
             } else {
                 this.chartType = ChartType.VALUE;
@@ -156,21 +213,16 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
         }
     }
 
-    /**
-    * trace back selected variable name to display full path name as chart title
-    */
-    _defineChartTitle(id: string) {
-        const parentId = this.simulationResult.content.nodes[id].parentInstanceId;
-        const parentVariable = this.simulationResult.content.nodes[parentId];
+
+    getChartTitle(resultNodeId: string): string {
+        function nodeName(n: SimulationNode): string { return n.name || n.ref };
+        const parentId = this.simulationResult.nodes[resultNodeId].parentInstanceId;
+        const parentVariable = this.simulationResult.nodes[parentId];
+        const resultNode = this.simulationResult.nodes[resultNodeId];
         if (parentVariable.type === 'BREAKDOWN') {
-            this.title = parentVariable.name || parentVariable.ref;
-            this._defineChartTitle(parentId);
-        } else if (parentId === 'root') {
-            this.title = this.resultVariable.name || this.resultVariable.ref;
+            return nodeName(parentVariable) + '.' + this.getChartTitle(parentId);
         } else {
-            this.title = this.title !== undefined ?
-                (parentVariable.name || parentVariable.ref) + '.' + this.title + '.' + (this.resultVariable.name || this.resultVariable.ref) :
-                (parentVariable.name || parentVariable.ref) + '.' + (this.resultVariable.name || this.resultVariable.ref);
+            return nodeName(resultNode);
         }
     }
 
@@ -179,7 +231,7 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
      */
     _hasBreakdownSelected(rowSelections) {
         for (const row of rowSelections) {
-            const resultVariable = this.simulationResult.content.nodes[row.objectId];
+            const resultVariable = this.simulationResult.nodes[row.objectId];
             if (resultVariable.type === 'BREAKDOWN') {
                 return true;
             }

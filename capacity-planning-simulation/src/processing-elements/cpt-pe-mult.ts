@@ -8,6 +8,7 @@ import { isNumber, dupl } from '../cpt-load-ops';
 export var CptPeMultiplyDescription: ProcessInterfaceDescription = {
     objectId: '59b677a7-ac5d-40cf-acd5-16a97db17719',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Multiply',
     inports: {
         '92665c3d-9dde-471d-9413-8e59ca17f383': {

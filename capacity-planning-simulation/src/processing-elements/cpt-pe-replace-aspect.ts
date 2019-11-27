@@ -6,6 +6,7 @@ import { scaleAspect, isNumber, isAspect, isAspectNumber } from '../cpt-load-ops
 export var CptPeReplaceAspectDescription: ProcessInterfaceDescription = {
     objectId: '7cd08bf0-da46-4a51-9e3e-61a81921f1a7',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Replace Aspect',
     inports: {
         '7f31dd1c-855e-4bb4-9868-8f083c1beb57': {

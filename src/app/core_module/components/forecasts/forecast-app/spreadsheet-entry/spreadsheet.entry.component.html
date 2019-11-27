@@ -78,7 +78,8 @@
                 <variable-creator
                     [variableList]="variableList"
                     (onVariableCreate)="processingVariableCreation($event)"
-                    (onVariableNameClicked)="clearFrameSelection()"></variable-creator>
+                    (onVariableNameClicked)="clearFrameSelection()"
+                    [branchId]="branchId"></variable-creator>
                 <cell-resize-handler [resizeId]= "'resize-create-td'" (onColumnResize)="handleColumnResize($event)"></cell-resize-handler>
             </td>
 

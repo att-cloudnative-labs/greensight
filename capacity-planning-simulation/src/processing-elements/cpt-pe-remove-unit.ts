@@ -6,6 +6,7 @@ import { isNumber } from '../cpt-load-ops';
 export var CptPeRemoveUnitDescription: ProcessInterfaceDescription = {
     objectId: "bdc9e038-2d18-40a4-ae71-4a707e1f08c7",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Remove Unit',
     inports: {
         '30f50f34-e265-4add-98d8-0142be665d9d': {

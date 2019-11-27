@@ -48,7 +48,8 @@ export class ProjectService {
             type: 'FC_PROJECT',
             description: project.description,
             parentId: 'fc_root',
-            acl: project._permissions ? project._permissions : null
+            acl: project._permissions ? project._permissions : null,
+            version: project._treeNode ? project._treeNode.version : -1
         };
 
     }
@@ -59,7 +60,7 @@ export class ProjectService {
         if (showLoading) {
             this.loaderService.show();
         }
-        return this.treeService.getTree2('fc_root').map(nodes => {
+        return this.treeService.getTree3('fc_root', true, true).map(nodes => {
             if (showLoading) {
                 this.loaderService.hide();
             }
@@ -105,12 +106,12 @@ export class ProjectService {
         } else {
             newProjectNode = this.projectToNode(newProject);
         }
-        return this.treeService.updateTreeNode2(newProjectNode).map(node => this.nodeToProject(node));
+        return this.treeService.updateTreeNode2(newProjectNode, String(newProjectNode.version)).map(node => this.nodeToProject(node));
     }
 
 
-    deleteProject(projectId: string) {
-        return this.treeService.trashTreeNode(projectId);
+    deleteProject(projectId: string, version: string) {
+        return this.treeService.trashTreeNode(projectId, version);
     }
 
     handleError(err) {

@@ -22,6 +22,7 @@
                 [isControlBar]="isControlBar"
                 [currentParentId]="currentParentId"
                 [item]="result"
+                [itemName] = "itemName(result)"
                 title="{{itemName(result)}}"
                 [filterIds]="graphModelIdsForFiltering"
                 (resultSelected)="onSelectResult($event)">

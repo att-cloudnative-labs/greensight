@@ -18,8 +18,9 @@ import * as Sifter from 'sifter';
 import { GraphSearchResultComponent } from './graph-search-result/graph-search-result.component';
 import { ActiveDescendantKeyManager } from '@angular/cdk/a11y';
 import { ENTER, UP_ARROW, DOWN_ARROW } from '@angular/cdk/keycodes';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { untilDestroyed } from 'ngx-take-until-destroy';
+import { ProcessInterfaceDescription } from '@cpt/capacity-planning-simulation-types/lib';
 
 @Component({
     selector: 'app-graph-processing-element-search',
@@ -27,12 +28,10 @@ import { untilDestroyed } from 'ngx-take-until-destroy';
     styleUrls: ['./graph-processing-element-search.component.css']
 })
 export class GraphProcessingElementSearchComponent implements OnInit, AfterViewInit, OnDestroy {
-    @Select(ProcessingElementState.processingElements) processingElements$: Observable<any[]>;
-    @Select(TreeState.nodesOfType('MODEL')) graphModelNodes$: Observable<TreeNode[]>;
+    @Select(ProcessingElementState.pids) pid$: Observable<ProcessInterfaceDescription[]>;
     @ViewChildren(GraphSearchResultComponent) items: QueryList<GraphSearchResultComponent>;
     @Input() placeholder = 'Add...';
-    // Only searches for graph models
-    @Input() onlyGraphs = false;
+
     @Input() isControlBar = false;
     // Displays the name of the selected result in the input field
     @Input() fillField = false;
@@ -42,7 +41,7 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
     showSearchResults = false;
     @Input() searchString = '';
     searchResults = [];
-    graphsAndProcessingElements = [];
+    graphsAndProcessingElements: ProcessInterfaceDescription[] = [];
     graphModelIdsForFiltering = [];
     currentParentId: string;
     private keyManager: ActiveDescendantKeyManager<GraphSearchResultComponent>;
@@ -59,42 +58,27 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
      * and combines them into an array
      */
     ngOnInit() {
-        if (!this.onlyGraphs) {
-            const combinedObservables = combineLatest(this.graphModelNodes$, this.processingElements$);
-            combinedObservables.pipe(untilDestroyed(this)).subscribe(
-                ([graphModelNodes, processingElements]) => {
-                    this.graphsAndProcessingElements = [...graphModelNodes, ...processingElements];
-                    // FIXME: this check for the existence of our graphmodel node is necessary
-                    // to avoid a race condition when deleting a folder with graph model nodes
-                    // inside. find a better way!
-                    const currentGraphModelNode = this.graphsAndProcessingElements.find(element => element.id === this.graphModel.id);
-                    if (currentGraphModelNode) {
-                        this.currentParentId = this.graphsAndProcessingElements.find(element => element.id === this.graphModel.id).parentId;
-                        // exclude the node itself
-                        this.graphsAndProcessingElements = this.graphsAndProcessingElements.filter(element => element.id !== this.graphModel.id);
-                        // exclude circular dependent graphs
-                        const graphModels = this.graphsAndProcessingElements.filter(element => element.type && element.type === 'MODEL');
-                        this.graphModelIdsForFiltering = [];
-                        this.findDependentGraphModelIds(graphModels, [this.graphModel.id]);
-                    }
-                }
-            );
-        } else {
-            if (this.simulation) {
-                this.currentParentId = this.simulation.parentId;
+        this.pid$.pipe(untilDestroyed(this)).subscribe(pids => {
+            this.graphsAndProcessingElements = pids;
+            const currentGraphModelNode = this.graphsAndProcessingElements.find(element => element.objectId === this.graphModel.id);
+            if (currentGraphModelNode) {
+                this.currentParentId = currentGraphModelNode.parentId;
+                // exclude the node itself
+                this.graphsAndProcessingElements = this.graphsAndProcessingElements.filter(element => element.objectType !== this.graphModel.id);
+                // exclude circular dependent graphs
+                const graphModels = this.graphsAndProcessingElements.filter(element => element.implementation && element.implementation === 'GRAPH_MODEL');
+                this.graphModelIdsForFiltering = [];
+                this.findDependentGraphModelIds(graphModels, [this.graphModel.id]);
             }
-            // get the selected simulation
-            this.graphModelNodes$.pipe(untilDestroyed(this)).subscribe(graphModelNodes => {
-                this.graphsAndProcessingElements = [...graphModelNodes];
-            });
-        }
+        });
+
     }
 
     ngOnDestroy() { }
 
     navigateList(event) {
         if (event.keyCode === ENTER) {
-            if (this.graphModelIdsForFiltering.indexOf(this.keyManager.activeItem.item.id) > -1 && this.isControlBar) {
+            if (this.graphModelIdsForFiltering.indexOf(this.keyManager.activeItem.item.objectId) > -1 && this.isControlBar) {
                 return false;
             } else {
                 this.onSelectResult(this.keyManager.activeItem.item);
@@ -134,9 +118,11 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
             const searchResultsRough = sifterResults.items.map(item => {
                 return this.graphsAndProcessingElements[item.id];
             });
-            const processEls = searchResultsRough.filter(res => res.objectType === 'PROCESS_INTERFACE_DESCRIPTION');
-            const graphsUnderSameFolder = searchResultsRough.filter(res2 => res2.type === 'MODEL' && res2.parentId === this.currentParentId);
-            const graphsOutside = searchResultsRough.filter(res3 => res3.type === 'MODEL' && res3.parentId !== this.currentParentId);
+            const processEls = searchResultsRough.filter(res => res.implementation === 'PROCESSING_ELEMENT');
+
+            // FIXME: the parentId is currently not available
+            const graphsUnderSameFolder = searchResultsRough.filter(res2 => res2.implementation === 'GRAPH_MODEL' && res2.parentId === this.currentParentId);
+            const graphsOutside = searchResultsRough.filter(res3 => res3.implementation === 'GRAPH_MODEL' && res3.parentId !== this.currentParentId);
             let graphsResults = [...graphsUnderSameFolder, ...graphsOutside];
             if (graphsResults.length > 20) {
                 graphsResults = graphsResults.slice(0, 20);
@@ -165,14 +151,14 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
      * @param graphModels: current models available
      * @param dependentGraphIds: the IDs of graphs that are dependent on this model
      */
-    findDependentGraphModelIds(graphModels, dependentGraphIds) {
+    findDependentGraphModelIds(graphModels: ProcessInterfaceDescription[], dependentGraphIds) {
         const graphDeps = [];
         dependentGraphIds.forEach(graphDe => {
             this.graphModelIdsForFiltering.push(graphDe);
             graphModels.forEach(graph => {
-                if (graph.processDependencies && graph.processDependencies.length) {
-                    if (graph.processDependencies.findIndex(id => id === graphDe) > -1) {
-                        graphDeps.push(graph.id);
+                if (graph.dependencies && graph.dependencies.length) {
+                    if (graph.dependencies.findIndex(id => id === graphDe) > -1) {
+                        graphDeps.push(graph.objectId);
                     }
                 }
             });
@@ -183,10 +169,8 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
     }
 
     itemName(result) {
-        if (result.type === 'MODEL') {
-            let fullName = '';
-            this.store.select(TreeState.nodeFullPathById).pipe(map(byId => byId(result.id))).forEach(node => { fullName = node; });
-            return fullName;
+        if (result.hasOwnProperty('pathName')) {
+            return result.pathName + '/' + result.name;
         } else {
             return result.name;
         }

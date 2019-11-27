@@ -5,7 +5,7 @@ import { ForecastValuesState } from '@app/modules/system-models/state/forecast-v
 import { ForecastVariableDescriptor } from '@app/core_module/interfaces/forecast-variable-descriptor';
 import { ForecastVariableUnit } from '@system-models/models/forecast-variable-unit';
 import { Observable } from 'rxjs';
-import { ALL_PARAM_TYPES } from '@system-models/interfaces/graph.interface';
+import { ALL_PARAM_TYPES } from '@cpt/capacity-planning-simulation-types';
 import * as moment from 'moment';
 
 @Component({

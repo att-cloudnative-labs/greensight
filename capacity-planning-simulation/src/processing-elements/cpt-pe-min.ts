@@ -8,6 +8,7 @@ import { NumberType, isNumber } from '../cpt-load-ops';
 export var CptPeMinDescription: ProcessInterfaceDescription = {
     objectId: '4642ea8a-1c77-4b08-96a8-73eb8d204ae2',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Min',
     inports: {
         '3e2b3e71-b36e-4a28-9264-4d1d833f3a71': {

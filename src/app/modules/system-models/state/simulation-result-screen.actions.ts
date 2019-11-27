@@ -45,7 +45,7 @@ export class DatatableRowAggregationMethodChanged {
 
 export class SimulationScenarioChanged {
     static readonly type = '[Simulation Result Screen] Simulation Scenario Changed';
-    constructor(public readonly payload: { simulationId: string, selectedScenarioId: string }) { }
+    constructor(public readonly payload: { simulationId: string, selectedScenarioId: string, updatedAggregationMethods: { [nodeid: string]: string } }) { }
 }
 
 export class UpdateNodeExpansionState {

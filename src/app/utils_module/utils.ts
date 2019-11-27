@@ -16,21 +16,12 @@ export class Utils {
     static modelBaseUrl: String = environment.modelApiUrl;
     static simulationBaseUrl: String = environment.simulationApiUrl;
     static version: String = environment.VERSION;
-    static routeProject: String = 'project';
-    static routeBranch: String = 'branch';
-    static routeVariable: String = 'variable';
     static routeVariableUnit = 'variableUnit';
     static routeUser: String = 'user';
     static routeLogin: String = 'login';
     static routeVariableType: String = 'variableType';
-    static routeSystemModel: String = 'model';
-    static routeModelBranch: String = 'modelbranch';
-    static routeModel: String = 'model';
-    static routeSimulation: String = 'modelsimulation';
-    static routeSimulationResult: String = 'modelsimulationresult';
     static routeUserGroup: String = 'userGroup';
-    static routeForecastVersion: String = 'forecastVersion';
-    static routeModelVersion: String = 'modelVersion';
+    static routeModelVersion: String = 'version';
     static routeSimVersion: String = 'simulation/version';
 
     // Colors for projections

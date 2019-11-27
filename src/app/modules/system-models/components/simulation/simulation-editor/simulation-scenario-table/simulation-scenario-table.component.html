@@ -26,8 +26,8 @@
         </thead>
         <tbody *ngIf="scenarioInportIds.length">
             <ng-container *ngFor="let inportId of scenarioInportIds">
-                    <tr *ngIf="selectedModel.processInterface.inports[inportId]" app-simulation-scenario-table-row
-                        [modelInport]="selectedModel.processInterface.inports[inportId]"
+                    <tr *ngIf="selectedModelPid.inports[inportId]" app-simulation-scenario-table-row
+                        [modelInport]="selectedModelPid.inports[inportId]"
                         [inportId]="inportId"
                         [inport]="scenarioInports[inportId]"
                         [scenarioId]="scenarioId"

@@ -73,7 +73,7 @@ export class SystemModelsPageComponent implements OnInit, OnDestroy {
             });
 
         this.actions$.pipe(ofActionDispatched(treeActions.TreeNodeTrashed),
-            untilDestroyed(this)).subscribe(({ payload: { trashedNode } }: treeActions.TreeNodeTrashed) => {
+            untilDestroyed(this)).subscribe(({ payload: { id } }: treeActions.TreeNodeTrashed) => {
                 const dialog =
                     this.modal.alert()
                         .title('Node has been trashed.')

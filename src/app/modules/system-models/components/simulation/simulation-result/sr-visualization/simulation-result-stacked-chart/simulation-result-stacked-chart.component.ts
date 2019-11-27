@@ -1,6 +1,8 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartOption } from 'echarts';
 import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
+import { ResultNodeDataSet } from '@system-models/components/simulation/simulation-result/sr-visualization/sr-visualization.component';
+import { AspectNumberParam, AspectsAggregate } from '@cpt/capacity-planning-simulation-types/lib';
 
 @Component({
     selector: 'app-srs-viz-stacked-chart',
@@ -8,37 +10,28 @@ import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
     styleUrls: ['../sr-chart.common.css', './simulation-result-stacked-chart.component.css']
 })
 export class SimulationResultStackedChartComponent implements OnChanges {
-    @Input() simResultData: SimulationNode;
-    @Input() title: string;
     @Input() isDisplayedRelativeValues;
-    @Input() aggregatedReportIndex;
-    @Input() dataType: string;
     formatWithUnitPipe;
-
-    scenarioId: string;
+    @Input() dataSet: ResultNodeDataSet;
     chartOption: EChartOption;
 
     constructor() { }
 
     ngOnChanges() {
-        // only dealing with one scenarion for no so getting the first scenario in the aggregated report
-        this.scenarioId = Object.keys(this.simResultData.aggregatedReport)[this.aggregatedReportIndex];
-        this.scenarioId = this.scenarioId ? this.scenarioId : Object.keys(this.simResultData.aggregatedReport)[0];
-        const chartKeys = Object.keys(this.simResultData.aggregatedReport[this.scenarioId]);
-        const chartDataRaw = Object.values(this.simResultData.aggregatedReport[this.scenarioId]) as any;
 
         const chartSeries = [];
         const yAxisValue = [];
         const subVarBreakdowns = {};
         const subVarBreakdownsPercentage = {};
         const unit = '';
-        const breakdownName = this.title;
+        const breakdownName = this.dataSet.title;
+        const chartKeys = Object.keys(this.dataSet.mainData);
 
-        chartDataRaw.forEach((date: any) => {
-            const data = date[this.dataType] ? date[this.dataType] : date;
-            const aspect = data.AVG.aspects.find(aspect => aspect.name = this.simResultData.name);
+        for (const date in this.dataSet.mainData) {
+            const aggregate = this.dataSet.mainData[date] as AspectNumberParam;
+            const aspect = aggregate.aspects.find(a => a.name === this.dataSet.title);
             const slices = aspect.slices;
-            const slicesSum = data.AVG.value;
+            const slicesSum = aggregate.value;
             for (const sliceName in slices) {
                 if (sliceName) {
                     const slicePercentage = (slices[sliceName] / slicesSum) * 100;
@@ -55,9 +48,10 @@ export class SimulationResultStackedChartComponent implements OnChanges {
                     }
                 }
             }
-        });
+        }
 
-        if (!this.isDisplayedRelativeValues || this.dataType === 'response') {
+
+        if (!this.isDisplayedRelativeValues) {
             Object.keys(subVarBreakdowns).forEach(subVarTitle => {
                 chartSeries.push({
                     name: subVarTitle,

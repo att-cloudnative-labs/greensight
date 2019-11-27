@@ -12,6 +12,7 @@ import { SelectionState } from '@system-models/state/selection.state';
 import * as treeActions from '@system-models/state/tree.actions';
 import * as graphControlBarActions from '@system-models/state/graph-control-bar.actions';
 import { TrashState } from '@system-models/state/trash.state';
+import { TreeNodeVersion } from '@app/core_module/interfaces/tree-node-version';
 
 @Component({
     selector: 'app-history',
@@ -20,9 +21,8 @@ import { TrashState } from '@system-models/state/trash.state';
 })
 
 export class HistoryComponent implements OnInit, OnDestroy {
-    @Select(TreeState.nonRootNodes) nodes$: Observable<TreeNode[]>;
-    @Select(HistoryState.nodes) historyNodes$: Observable<string>;
-    @Select(HistoryState.searchString) searchString$: Observable<string>;
+    @Select(HistoryState.nodes) historyNodes$: Observable<TreeNodeVersion[]>;
+    @Select(HistoryState.versions) versions$: Observable<TreeNodeVersion[]>;
     @Select(SelectionState.withNodesContext) selection$: Observable<any>;
     @Select(HistoryState.hasLoaded) historyHasLoaded$: Observable<boolean>;
     @HostBinding('class.isLoading') historyIsLoading = false;
@@ -66,48 +66,18 @@ export class HistoryComponent implements OnInit, OnDestroy {
                     this.store.dispatch(new historyActions.GetHistory(this.selectedNode));
                 }
             });
-        this.historyNodes$.subscribe(
-            (historyNodes) => {
-                this.historyResults = [...historyNodes];
-                this.historyItems = [];
-                // TODO: Optimize the logic at a later date
-                for (let i = 0; i < this.historyResults.length; i++) {
-                    if (i === 0) {
-                        this.historyItems.push({
-                            time: Utils.convertUTCToUserTimezone(this.historyResults[i].timestamp),
-                            user: this.historyResults[i].userName,
-                            action: 'Created ' + this.historyResults[i].object.name
-                        });
-                    } else {
-                        const keys = Object.keys(this.historyResults[i].object);
-                        let actionString = '';
-                        for (let j = 0; j < keys.length; j++) {
-                            const key = keys[j];
-                            if (this.historyResults[i].object[key] !== this.historyResults[i - 1].object[key] && key !== 'version' && key !== 'currentUserAccessPermissions' && key !== 'acl' && key !== 'processInterface' && key !== 'processDependencies' && key !== 'parentId') {
-                                actionString = 'Changed ' + key + ' to ' + this.historyResults[i].object[key];
-                                break;
-                            }
-                        }
-                        if (this.historyResults[i].comment) {
-                            this.historyItems.push({
-                                time: Utils.convertUTCToUserTimezone(this.historyResults[i].timestamp),
-                                user: this.historyResults[i].userName,
-                                action: this.historyResults[i].comment
-                            });
-                        } else {
-                            if (actionString !== '') {
-                                this.historyItems.push({
-                                    time: Utils.convertUTCToUserTimezone(this.historyResults[i].timestamp),
-                                    user: this.historyResults[i].userName,
-                                    action: actionString
-                                });
-                            }
-                        }
-                    }
-                }
-                this.historyItems.reverse();
+
+        this.versions$.pipe(untilDestroyed(this)).subscribe((versions: TreeNodeVersion[]) => {
+            this.historyItems = [];
+            for (let i = 0; i < versions.length; i++) {
+                const v = versions[i];
+                this.historyItems.push({
+                    time: Utils.convertUTCToUserTimezone(v.timestamp),
+                    user: v.userName,
+                    action: v.versionId === 1 ? 'Created' : v.comment
+                });
             }
-        );
+        });
     }
 
     ngOnDestroy() { }

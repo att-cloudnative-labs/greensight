@@ -3,10 +3,6 @@ import { Selection } from './selection.state';
 import { Action, Selector, State, StateContext } from '@ngxs/store';
 import produce from 'immer';
 import * as clipBoardActions from '@system-models/state/clipboard.actions';
-import { TreeState, TreeStateModel } from '@system-models/state/tree.state';
-import { ProcessingElementState, ProcessingElementStateModel } from '@system-models/state/processing-element.state';
-import { GraphModel, ProcessInterfaceDescription } from '@system-models/models/graph-model.model';
-import * as graphEditorActions from '@system-models/state/graph-editor.actions';
 
 export class ClipboardStateModel {
     selections: Selection[];

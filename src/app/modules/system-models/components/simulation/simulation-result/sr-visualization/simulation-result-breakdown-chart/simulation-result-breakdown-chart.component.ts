@@ -1,6 +1,8 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartOption } from 'echarts';
 import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
+import { ResultNodeDataSet } from '@system-models/components/simulation/simulation-result/sr-visualization/sr-visualization.component';
+import { AspectNumberParam } from '@cpt/capacity-planning-simulation-types/lib';
 
 @Component({
     selector: 'app-srs-viz-breakdown-chart',
@@ -8,23 +10,15 @@ import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
     styleUrls: ['../sr-chart.common.css', './simulation-result-breakdown-chart.component.css']
 })
 export class SimulationResultBreakdownChartComponent implements OnChanges {
-    @Input() simResultData;
-    @Input() month: string;
-    @Input() title;
-    @Input() dataType: string;
-    @Input() aggregatedReportIndex;
+    @Input() dataSet: ResultNodeDataSet;
     chartOption: EChartOption;
     scenarioId: string;
 
     constructor() { }
 
     ngOnChanges() {
-        // only dealing with one scenarion for no so getting the first scenario in the aggregated report
-        this.scenarioId = Object.keys(this.simResultData.aggregatedReport)[this.aggregatedReportIndex];
-        this.scenarioId = this.scenarioId ? this.scenarioId : Object.keys(this.simResultData.aggregatedReport)[0];
-        const report = this.simResultData.aggregatedReport[this.scenarioId];
-        const monthData = report[this.month][this.dataType] ? report[this.month][this.dataType] : report[this.month];
-        const aspect = monthData.AVG.aspects.find(aspect => aspect.name = this.simResultData.name);
+        const monthData = this.dataSet.mainData[this.dataSet.date] as AspectNumberParam;
+        const aspect = monthData.aspects.find(aspect => aspect.name === this.dataSet.title);
         const slices = aspect.slices;
         const chartLegend = [];
         const chartSeriesData = [];
@@ -37,7 +31,7 @@ export class SimulationResultBreakdownChartComponent implements OnChanges {
                 });
             }
         }
-        const chartName = this.title + ' - ' + this.month;
+        const chartName = this.dataSet.title + ' - ' + this.dataSet.date;
 
         this.chartOption = {
             title: {

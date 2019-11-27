@@ -18,7 +18,7 @@ export class Server {
 
     // this is just needed when running in local dev mode
     private allowCrossDomain(req: express.Request, res: express.Response, next: () => void) {
-        res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
+        res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN_HOST || 'http://localhost:4200');
         res.header('Access-Control-Allow-Headers', 'Authorization, Content-Type');
         res.header('Access-Control-Allow-Methods', 'GET,PUT,POST');
         res.header('Access-Control-Allow-Credentials', 'true');

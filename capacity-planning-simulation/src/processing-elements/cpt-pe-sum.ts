@@ -7,6 +7,7 @@ import { isNumber } from '../cpt-load-ops';
 export var CptPeSumDescription: ProcessInterfaceDescription = {
     objectId: "bd96eec1-483b-44fe-a07b-11bb9141f02f",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Sum',
     inports: {
         'f37c3cf8-881d-46ba-8715-de76904365c5': {

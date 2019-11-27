@@ -97,27 +97,6 @@ export interface TreeNode {
     processDependencies?: string[];
 }
 
-// gernerate a process interface description by parsing
-// the internals of the graph model treenode.
-// this used to populate the processInterface field of the TreeNode
-export function generatePid(graphModelTreeNode: TreeNode): ProcessInterfaceDescription {
-    if (graphModelTreeNode.type !== 'MODEL') {
-        return null;
-    }
-    // if the content hasnt been loaded we just return the current config
-    if (!graphModelTreeNode.content) {
-        return graphModelTreeNode.processInterface;
-    }
-    return {
-        name: graphModelTreeNode.name,
-        objectType: 'PROCESS_INTERFACE_DESCRIPTION',
-        objectId: graphModelTreeNode.id,
-        description: graphModelTreeNode.description,
-        inports: graphModelTreeNode.content.inports,
-        outports: graphModelTreeNode.content.outports,
-        portTemplates: {}
-    }
-}
 
 // fetch all graph model IDs of the processes
 // i.e. all the graph model we're depending on
@@ -136,14 +115,26 @@ export function getProcessGraphModelIds(graphModelTreeNode: TreeNode): string[] 
     return processGraphModelIds;
 }
 
-
-export interface TreeNodeContentPatch {
-    added?: any,
-    updated?: any,
-    deleted?: any
+export function hasDependencies(node: TreeNode): boolean {
+    if (!node.processDependencies) {
+        return false;
+    }
+    if (node.processDependencies.length < 1) {
+        return false;
+    }
+    if (!node.processDependencies[0]) {
+        return false;
+    }
+    return true;
 }
 
-// to successfully tranport the deleted sections map
+export interface TreeNodeContentPatch {
+    added?: any;
+    updated?: any;
+    deleted?: any;
+}
+
+// to successfully transport the deleted sections map
 // they need to be changed from undefined as value for null as value
 // otherwise the data will be purged during the JSON (de-)serialization.
 export function buildPatch(patch: { added: any, updated: any, deleted: any }): TreeNodeContentPatch {

@@ -11,9 +11,9 @@
                             <select class="form-control" [(ngModel)]="timezone" (change)="onChangeSettings()">
                                 <option [ngValue]="timezone">{{timezone}}</option>
                                 <option *ngFor="let tz of utcList" [ngValue]="tz">{{tz}}</option>
-                            </select>    
+                            </select>
                     </div>
-            </div>            
+            </div>
             <div class="form-group" data-testid="percentiles">
                 <label for="">User Selected Percentiles</label>
                 <div class="input-group">
@@ -92,29 +92,14 @@
                 <div class="key">Version number:</div><div class="value">{{version}}</div>
                 <div style="clear: both;"></div>​
             </div>
-
-            <i><b>Forecast backend version</b></i>
+            <i><b>Backend version</b></i>
             <div class="info-box">
-                <div class="key">Version number:</div><div class="value">{{forecastBackendVersion.version}}</div>
-                <div style="clear: both;"></div>​
-                <div class="key">Model version:</div><div class="value">{{forecastBackendVersion.modelVersion}}</div>
-                <div style="clear: both;"></div>​
-                <div class="key">Group ID:</div><div class="value">{{forecastBackendVersion.groupId}}</div>
-                <div style="clear: both;"></div>​
-                <div class="key">Artifact ID:</div><div class="value">{{forecastBackendVersion.artifactId}}</div>
-                <div style="clear: both;"></div>​
-            </div>
-
-            <i><b>Model backend version</b></i>
-            <div class="info-box">
-                <div class="key">Version number:</div><div class="value">{{modelBackendVersion.version}}</div>
-                <div style="clear: both;"></div>​
-                <div class="key">Model version:</div><div class="value">{{modelBackendVersion.modelVersion}}</div>
-                <div style="clear: both;"></div>​
-                <div class="key">Group ID:</div><div class="value">{{modelBackendVersion.groupId}}</div>
-                <div style="clear: both;"></div>​
-                <div class="key">Artifact ID:</div><div class="value">{{modelBackendVersion.artifactId}}</div>
-                <div style="clear: both;"></div>​
+                <div class="key">Version number:</div><div class="value">{{backendVersion.version}}</div>
+                <div style="clear: both;"></div>
+                <div class="key">Group ID:</div><div class="value">{{backendVersion.groupId}}</div>
+                <div style="clear: both;"></div>
+                <div class="key">Artifact ID:</div><div class="value">{{backendVersion.artifactId}}</div>
+                <div style="clear: both;"></div>
             </div>
 
             <i><b>Simulation backend version</b></i>

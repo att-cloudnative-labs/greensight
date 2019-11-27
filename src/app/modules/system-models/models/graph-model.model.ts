@@ -5,9 +5,9 @@ import {
     GeneratesResponseTypes,
     ConfigType,
     GraphParam,
-    GraphConfig
-} from '@system-models/interfaces/graph.interface';
-import { GraphModelDoubleClicked } from '../state/library-search-result.actions';
+    GraphConfig,
+    ProcessInterfaceDescription
+} from '@cpt/capacity-planning-simulation-types';
 
 class Discriminator {
     public fn;
@@ -21,45 +21,24 @@ class Discriminator {
     }
 }
 
-export class ProcessInterfaceDescription {
-    public type: ProcessTypes;
-    public id: string;
-    public name: string;
-    public inports: { [id: string]: Inport };
-    public outports: { [id: string]: Outport };
-    public portTemplates: { [id: string]: any } = {}; // TODO: type this
-    public visualizationHint?: string;
-    public description?: string;
-    // there will be templates here eventually
 
-    public static fromProcessingElement(processingElement): ProcessInterfaceDescription {
-        const instance = new this();
-        instance.id = processingElement.objectId;
-        instance.type = 'PROCESSING_ELEMENT';
-        instance.name = processingElement.name;
-        instance.inports = processingElement.inports;
-        instance.outports = processingElement.outports;
-        instance.portTemplates = processingElement.portTemplates;
-        instance.visualizationHint = processingElement.visualizationHint;
-        instance.description = processingElement.description;
-        return instance;
+export function pidFromGraphModelNode(graphModelNode: TreeNode): ProcessInterfaceDescription {
+    const pid: ProcessInterfaceDescription = {
+        objectId: graphModelNode.id,
+        objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+        implementation: 'GRAPH_MODEL',
+        name: graphModelNode.name,
+        description: graphModelNode.description,
+        inports: {},
+        outports: {},
+        portTemplates: {},
+        parentId: graphModelNode.parentId
+    };
+    if (graphModelNode.content) {
+        pid.inports = graphModelNode.content.inports as any || {}
+        pid.outports = graphModelNode.content.outports as any || {};
     }
-
-    public static fromGraphModelNode(graphModelNode: TreeNode): ProcessInterfaceDescription {
-        const instance = new this();
-        instance.id = graphModelNode.id;
-        instance.type = 'GRAPH_MODEL';
-        instance.name = graphModelNode.name;
-        instance.inports = {};
-        instance.outports = {};
-        instance.description = graphModelNode.description;
-
-        if (graphModelNode.processInterface) {
-            instance.inports = graphModelNode.processInterface.inports as any || {}
-            instance.outports = graphModelNode.processInterface.outports as any || {};
-        }
-        return instance;
-    }
+    return pid;
 }
 
 // TODO: New name, Serializable no longer makes sense
@@ -330,7 +309,7 @@ export class Process extends Serializable {
         this.label = process.label;
         // this.description = process.description;
         this.metadata = process.metadata;
-        const pid = pids.find(x => x.id === process.ref);
+        const pid = pids.find(x => x.objectId === process.ref);
         this.description = pid ? pid.description : undefined;
         this.name = pid.name;
         this.visualizationHint = pid.visualizationHint;

@@ -5,6 +5,7 @@ import { CptSimulationProcessIf } from '../cpt-object';
 export var CptPeTestGreaterThanDescription: ProcessInterfaceDescription = {
     objectId: "b06160a3-1573-4568-93f1-6e4473efcd9b",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Test Greater Than',
     inports: {
         'f7ab1ebe-0869-4738-ac23-6eecb41072ff': {

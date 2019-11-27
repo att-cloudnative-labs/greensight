@@ -68,8 +68,7 @@ export class SettingsComponent implements OnInit {
 
 
     public version: String = Utils.getUIVersion();
-    public forecastBackendVersion: any = {};
-    public modelBackendVersion: any = {};
+    public backendVersion: any = {};
     public simBackendVersion: any = {};
     public ProjectionVersion = require('@cpt/capacity-planning-projection/package.json').version;
 
@@ -219,19 +218,11 @@ export class SettingsComponent implements OnInit {
     }
 
     getBackendVersionInfo() {
-        // get the forecast backend version information
-        this.versionService.getForecastBackendVersion().subscribe(result => {
-            if (result.status === 'OK') {
-                // this.forecastBackendVersion = {'version':result.data.version, 'modelVersion':result.data.modelVersion, 'groupId':result.data.groupId, 'artifactId':result.data.artifactId};
-                this.forecastBackendVersion = result.data;
-            }
-        });
-
         // get the model backend version information
-        this.versionService.getModelBackendVersion().subscribe(result => {
+        this.versionService.getBackendVersion().subscribe(result => {
             if (result.status === 'OK') {
                 // this.modelBackendVersion = {'version':result.data.version, 'modelVersion':result.data.modelVersion, 'groupId':result.data.groupId, 'artifactId':result.data.artifactId};
-                this.modelBackendVersion = result.data;
+                this.backendVersion = result.data;
             }
         });
 

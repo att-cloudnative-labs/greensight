@@ -8,6 +8,7 @@ import { isNumber, NumberType, dupl } from '../cpt-load-ops';
 export var CptPeMaxDescription: ProcessInterfaceDescription = {
     objectId: 'afe75ba2-2530-4fa7-82e6-a2e0bdc3f5d6',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Max',
     inports: {
         'cfad3400-064a-47eb-a18b-2e325161e43b': {

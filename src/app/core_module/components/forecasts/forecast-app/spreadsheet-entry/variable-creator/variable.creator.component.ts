@@ -13,6 +13,7 @@ export class VariableCreatorComponent implements OnInit {
     @Output('onVariableCreate') variableCreated = new EventEmitter();
     @Output('onVariableNameClicked') variableNameClicked = new EventEmitter();
     @Input('variableList') variableList;
+    @Input('branchId') branchId: string;
 
     constructor(
         private modal: ModalDialogService
@@ -39,7 +40,7 @@ export class VariableCreatorComponent implements OnInit {
      * Listen for an enter button press and emit an event whenever this occurs
      */
     processingVariableCreation() {
-        const verifyingVarName = this.variableList.filter(newVar => newVar.content.title === this.newVariableTitle);
+        const verifyingVarName = this.variableList.filter(newVar => newVar.content.title === this.newVariableTitle && newVar.metadata.branchId === this.branchId);
         if (verifyingVarName.length > 0) {
             this.modal.showError('Failed to create variable. A variable with name "' + this.newVariableTitle + '" already exists');
         } else if (!this.newVariableTitle || this.newVariableTitle.length === 0) {

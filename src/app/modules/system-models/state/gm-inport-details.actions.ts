@@ -1,4 +1,4 @@
-import { ParamType } from '@system-models/interfaces/graph.interface'; // TODO: load this from the above import once library updated
+import { ParamType } from '@cpt/capacity-planning-simulation-types';
 
 export class RequiredTypeOptionToggled {
     static readonly type = '[Gm Inport Details] Required Types Option Toggled';

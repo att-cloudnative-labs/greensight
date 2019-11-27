@@ -6,6 +6,7 @@ import { getMonthNr, monthNrToString } from '../cpt-date-ops';
 export var CptPeSimulationIntervalDescription: ProcessInterfaceDescription = {
     objectId: '498a73a6-a046-43bf-9f59-3847daa52296',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Simulation Interval',
     inports: {},
     outports: {

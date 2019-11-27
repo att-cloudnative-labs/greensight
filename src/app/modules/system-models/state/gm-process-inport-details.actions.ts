@@ -1,5 +1,4 @@
-import { GraphParam } from '@cpt/capacity-planning-simulation-types';
-import { ParamType } from '@system-models/interfaces/graph.interface'; // TODO: load this from the above import once library updated
+import { GraphParam, ParamType } from '@cpt/capacity-planning-simulation-types';
 
 export class ParamTypeChanged {
     static readonly type = '[Gm Process Inport Details] Param Type Changed';

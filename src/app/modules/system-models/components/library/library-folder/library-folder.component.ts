@@ -14,8 +14,8 @@ import { TreeNodeProperties } from '@system-models/state/library.actions';
 
 import { TreeState } from '@system-models/state/tree.state';
 import { Select, Store, Actions, ofActionSuccessful } from '@ngxs/store';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { merge, Observable, of } from 'rxjs';
+import { delay, map } from 'rxjs/operators';
 import { LibraryState } from '@system-models/state/library.state';
 import * as libraryActions from '@system-models/state/library.actions';
 import * as treeActions from '@system-models/state/tree.actions';
@@ -56,6 +56,9 @@ export class LibraryFolderComponent implements OnInit, OnDestroy {
     userRoleId = Utils.getUserRoleId();
     createPermissionsObj: PermissionsObject;
     modifyPermissionsObj: PermissionsObject;
+    isInClipboard = false;
+    loadingOrEmpty: Observable<string>;
+
 
     get isHighlighted() {
         return this.showPopup || this.hovering;
@@ -73,6 +76,9 @@ export class LibraryFolderComponent implements OnInit, OnDestroy {
         private popover: Popover, private viewContainerRef: ViewContainerRef) { }
 
     ngOnInit() {
+
+        this.loadingOrEmpty = merge<string>(of("Loading"), of("Empty").pipe(delay(3000)));
+
         this.createPermissionsObj = { permissions: 'CREATE', accessObject: this.folder };
         this.modifyPermissionsObj = { permissions: 'MODIFY', accessObject: this.folder };
 
@@ -121,6 +127,7 @@ export class LibraryFolderComponent implements OnInit, OnDestroy {
         // check if there is data in clipboard
         this.clipboard$.pipe(untilDestroyed(this)).subscribe(clipboard => {
             this.clipboardHasData = (clipboard.selections.length !== 0);
+            this.isInClipboard = (clipboard.selections.length !== 0 && clipboard.selections[0].id === this.folder.id);
         });
     }
 

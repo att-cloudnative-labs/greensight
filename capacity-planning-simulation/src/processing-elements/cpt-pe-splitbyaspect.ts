@@ -8,6 +8,7 @@ import { isResponseNumber, aggregateResponseByAspect } from '../cpt-response-ops
 export var CptPeSplitByAspectDescription: ProcessInterfaceDescription = {
     objectId: 'c6a9bfed-4949-4692-b5c3-3906f48bc9ad',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Split By Aspect',
     inports: {
         '07638ad0-7e36-4392-82e0-e90b5898dede': {

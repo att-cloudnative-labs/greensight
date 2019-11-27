@@ -6,6 +6,7 @@ import { hasUnit } from '../cpt-load-ops';
 export var CptPeTestSameUnitDescription: ProcessInterfaceDescription = {
     objectId: "752583fd-bc36-4604-9d5f-a276e9974c46",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Test Same Unit',
     inports: {
         '92f778c4-4004-4c27-999a-b5964eee5911': {

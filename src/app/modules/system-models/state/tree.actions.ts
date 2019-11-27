@@ -7,17 +7,17 @@ export class LoadTree {
 
 export class LoadSimulationResultContent {
     static readonly type = '[Tree] Load Simulation Result Content';
-    constructor(public readonly payload: TreeNode) { }
+    constructor(public readonly payload: { id: string }) { }
 }
 
 export class LoadGraphModelContent {
     static readonly type = '[Tree] Load GraphModel Content';
-    constructor(public readonly payload: TreeNode) { }
+    constructor(public readonly payload: { id: string }) { }
 }
 
 export class LoadSimulationContent {
     static readonly type = '[Tree] Load Simulation Content';
-    constructor(public readonly payload: TreeNode) { }
+    constructor(public readonly payload: { id: string }) { }
 }
 
 
@@ -104,7 +104,7 @@ export class TreeNodeConflicted {
 
 export class TreeNodeTrashed {
     static readonly type = '[Tree] Trashed Tree Node Detected';
-    constructor(public readonly payload: { trashedNode: TreeNode }) { }
+    constructor(public readonly payload: { id: string }) { }
 }
 
 export class TreeNodeFailedDependency {

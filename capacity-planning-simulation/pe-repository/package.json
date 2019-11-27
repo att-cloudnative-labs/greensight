@@ -1,6 +1,6 @@
 {
   "name": "@cpt/capacity-planning-simulation-pe-repository",
-  "version": "0.0.650",
+  "version": "0.0.720",
   "description": "A Repository for CPT Processing Elements",
   "main": "lib/index.js",
   "scripts": {

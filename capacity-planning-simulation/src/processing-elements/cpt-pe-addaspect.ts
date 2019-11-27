@@ -6,6 +6,7 @@ import { scaleAspect, isNumber, isAspect, isAspectNumber } from '../cpt-load-ops
 export var CptPeAddAspectDescription: ProcessInterfaceDescription = {
     objectId: '5a615ab0-8960-42e7-a99c-78e5c548bfda',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Add Aspect',
     description: 'Add an aspect (breakdown or tag) to a load. Input has to be a number for this to work.',
     inports: {

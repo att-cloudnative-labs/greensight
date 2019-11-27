@@ -2,99 +2,99 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>1.5.7.RELEASE</version>
-  </parent>
 
   <groupId>cptl.capacityplanning</groupId>
   <artifactId>modelbackend</artifactId>
-  <version>1.0.45-SNAPSHOT</version>
-
+  <version>1.0.47-SNAPSHOT</version>
   <name>modelbackend</name>
+
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.2.0.RELEASE</version>
+    <relativePath />
+  </parent>
 
   <developers>
     <developer>
       <id>sm935j</id>
     </developer>
   </developers>
+
+  <scm>
+    <connection>scm:git:ssh://git@egbitbucket.dtvops.net:7999/cptl/capacity-planning-backend-model.git</connection>
+    <developerConnection>scm:git:ssh://git@egbitbucket.dtvops.net:7999/cptl/capacity-planning-backend-model.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <backend.common.version>1.0.54</backend.common.version>
+    <backend.common.version>1.0.54-SNAPSHOT</backend.common.version>
+    <lombok.version>1.18.0</lombok.version>
+
   </properties>
 
   <dependencies>
+	<dependency>
+  		<groupId>org.springframework.metrics</groupId>
+  		<artifactId>spring-metrics</artifactId>
+  		<version>0.5.1.RELEASE</version>
+	</dependency>
+	<dependency>
+  		<groupId>io.prometheus</groupId>
+  		<artifactId>simpleclient_common</artifactId>
+  		<version>0.7.0</version>
+	</dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>ch.qos.logback</groupId>
-          <artifactId>logback-classic</artifactId>
-        </exclusion>
-      </exclusions>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-rest</artifactId>
-    </dependency>
+    	<dependency>
+    	<groupId>io.micrometer</groupId>
+    	<artifactId>micrometer-registry-prometheus</artifactId>
+	</dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-mongodb</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.jayway.jsonpath</groupId>
-      <artifactId>json-path</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.junit.vintage</groupId>
+          <artifactId>junit-vintage-engine</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-thymeleaf</artifactId>
-    </dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+  </dependency>
     <dependency>
-      <groupId>io.springfox</groupId>
-      <artifactId>springfox-swagger2</artifactId>
-      <version>2.9.2</version>
-      <scope>compile</scope>
+      <groupId>org.springframework.ldap</groupId>
+      <artifactId>spring-ldap-core</artifactId>
+      <version>2.3.2.RELEASE</version>
     </dependency>
-    <dependency>
-      <groupId>io.springfox</groupId>
-      <artifactId>springfox-swagger-ui</artifactId>
-      <version>2.9.2</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>de.congrace</groupId>
-      <artifactId>exp4j</artifactId>
-      <version>0.3.11</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-tx</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-log4j2</artifactId>
-    </dependency>
+  <dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-ldap</artifactId>
+    <version>5.0.5.RELEASE</version>
+  </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.9.10</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.7</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -102,13 +102,14 @@
       <version>3.3.9</version>
     </dependency>
     <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
     </dependency>
     <dependency>
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-java</artifactId>
-      <version>3.7.1</version>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>1.10.19</version>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
@@ -143,21 +144,6 @@
       <version>2.6</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.kafka</groupId>
-      <artifactId>kafka_2.12</artifactId>
-      <version>1.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.couchbase.client</groupId>
-      <artifactId>java-client</artifactId>
-      <version>2.3.0</version>
-    </dependency>
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.11</version>
-    </dependency>    
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>20.0</version>
@@ -167,22 +153,13 @@
       <artifactId>commons-io</artifactId>
       <version>2.5</version>
     </dependency>
-    <!-- Internal Dependencies -->
     <dependency>
-      <groupId>cptl.capacityplanning</groupId>
-      <artifactId>common-model</artifactId>
-      <version>${backend.common.version}</version>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>cptl.capacityplanning</groupId>
-      <artifactId>common-utilities</artifactId>
-      <version>${backend.common.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>cptl.capacityplanning</groupId>
-      <artifactId>session-management</artifactId>
-      <version>${backend.common.version}</version>
-    </dependency>
+
   </dependencies>
 
   <build>
@@ -201,22 +178,18 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>8.18</version>
+            <version>8.12</version>
           </dependency>
         </dependencies>
-        <executions>
-          <execution>
-            <id>checkstyle</id>
-            <phase>validate</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
+	<artifactId>spring-boot-maven-plugin</artifactId>
+	    <configuration>
+        <jvmArguments>
+            -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005
+        </jvmArguments>
+         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -275,7 +248,7 @@
             <version>2.22.0</version>
           </dependency>
         </dependencies>
-      </plugin>      
+      </plugin>
       <plugin>
         <groupId>com.spotify</groupId>
         <artifactId>dockerfile-maven-plugin</artifactId>

@@ -5,6 +5,7 @@ import { CptSimulationProcessIf, CptInformationPackage } from '../cpt-object';
 export var CptPeWarningDescription: ProcessInterfaceDescription = {
     objectId: "e3cc50a9-795c-4a47-8643-6d0aee39b49c",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Warning',
     inports: {
         'a3cbcc81-fb06-4bd2-87cd-31c6665de9ce': {

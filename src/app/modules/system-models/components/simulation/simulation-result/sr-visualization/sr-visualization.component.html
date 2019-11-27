@@ -1,42 +1,25 @@
   <div class="chart-container" [ngSwitch]="chartType" *ngIf="hasData">
 
      <app-srs-visualization-time-series *ngSwitchCase="'LINE'"
-         [simResultData]="simulationResult.content.nodes"
-         [variableSelections]="selections"
-         [dataType]="selections[0].dataType"
-         [title]="title"
-         [aggregatedReportIndex]="aggregatedReportIndex"
-         [selectedScenarioId]=selectedScenarioId></app-srs-visualization-time-series>
+         [dataSets]=selectedNodeDataSets>
+     </app-srs-visualization-time-series>
 
      <app-srs-viz-stacked-chart *ngSwitchCase="'STACKED'"
-        [simResultData]="simulationResult.content.nodes[id]"
-        [dataType]="selections[0].dataType"
-        [isDisplayedRelativeValues]="isDisplayedRelativeValues"
-        [title]="title"
-        [aggregatedReportIndex]="aggregatedReportIndex"></app-srs-viz-stacked-chart>
+                                [dataSet]="selectedNodeDataSets[0]"
+        [isDisplayedRelativeValues]="isDisplayedRelativeValues">
+     </app-srs-viz-stacked-chart>
 
      <app-srs-viz-breakdown-chart *ngSwitchCase="'BREAKDOWN'"
-        [simResultData]="simulationResult.content.nodes[id]"
-        [dataType]="selections[0].dataType"
-        [month]="selections[0].month"
-        [title]="title"
-        [aggregatedReportIndex]="aggregatedReportIndex"></app-srs-viz-breakdown-chart>
+         [dataSet]="selectedNodeDataSets[0]"
+     ></app-srs-viz-breakdown-chart>
 
      <app-srs-value-display *ngSwitchCase="'VALUE'"
-        [simResultData]="simulationResult.content.nodes[id]"
-        [aggregationMethod]="selections[0].aggregationMethod"
-        [month]="selections[0].month"
-        [dataType]="selections[0].dataType"
-        [isErrorWarningPe]="_isErrorWarningPe(simulationResult.content.nodes[id])"
-        [aggregatedReportIndex]="aggregatedReportIndex"></app-srs-value-display>
+        [dataSet]="selectedNodeDataSets[0]"></app-srs-value-display>
 
     <app-srs-viz-histogram *ngSwitchCase="'HISTOGRAM'"
-         [simResultData]="simulationResult.content.nodes[id]"
-         [aggregationMethod]="selections[0].aggregationMethod"
-         [dataType]="selections[0].dataType"
-         [month]="selections[0].month"
-         [title]="title"
-         [aggregatedReportIndex]="aggregatedReportIndex"></app-srs-viz-histogram>
+                           [dataSet]="selectedNodeDataSets[0]">
+
+    </app-srs-viz-histogram>
 
     <div class="no-chart" *ngSwitchDefault>
         {{message}}

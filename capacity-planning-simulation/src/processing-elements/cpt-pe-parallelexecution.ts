@@ -7,6 +7,7 @@ import { aggregateResponseParallel } from '../cpt-response-ops';
 export var CptPeParallelExecutionDescription: ProcessInterfaceDescription = {
     objectId: '51c9c02a-21ce-45f6-be6c-512f01aa0d32',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Parallel Execution',
     description: 'Forward load downstream. Select max latency response.',
 

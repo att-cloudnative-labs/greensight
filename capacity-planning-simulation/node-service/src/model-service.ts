@@ -32,14 +32,11 @@ export class ModelService {
     beModelPort: number = parseInt(process.env.BACKEN_MODEL_PORT || "8080");
 
     private getTreeNode(authToken: string, nodeId: string): Observable<TreeNode> {
-        return this.getTreeNodes(authToken, nodeId, 1).pipe(map(tns => tns[0]));
+        return this.getTreeNodes(authToken, nodeId, false).pipe(map(tns => tns[0]));
     }
 
-    private getTreeNodes(authToken: string, nodeId: string, depth?: number): Observable<TreeNode[]> {
-        let url = 'http://' + this.beModelHost + ':' + this.beModelPort + '/tree/' + nodeId + '?sparse=false';
-        if (depth) {
-            url = url + "&depth=" + depth;
-        }
+    private getTreeNodes(authToken: string, nodeId: string, withChildren: boolean): Observable<TreeNode[]> {
+        const url = `http://${this.beModelHost}:${this.beModelPort}/tree/${nodeId}?sparse=false&sparseChildren=false&withChildren=${withChildren}`;
         let o$ = Observable.create((obs: Observer<TreeNode[]>) => {
             let options = {
                 url: url,
@@ -91,7 +88,7 @@ export class ModelService {
     private putTreeNode(authToken: string, node: TreeNode): Observable<TreeNode> {
         let o$ = Observable.create((obs: Observer<TreeNode>) => {
             let options = {
-                url: 'http://' + this.beModelHost + ':' + this.beModelPort + '/tree/' + node.id,
+                url: 'http://' + this.beModelHost + ':' + this.beModelPort + '/tree/' + node.id + '?v=' + node.version,
                 headers: {
                     'Authorization': authToken,
                 },
@@ -153,21 +150,22 @@ export class ModelService {
             objectId: srId,
             nodes: {},
             scenarios: {}
-        }
+        };
         let node: TreeNode = {
             id: srId,
             content: sr,
             name: resultName,
             parentId: sc.objectId,
             type: 'SIMULATIONRESULT',
-            accessControl: 'INHERIT'
+            accessControl: 'INHERIT',
+            version: 1
 
-        }
+        };
         return this.postTreeNode(authToken, node);
     }
 
     public fetchBranchVariables(authToken: string, branchId: string): Observable<Variable[]> {
-        return this.getTreeNodes(authToken, branchId).pipe(map(tns => {
+        return this.getTreeNodes(authToken, branchId, true).pipe(map(tns => {
             let variableNodes = tns.filter(tn => tn.type.startsWith('FC_VARIABLE'));
             let variables: Variable[] = [];
             for (var i = variableNodes.length - 1; i >= 0; i--) {

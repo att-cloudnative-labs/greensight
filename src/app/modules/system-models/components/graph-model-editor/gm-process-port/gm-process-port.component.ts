@@ -64,7 +64,7 @@ export class GmProcessPortComponent implements OnInit, OnDestroy {
                 case 'STRING':
                     return JSON.stringify(this.port.defaultParam.value);
                 case 'ASPECT':
-                    return '{' + JSON.stringify(this.port.defaultParam.value.name) + '...}';
+                    return '{' + JSON.stringify(this.port.defaultParam.value) + '...}';
 
             }
         } else if (this.port.param && this.port.param.type) {

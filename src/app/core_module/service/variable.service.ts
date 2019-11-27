@@ -12,14 +12,28 @@ import { ForecastVariableDescriptor } from '../interfaces/forecast-variable-desc
 import { TreeService } from './tree.service';
 import { TreeNode } from '../interfaces/tree-node';
 import { v4 as uuid } from 'uuid';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { ApiResult } from '@app/core_module/interfaces/api-result';
 
 @Injectable()
 export class ForecastVariableService {
 
     constructor(
         private loaderService: LoaderService,
-        private treeService: TreeService
+        private treeService: TreeService,
+        private http: HttpClient
     ) { }
+
+    baseUrl = Utils.createModelUrl('variables');
+
+    get httpOptions() {
+        return {
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json',
+                'Authorization': Utils.getToken()
+            })
+        };
+    }
 
 
     private nodeToVariable(node: TreeNode): ForecastVariableModel {
@@ -71,7 +85,7 @@ export class ForecastVariableService {
         if (showLoading) {
             this.loaderService.show();
         }
-        return this.treeService.getTree2(branchId, false, 2).map(nodes => {
+        return this.treeService.getTree3(branchId, false, true, false).map(nodes => {
             const variableNodes = nodes.filter(n => n.type === 'FC_VARIABLE_BD' || n.type === 'FC_VARIABLE_NUM');
             return variableNodes.map(vn => this.nodeToVariable(vn));
         });
@@ -111,75 +125,9 @@ export class ForecastVariableService {
 
     // fetch all projects/sheets/variables and compile the ForecastVariableDescriptor list
     getForecastVariableDescriptors(): Observable<ForecastVariableDescriptor[]> {
-        return this.treeService.getTree2('fc_root', true, 3).map(nodes => {
-            const variableDescriptors: ForecastVariableDescriptor[] = [];
-            // create a id map of the tree nodes.
-            const treeNodes: { [id: string]: TreeNode } = {};
-            // while at it, identify all projects and sheets
-            const projectNodes: TreeNode[] = [];
-            const sheetNodes: TreeNode[] = [];
-            // also map the tree structure to something parseable
-            const sheetsPerProject: { [projectId: string]: TreeNode[] } = {};
-            const variablesPerSheet: { [sheetId: string]: TreeNode[] } = {};
-            for (let i = nodes.length - 1; i >= 0; i--) {
-                const node = nodes[i];
-                treeNodes[node.id] = node;
-                switch (node.type) {
-                    case 'FC_PROJECT':
-                        projectNodes.push(node);
-                        break;
-                    case 'FC_SHEET':
-                        sheetNodes.push(node);
-                        if (sheetsPerProject[node.parentId]) {
-                            sheetsPerProject[node.parentId].push(node);
-                        } else {
-                            sheetsPerProject[node.parentId] = [node];
-                        }
-                        break;
-                    case 'FC_VARIABLE_BD':
-                    case 'FC_VARIABLE_NUM':
-                        if (variablesPerSheet[node.parentId]) {
-                            variablesPerSheet[node.parentId].push(node);
-                        } else {
-                            variablesPerSheet[node.parentId] = [node];
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            // now iterate through all projects
-            // and dive into the respective sheets/variables
-            // and add create a descriptor entry for each variable
-            for (let i = projectNodes.length - 1; i >= 0; i--) {
-                const project = projectNodes[i];
-                const sheets = sheetsPerProject[project.id] || [];
-                for (let j = sheets.length - 1; j >= 0; j--) {
-                    const sheet = sheets[j];
-                    const variables = variablesPerSheet[sheet.id] || [];
-                    for (let k = variables.length - 1; k >= 0; k--) {
-                        const variable = variables[k];
-                        const desc: ForecastVariableDescriptor = {
-                            variableName: variable.name,
-                            variableId: variable.id,
-                            variableUnit: variable.description,
-                            projectId: project.id,
-                            projectName: project.name,
-                            projectBranchId: sheet.id,
-                            projectBranchName: sheet.name,
-                            searchKey: project.name + '.' + sheet.name + '.' + variable.name,
-                            variableType: variable.type === 'FC_VARIABLE_BD' ? 'BREAKDOWN' : 'INTEGER'
-                        };
-                        variableDescriptors.push(desc);
-                    }
-                }
-            }
-
-            return variableDescriptors;
-        });
-
-
+        return this.http
+            .get<ApiResult<ForecastVariableDescriptor[]>>(`${this.baseUrl}`, this.httpOptions)
+            .map(result => result.data);
     }
 
 }

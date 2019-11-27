@@ -9,6 +9,7 @@ import * as simulationResultActions from '@system-models/state/simulation-result
 import * as treeActions from '@system-models/state/tree.actions';
 import { SRSState } from '@system-models/state/simulation-result-screen.state';
 import { TableEntryProperties, SRSDatatableProperties } from '@app/modules/system-models/models/srs-datatable-properties';
+import { AggregationMethods, SimulationNode } from '@cpt/capacity-planning-simulation-types/lib';
 
 
 
@@ -30,7 +31,9 @@ export class SimulationResultComponent implements OnInit, OnDestroy {
     aggregatedReportIndex = 0;
     selectedScenarioId: string;
     initialReload = true;
-    isVisible: boolean = true;
+    isVisible = true;
+
+    tableEntryProperties: TableEntryProperties[] = [];
 
     constructor(private store: Store, private actions$: Actions, private _el: ElementRef) {
         // When reloading the simulation results is complete, stop spinning the refresh button
@@ -40,13 +43,16 @@ export class SimulationResultComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+
+        this.store.dispatch(new treeActions.LoadSimulationResultContent({ id: this.nodeId }));
+
         this.treeHasLoaded$.subscribe(treeHasLoaded => this.treeIsLoading = !treeHasLoaded);
-        let simulationResultProperties$ = this.store.select(SRSState.resultById).pipe(
+        const simulationResultProperties$ = this.store.select(SRSState.resultById).pipe(
             map(byId => byId(this.nodeId)),
             untilDestroyed(this)
         );
         // get the selected simulation
-        let simulationResult$ = this.store.select(TreeState.nodeOfId).pipe(
+        const simulationResult$ = this.store.select(TreeState.nodeOfId).pipe(
             map(byId => byId(this.nodeId)),
             untilDestroyed(this),
             filter(result => !!result),
@@ -55,11 +61,11 @@ export class SimulationResultComponent implements OnInit, OnDestroy {
         combineLatest(simulationResultProperties$, simulationResult$).subscribe(([simulationResultProperties, simulationResult]) => {
             if (simulationResult.content === null && !this.simulationResult) {
                 this.simulationResult = JSON.parse(JSON.stringify(simulationResult));
-                this.store.dispatch(new treeActions.LoadSimulationResultContent(this.simulationResult));
+                // this.store.dispatch(new treeActions.LoadSimulationResultContent(this.simulationResult));
             } else if (simulationResult.content !== null) {
                 if (this.initialReload && (simulationResult.content.state === 'RUNNING' || simulationResult.content.state === 'QUEUED')) {
                     this.initialReload = false;
-                    this.store.dispatch(new treeActions.LoadSimulationResultContent({ ...simulationResult, content: null }));
+                    // this.store.dispatch(new treeActions.LoadSimulationResultContent({ id: this.nodeId }));
                 } else {
                     let scenarioUpdated = false;
                     if (simulationResultProperties && simulationResultProperties.selectedScenario) {
@@ -67,6 +73,7 @@ export class SimulationResultComponent implements OnInit, OnDestroy {
                             this.selectedScenarioId = simulationResultProperties.selectedScenario;
                             scenarioUpdated = true;
                         }
+                        this.tableEntryProperties = simulationResultProperties.tableEntries;
                     }
                     if (!this.simulationResult || !this.simulationResult.content || this.simulationResult.version !== simulationResult.version || scenarioUpdated) {
                         this.scenarios = [];
@@ -101,9 +108,37 @@ export class SimulationResultComponent implements OnInit, OnDestroy {
 
     }
 
+    private getDataContent(nodeId: string, dataType: string): any {
+        const node = this.simulationResult.content.nodes[nodeId];
+        const aggregatedReportData = node ? node.aggregatedReport[this.selectedScenarioId] : null;
+        const aggregatedReportDataIndex = aggregatedReportData ? Object.keys(aggregatedReportData)[0] : null;
+        return aggregatedReportData ? aggregatedReportData[aggregatedReportDataIndex][dataType] : null;
+    }
+
+    private availableAggregationMethods(node: SimulationNode, dataType: 'data' | 'response'): AggregationMethods[] {
+        const aggregatedReport = node ? node.aggregatedReport[this.selectedScenarioId] : null;
+        const firstMonthReport = aggregatedReport ? aggregatedReport[Object.keys(aggregatedReport)[0]] : null;
+        const firstMonthContent = firstMonthReport ? firstMonthReport[dataType] : null;
+        return Object.keys(firstMonthContent) as AggregationMethods[];
+    }
+
+
     onChangeScenario(event) {
         this.selectedScenarioId = this.scenarios.find(x => x.scenarioId === event.target.value).scenarioId;
-        this.store.dispatch(new simulationResultActions.SimulationScenarioChanged({ simulationId: this.simulationResult.id, selectedScenarioId: this.selectedScenarioId }));
+
+        let updatedAggregationMethods: {
+            [simulationResultNodeId: string]: string
+        } = {};
+
+        for (const tep of this.tableEntryProperties) {
+            const varContent = this.getDataContent(tep.objectId, tep.dataType);
+            if (varContent && !varContent[tep.aggregationMethod]) {
+                updatedAggregationMethods[tep.objectId] = Object.keys(varContent).find(e => e !== 'HISTOGRAM');
+            }
+        }
+        this.aggregatedReportIndex = this.selectedScenarioId ? this.scenarios.findIndex(x => x.scenarioId === this.selectedScenarioId) :
+            this.scenarios.findIndex(x => x.scenarioId === this.scenarios[0].scenarioId);
+        this.store.dispatch(new simulationResultActions.SimulationScenarioChanged({ simulationId: this.simulationResult.id, selectedScenarioId: this.selectedScenarioId, updatedAggregationMethods: updatedAggregationMethods }));
     }
 
     /**

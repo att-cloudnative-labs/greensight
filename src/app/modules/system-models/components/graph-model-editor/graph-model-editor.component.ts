@@ -16,9 +16,9 @@ import { TreeState } from '@system-models/state/tree.state';
 import * as graphEditorActions from '@system-models/state/graph-editor.actions';
 import * as treeActions from '@system-models/state/tree.actions';
 
-import { GraphModel, ProcessInterfaceDescription } from '@system-models/models/graph-model.model';
+import { GraphModel, pidFromGraphModelNode } from '@system-models/models/graph-model.model';
 import { synchronizeGraphModel } from '@system-models/lib/synchronize-graph-model';
-import { ProcessingElementState } from '@system-models/state/processing-element.state';
+import { ProcessingElementState, ProcessingElementStateModel } from '@system-models/state/processing-element.state';
 import { transform, isEqual, isObject } from 'lodash';
 import { Popover } from '@app/shared/services/popover.service';
 import * as clipboardActions from '@system-models/state/clipboard.actions';
@@ -27,6 +27,7 @@ import { Selection, SelectionState } from '@system-models/state/selection.state'
 import * as gmInportDetailsActions from '@system-models/state/gm-inport-details.actions';
 import * as gmProcessDetailsActions from '@system-models/state/gm-process-details.actions';
 import * as gmVariableReferenceDetailsActions from '@system-models/state/gm-variable-reference-details.actions';
+import { ProcessInterfaceDescription } from '@cpt/capacity-planning-simulation-types/lib';
 
 
 class StateHistory {
@@ -111,13 +112,13 @@ export class GraphModelEditorComponent implements OnInit, OnDestroy {
     graphModel: GraphModel;
     @ViewChildren(GmConnectionComponent) graphConnectionElements: QueryList<GmConnectionComponent>;
     @ViewChild('variablePicker') variablePicker: TemplateRef<any>;
+    @Select(ProcessingElementState) pids$: Observable<ProcessingElementStateModel>;
     @Select(ProcessingElementState.processingElements) processingElements$: Observable<any[]>;
     @Select(TreeState.nodesOfType('MODEL')) graphModelNodes$: Observable<TreeNode[]>;
     @Select(ClipboardState.clipboardData) clipboard$: Observable<ClipboardStateModel>;
     @Select(SelectionState) selection$: Observable<Selection[]>;
     isFocused = false;
     stateHistory: StateHistory;
-    private requestedContent = false;
     clipboardHasData: boolean;
     selection: any;
 
@@ -142,13 +143,14 @@ export class GraphModelEditorComponent implements OnInit, OnDestroy {
         this.cablePullService.pullDrop.pipe(untilDestroyed(this)).subscribe(this.handleCablePullDrop.bind(this));
         this.dragManagerService.stopDragging.pipe(untilDestroyed(this)).subscribe(this.handleDragComplete.bind(this));
 
+        this.store.dispatch(new treeActions.LoadGraphModelContent({ id: this.nodeId }))
 
         // FIXME: we should limit this to only trigger if the actual data updates.
         // at the moment this breaks because the processInterfaceDescriptions will not
         // get updated correctly if we don't run on every update.
         // a way out would be to emit the processInterfaceDescriptions from state
         // whenever they get updated and have the graphmodel listen for those changes
-        this.store
+        const filteredNode$ = this.store
             .select(TreeState.nodeById)
             .pipe(
                 map(byId => byId(this.nodeId)),
@@ -156,37 +158,22 @@ export class GraphModelEditorComponent implements OnInit, OnDestroy {
                 filter(node => !!node),
                 filter(node => !this.graphModel || node.content)
                 // filter(node => !this.graphModel || this.graphModel.version !== node.version)
-            ).subscribe(graphModelNode => {
-                if (graphModelNode.content) {
-                    const allGraphModelNodes = this.store.selectSnapshot(TreeState.nodesOfType('MODEL'));
-                    const processingElements = this.store.selectSnapshot(ProcessingElementState.processingElements);
-                    const processInterfaceDescriptions = this.nodesAndPEsToDescriptions(allGraphModelNodes, processingElements);
-                    if (this.graphModel) {
-                        this.graphModel.update(graphModelNode, processInterfaceDescriptions);
-                        this.stateHistory.add(graphModelNode);
-                    } else {
-                        this.stateHistory = new StateHistory(graphModelNode);
-                        this.graphModel = new GraphModel(graphModelNode, processInterfaceDescriptions);
-                        this.init();
-                    }
-                } else if (!this.requestedContent) {
-                    this.requestedContent = true;
-                    // if there is no content field, go fetch it from the backend
-                    this.store.dispatch(new treeActions.LoadGraphModelContent(graphModelNode));
-                }
-            });
-
-        combineLatest(this.graphModelNodes$, this.processingElements$)
-            .pipe(
-                untilDestroyed(this),
-            )
-            .subscribe(([allGraphModelNodes, processingElements]) => {
+            );
+        combineLatest(filteredNode$, this.pids$).subscribe(([graphModelNode, pids]) => {
+            if (graphModelNode.content && pids.loaded) {
+                const processInterfaceDescriptions = this.store.selectSnapshot(ProcessingElementState.pids);
                 if (this.graphModel) {
-                    setTimeout(() => {
-                        this.synchronizeGraphModel(allGraphModelNodes, processingElements);
-                    });
+                    this.graphModel.update(graphModelNode, processInterfaceDescriptions);
+                    this.stateHistory.add(graphModelNode);
+                } else {
+                    this.stateHistory = new StateHistory(graphModelNode);
+                    this.graphModel = new GraphModel(graphModelNode, processInterfaceDescriptions);
+                    this.init();
                 }
-            });
+                const gmn = this.store.selectSnapshot(TreeState.nodes).find(n => n.id === this.nodeId);
+                this.synchronizeGraphModel(gmn, processInterfaceDescriptions);
+            }
+        });
 
         combineLatest(this.selection$, this.clipboard$)
             .pipe(
@@ -206,18 +193,18 @@ export class GraphModelEditorComponent implements OnInit, OnDestroy {
     private nodesAndPEsToDescriptions(allGraphModelNodes, processingElements): ProcessInterfaceDescription[] {
         const processInterfaceDescriptions: ProcessInterfaceDescription[] = [];
         processingElements.forEach(pe => {
-            processInterfaceDescriptions.push(ProcessInterfaceDescription.fromProcessingElement(pe));
+            processInterfaceDescriptions.push(pe);
         });
         allGraphModelNodes.forEach(gmn => {
             if (gmn.processInterface !== null) {
-                processInterfaceDescriptions.push(ProcessInterfaceDescription.fromGraphModelNode(gmn));
+                processInterfaceDescriptions.push(pidFromGraphModelNode(gmn));
             }
         });
         return processInterfaceDescriptions;
     }
 
-    synchronizeGraphModel(allGraphModelNodes, processingElements) {
-        synchronizeGraphModel(this.graphModel.id, allGraphModelNodes, processingElements, async (gmn) => {
+    synchronizeGraphModel(graphModelTreeNode: TreeNode, processingElements) {
+        synchronizeGraphModel(graphModelTreeNode, processingElements, async (gmn) => {
             await this.store.dispatch(new treeActions.UpdateTreeNode(gmn)).toPromise();
             const updatedNode = this.store.selectSnapshot(TreeState.nodesOfType('MODEL')).find(x => x.id === gmn.id);
             return updatedNode;

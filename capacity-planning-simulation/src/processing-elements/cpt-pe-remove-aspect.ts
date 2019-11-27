@@ -6,6 +6,7 @@ import { isNumber, isAspectNumber } from '../cpt-load-ops';
 export var CptPeRemoveAspectDescription: ProcessInterfaceDescription = {
     objectId: "bda55420-1bd1-4e4e-bceb-da993d3040cc",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Remove Aspect',
     inports: {
         'dba4d0fa-2717-4c67-8357-0a1351ad278d': {

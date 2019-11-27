@@ -11,6 +11,7 @@ import { map } from 'rxjs/operators';
 })
 export class GraphSearchResultComponent implements Highlightable {
     @Input() item;
+    @Input() itemName;
     @Input() currentParentId;
     @Input() isControlBar;
     @Input() filterIds;
@@ -22,22 +23,12 @@ export class GraphSearchResultComponent implements Highlightable {
         return this._isActive;
     }
 
-    get itemName() {
-        if (this.isGraphModel && this.item.parentId !== this.currentParentId) {
-            let fullName = '';
-            this.store.select(TreeState.nodeFullPathById).pipe(map(byId => byId(this.item.id))).forEach(node => { fullName = node; });
-            return fullName;
-        } else {
-            return this.item.name;
-        }
-    }
-
     get isGraphModel() {
-        return this.item.type === 'MODEL';
+        return this.item.implementation === 'GRAPH_MODEL';
     }
 
     get isCircularDependencies() {
-        return (this.filterIds.indexOf(this.item.id) > -1) && this.isControlBar;
+        return (this.filterIds.indexOf(this.item.objectId) > -1) && this.isControlBar;
     }
 
     constructor(private store: Store) { }

@@ -1,6 +1,6 @@
 {
   "name": "capacity-planning-tool",
-  "version": "1.1.1",
+  "version": "1.5.1-multisim-2",
   "license": "MIT",
   "scripts": {
     "ng": "ng",

@@ -1,3 +1,5 @@
+import { TreeNode } from '@app/core_module/interfaces/tree-node';
+
 export interface Branch {
     id: string;
     projectId: string;
@@ -8,4 +10,5 @@ export interface Branch {
     ownerName: string;
     startTime: string;
     endTime: string;
+    _treeNode?: TreeNode;
 }

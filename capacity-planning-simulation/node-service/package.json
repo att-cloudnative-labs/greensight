@@ -1,6 +1,6 @@
 {
   "name": "@cpt/capacity-planning-simulation-service",
-  "version": "0.0.690",
+  "version": "0.0.720",
   "description": "A Service for running CPT Simulations",
   "main": "lib/index.js",
   "dependencies": {

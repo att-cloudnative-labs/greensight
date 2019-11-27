@@ -215,12 +215,14 @@ export class SRSState {
     ) {
         let oldState = ctx.getState();
         let currentProps = oldState.simulationResults[payload.simulationId] || { tableEntries: [], selectedRows: [], expansionStateVariables: {}, selectedScenario: undefined };
+        let patchAggregation = (tep: TableEntryProperties) => { if (payload.updatedAggregationMethods[tep.objectId]) { return { ...tep, aggregationMethod: payload.updatedAggregationMethods[tep.objectId] } } else return tep; };
         let updatedProperties: SRSDatatableProperties = {
-            tableEntries: currentProps.tableEntries,
-            selectedRows: currentProps.selectedRows,
+            tableEntries: [...currentProps.tableEntries.map(patchAggregation)],
+            selectedRows: [...currentProps.selectedRows.map(patchAggregation)],
             expansionStateVariables: currentProps.expansionStateVariables,
             selectedScenario: payload.selectedScenarioId
         };
+
 
         let updatedResults: { [simulationNodeId: string]: SRSDatatableProperties } = { ...oldState.simulationResults };
         updatedResults[payload.simulationId] = updatedProperties;

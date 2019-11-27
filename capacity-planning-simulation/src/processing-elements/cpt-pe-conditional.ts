@@ -5,6 +5,7 @@ import { CptSimulationProcessIf } from '../cpt-object';
 export var CptPeConditionalDescription: ProcessInterfaceDescription = {
     objectId: "1bc3082b-a2b2-4192-9016-4ad1177130b5",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Conditional',
     inports: {
         'ed1ce2ff-0121-49f4-8ec1-f26be3566d83': {

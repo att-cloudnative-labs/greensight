@@ -225,8 +225,9 @@ export class ProjectListComponent implements OnInit {
 
             dialog.result.then(promise => {
                 this.isLoading = true;
+                const projectVersion = project._treeNode ? project._treeNode.version : -1;
                 this.projectService
-                    .deleteProject(id)
+                    .deleteProject(id, String(projectVersion))
                     .subscribe(resp => {
                         this.selectedProject = null;
                         if (Utils.getActiveProject() === id) {

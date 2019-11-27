@@ -5,6 +5,7 @@
     [class.highlighted]='isHighlighted'
     [class.selected]="isSelected"
     class="folder-label"
+    [class.isInClipboard]='isInClipboard'
 >
 
     <div class="folder-name" style="display: inline;" *ngIf="isRename">
@@ -41,7 +42,7 @@
 
 <ul *ngIf="isExpanded">
     <li class="empty" *ngIf="!(childNodes$ | async)?.length">
-        <i>Empty</i>
+        <i>{{loadingOrEmpty | async }}</i>
     </li>
     <li *ngFor="let node of (childNodes$ | async)" [ngSwitch]="node.type">
         <app-library-graph-model *ngSwitchCase="'MODEL'" [graphModel]="node" [libChildrenNodes]="(childNodes$ | async)"></app-library-graph-model>

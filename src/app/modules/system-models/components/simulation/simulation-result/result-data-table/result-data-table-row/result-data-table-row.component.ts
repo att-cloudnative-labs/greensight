@@ -33,6 +33,9 @@ export class ResultDataTableRowComponent implements OnInit, OnChanges {
     hasData: boolean;
     isErrorWarningPe;
 
+    usableAggregationMethods: string[] = [];
+    selectedAggregationMethod: string;
+
     ngOnInit() {
         this.isResponse = this.dataType === 'response';
     }
@@ -40,10 +43,22 @@ export class ResultDataTableRowComponent implements OnInit, OnChanges {
     ngOnChanges() {
         const dataType = this.dataType;
         this.resultVariable = this.simResult.nodes[this.resultVariableRef.objectId];
-        // only dealing with one scenarion for no so getting the first scenario in the aggregated report
+        // only dealing with one scenario for no so getting the first scenario in the aggregated report
         let aggregatedReport = this.resultVariable.aggregatedReport[this.selectedScenarioId];
         aggregatedReport = aggregatedReport ? aggregatedReport : this.resultVariable.aggregatedReport[Object.keys(this.resultVariable.aggregatedReport)[0]];
         this.hasData = Object.keys(this.resultVariable['aggregatedReport']).findIndex(key => key === this.selectedScenarioId) !== -1 && this.hasResults(this.resultVariable);
+
+        const dataContent = this.getDataContent(this.resultVariable);
+        //FIXME: there seems to be an intermediate state where variables
+        // that should be disabled are still passed.
+        if (!dataContent) {
+            return;
+        }
+        this.usableAggregationMethods = this.resultVariable.aggregationMethods.filter(method => dataContent[method]);
+        this.selectedAggregationMethod = this.resultVariableRef.aggregationMethod;
+        if (this.usableAggregationMethods.findIndex(method => method === this.selectedAggregationMethod) < 0) {
+            this.selectedAggregationMethod = this.usableAggregationMethods.pop();
+        }
 
         // turn the report object into an array
         this.resultVariableReport = Object.keys(aggregatedReport).map(function(month) {
@@ -57,10 +72,15 @@ export class ResultDataTableRowComponent implements OnInit, OnChanges {
         });
     }
 
-    hasResults(node: any): boolean {
+    private getDataContent(node: any): any {
         const aggregatedReportData = node ? node.aggregatedReport[this.selectedScenarioId] : null;
         const aggregatedReportDataDataIndex = aggregatedReportData ? Object.keys(aggregatedReportData)[0] : null;
-        const dataContent = aggregatedReportData ? aggregatedReportData[aggregatedReportDataDataIndex][this.dataType] : null;
+        return aggregatedReportData ? aggregatedReportData[aggregatedReportDataDataIndex][this.dataType] : null;
+
+    }
+
+    hasResults(node: any): boolean {
+        const dataContent = this.getDataContent(node);
         const sliceContent = dataContent ? dataContent.AVG : null;
         const hasSlice = sliceContent && node.type === 'SLICE';
         const isBreakdown = sliceContent && node.type === 'BREAKDOWN';

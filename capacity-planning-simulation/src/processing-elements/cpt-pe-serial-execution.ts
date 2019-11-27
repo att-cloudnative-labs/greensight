@@ -6,6 +6,7 @@ import { aggregateResponseSerial } from '../cpt-response-ops';
 export var CptPeSerialExecutionDescription: ProcessInterfaceDescription = {
     objectId: '23b4f3ff-1e7c-4fb9-b8b0-a98611f58573',
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Serial Execution',
     description: 'Forward load downstream. Add up responses.',
     inports: {

@@ -8,7 +8,8 @@ import * as librarySearchResultActions from './library-search-result.actions';
 import * as graphEditorActions from './graph-editor.actions';
 import * as dockableStackActions from './dockable-stack.actions';
 import * as clipBoardActions from './clipboard.actions';
-import { GraphModel, ProcessInterfaceDescription } from '@system-models/models/graph-model.model';
+import { ProcessInterfaceDescription } from '@cpt/capacity-planning-simulation-types';
+import { pidFromGraphModelNode, GraphModel } from '@system-models/models/graph-model.model';
 
 export interface Selection {
     id: string;
@@ -36,19 +37,9 @@ export class SelectionState {
                 case 'ProcessInport':
                 case 'ProcessOutport':
                 case 'VariableReference':
-                    // TODO: fix this mess (Joan)
-                    const allGraphModelNodes = treeState.nodes.filter(x => x.type === 'MODEL');
-                    const processInterfaceDescriptions: ProcessInterfaceDescription[] = [];
-                    processingElements.processingElements.forEach(pe => {
-                        processInterfaceDescriptions.push(ProcessInterfaceDescription.fromProcessingElement(pe));
-                    });
-                    allGraphModelNodes.forEach(gmn => {
-                        processInterfaceDescriptions.push(ProcessInterfaceDescription.fromGraphModelNode(gmn));
-                    });
-                    graphModel = new GraphModel(treeState.nodes.find(x => x.id === selected.context), processInterfaceDescriptions);
+                    graphModel = new GraphModel(treeState.nodes.find(x => x.id === selected.context), [...processingElements.processingElements, ...processingElements.graphModels]);
                     object = graphModel.find(selected.id);
             }
-
             return {
                 ...selected,
                 object

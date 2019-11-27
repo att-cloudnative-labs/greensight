@@ -1,14 +1,14 @@
 <div class="sim-panel">
     <div class="sim-section">
         <h3>Model</h3>
-        <input value="{{selectedModel?.name}}" title="{{selectedModel?.name}}" readonly>
+        <input value="{{modelPid?.name}}" title="{{modelPid?.name}}" readonly>
     </div>
 
-    <div *ngIf="selectedModel" class="sim-scenario-tables">
+    <div *ngIf="modelPid" class="sim-scenario-tables">
         <h3>Scenarios</h3>
             <app-simulation-scenario-table *ngFor="let scenarioId of scenarioIds"
                 [simulation]="simulation"
-                [selectedModel]="selectedModel"
+                [selectedModelPid]="modelPid"
                 [scenario]="scenarios[scenarioId]"
                 [scenarioId]="scenarioId"
                 [scenarioIds]="scenarioIds"

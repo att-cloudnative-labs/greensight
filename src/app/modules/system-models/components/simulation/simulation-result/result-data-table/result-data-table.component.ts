@@ -2,7 +2,11 @@ import { Component, OnInit, Input, Output, EventEmitter, HostListener, OnChanges
 import * as moment from 'moment';
 import { Store } from '@ngxs/store';
 import * as simulationResultScreenActions from '@system-models/state/simulation-result-screen.actions';
-import { TableEntryProperties, SRSDatatableProperties } from '@app/modules/system-models/models/srs-datatable-properties';
+import {
+    TableEntryProperties,
+    SRSDatatableProperties,
+    SelectedRowProperties
+} from '@app/modules/system-models/models/srs-datatable-properties';
 import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
 import { SRSState } from '@system-models/state/simulation-result-screen.state';
 import { SelectionState } from '@system-models/state/selection.state';
@@ -10,6 +14,7 @@ import { TreeState } from '@system-models/state/tree.state';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map, filter, take } from 'rxjs/operators';
 import { untilDestroyed } from 'ngx-take-until-destroy';
+import { SimulationResult } from '@cpt/capacity-planning-simulation-types/lib';
 
 interface FlatNode {
     result: any;
@@ -24,25 +29,24 @@ interface FlatNode {
     styleUrls: ['./result-data-table.component.css']
 })
 export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
-    @Input() simResult;
-    @Input() simResultId;
+    @Input() simulationResult: SimulationResult;
     @Input() aggregatedReportIndex;
-    @Input() selectedScenarioId;
+
     @Output() rowSelectionUpdated = new EventEmitter();
     @Output() cellSelectionUpdated = new EventEmitter();
+    simulationResultId: string;
+    selectedScenarioId: string;
+
     // the months which the simulation ran for
     months = [];
-    selectedRows = [];
-    selectedCell = undefined;
+    selectedRows: SelectedRowProperties[] = [];
+    selectedCell: SelectedRowProperties;
     selection = new Array<any>();
     selectionPosition: number[] = [];
     simulationResultProperties$: Observable<SRSDatatableProperties>;
 
 
-    tableEntries = [];
-
-    tableEntries$$: BehaviorSubject<TableEntryProperties[]> = new BehaviorSubject([]);
-    tableEntries$: Observable<TableEntryProperties[]> = this.tableEntries$$.asObservable();
+    tableEntries: TableEntryProperties[] = [];
 
     flatNodes: FlatNode[] = [];
     PRIORITIES = {
@@ -51,20 +55,27 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
         'GRAPH_MODEL': 2,
         'PROCESSING_ELEMENT': 3,
     };
-    nodesToRemove = [];
     hasData: boolean;
-    simProperties: any;
+    simProperties: SRSDatatableProperties;
     isFocused = false;
 
     constructor(private store: Store, private changeDetector: ChangeDetectorRef) {
     }
 
     ngOnInit() {
-        this.simulationResultProperties$ = this.store.select(SRSState.resultById).pipe(map(byId => byId(this.simResultId)));
+        this.simulationResultId = this.simulationResult.objectId;
+        this.simulationResultProperties$ = this.store.select(SRSState.resultById).pipe(map(byId => byId(this.simulationResultId)));
         this.simulationResultProperties$.pipe(untilDestroyed(this)).subscribe(simulationResultProperties => {
             if (simulationResultProperties) {
                 this.simProperties = simulationResultProperties;
+                this.selectedScenarioId = simulationResultProperties.selectedScenario;
+                const resultArray: SimulationNode[] = Object.values(this.simulationResult.nodes);
+
+                const root = resultArray.find(node => node.processNodeId === 'root');
+                this.flatNodes = this.flatten(resultArray, root, 0);
                 this.reConfigDataEntries();
+                this.months = [];
+                this.getResultMonths();
             }
         });
 
@@ -74,32 +85,18 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
             untilDestroyed(this)).subscribe(selection => {
                 let focused = false;
                 if (selection.length === 1) {
-                    if (selection[0].id === this.simResultId) {
+                    if (selection[0].id === this.simulationResultId) {
                         focused = true;
                     }
                 }
                 this.isFocused = focused;
             });
+
+
     }
 
     ngOnChanges() {
-        const resultArray: SimulationNode[] = Object.values(this.simResult.nodes);
-        for (let index = 0; index < resultArray.length; index++) {
-            const scenarioIds = Object.keys(resultArray[index].aggregatedReport);
-            const scenarioIdIndex = scenarioIds.findIndex(id => id === this.selectedScenarioId);
-            if (scenarioIdIndex === -1 && resultArray[index].processNodeId !== 'root' && (resultArray[index].type === 'BREAKDOWN' || resultArray[index].type === 'SLICE')) {
-                this.nodesToRemove.push(resultArray[index]);
-            }
-        }
-        this.nodesToRemove.forEach(node => {
-            resultArray.splice(resultArray.findIndex(x => x === node), 1);
-        });
-        this.nodesToRemove = [];
-        const root = resultArray.find(node => node.processNodeId === 'root');
-        this.flatNodes = this.flatten(resultArray, root, 0);
-        this.reConfigDataEntries();
-        this.months = [];
-        this.getResultMonths();
+
     }
 
     ngOnDestroy() { }
@@ -108,12 +105,18 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
         this.hasData = false;
         if (this.simProperties) {
             this.tableEntries = this.simProperties.tableEntries;
-            this.simProperties = this.simProperties;
             if (this.simProperties.selectedRows.length === 1 && this.simProperties.selectedRows[0].month) {
                 this.selectedCell = JSON.parse(JSON.stringify(this.simProperties.selectedRows[0]));
             } else if (this.simProperties.selectedRows.length > 0) {
                 this.selectedRows = JSON.parse(JSON.stringify(this.simProperties.selectedRows));
             }
+        }
+        // filter out all entries that are not available our flat nodes
+        this.tableEntries = this.tableEntries.filter(tep => this.flatNodes.findIndex(fn => fn.result.objectId === tep.objectId) > -1);
+        // now update rows and cells accordingly
+        this.selectedRows = this.selectedRows.filter(row => this.flatNodes.findIndex(fn => fn.result.objectId === row.objectId) > -1);
+        if (this.selectedCell && this.flatNodes.findIndex(fn => fn.result.objectId === this.selectedCell.objectId) < 0) {
+            this.selectedCell = undefined;
         }
         this.tableEntries.forEach(entry => {
             if (!this.hasResults(this.flatNodes.find(x => x.result.objectId === entry.objectId), entry.dataType)) {
@@ -122,7 +125,7 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
                     this.rowSelectionUpdated.emit(this.selectedRows);
                 }
                 this.hasData = this.hasData ? this.hasData : false;
-                this.hasData = entry.aggregationMethod === 'MESSAGES' || this.hasData ? true : false;
+                this.hasData = entry.aggregationMethod === 'MESSAGES' || this.hasData;
             } else if (this.hasResults(this.flatNodes.find(x => x.result.objectId === entry.objectId), entry.dataType) || entry.aggregationMethod === 'MESSAGES') {
                 this.hasData = true;
             }
@@ -258,8 +261,8 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
      * and step last months defined in the simulation configuration
      */
     getResultMonths() {
-        let startDate = moment(this.simResult.stepStart, 'YYYY-MM');
-        const endDate = moment(this.simResult.stepLast, 'YYYY-MM').add(1, 'month');
+        let startDate = moment(this.simulationResult.stepStart, 'YYYY-MM');
+        const endDate = moment(this.simulationResult.stepLast, 'YYYY-MM').add(1, 'month');
 
         while (startDate.isBefore(endDate)) {
             this.months.push(startDate.format('MMM-YY'));
@@ -280,7 +283,7 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
             this.selectedRows = [];
             this.store.dispatch(new simulationResultScreenActions.DatatableSingleRowSelected(
                 {
-                    simulationId: this.simResultId,
+                    simulationId: this.simulationResultId,
                     nodeId: row.objectId,
                     aggregationMethod: row.aggregationMethod,
                     dataType: row.dataType
@@ -288,7 +291,7 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
         } else {
             this.store.dispatch(new simulationResultScreenActions.DatatableMultiRowSelected(
                 {
-                    simulationId: this.simResultId,
+                    simulationId: this.simulationResultId,
                     nodeId: row.objectId,
                     aggregationMethod: row.aggregationMethod,
                     dataType: row.dataType
@@ -320,7 +323,7 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
 
             this.store.dispatch(new simulationResultScreenActions.DatatableMultiRowSelected(
                 {
-                    simulationId: this.simResultId,
+                    simulationId: this.simulationResultId,
                     nodeId: row.objectId,
                     aggregationMethod: row.aggregationMethod,
                     dataType: row.dataType
@@ -344,7 +347,7 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
         this.cellSelectionUpdated.emit(this.selectedCell);
         this.store.dispatch(new simulationResultScreenActions.DatatableCellSelected(
             {
-                simulationId: this.simResultId,
+                simulationId: this.simulationResultId,
                 nodeId: this.selectedCell.objectId,
                 month: this.selectedCell.month,
                 aggregationMethod: this.selectedCell.aggregationMethod,
@@ -385,8 +388,8 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
             const existing = this.tableEntries.find(x => x.objectId === objectId && x.dataType === node.dataType);
             if (!existing) {
                 // select the first aggregation method that isnt a histogram
-                const aggregationMethod = result.aggregationMethods.find(method => method !== 'HISTOGRAM');
-                this.store.dispatch(new simulationResultScreenActions.DatatableEntryAdded({ simulationId: this.simResultId, nodeId: objectId, aggregationMethod: aggregationMethod, dataType: node.dataType }));
+                const aggregationMethod = result.aggregationMethods.filter(method => dataContent[method]).find(method => method !== 'HISTOGRAM');
+                this.store.dispatch(new simulationResultScreenActions.DatatableEntryAdded({ simulationId: this.simulationResultId, nodeId: objectId, aggregationMethod: aggregationMethod, dataType: node.dataType }));
             }
         });
     }
@@ -399,7 +402,7 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
     updateSelectedAggregationMethod(newRow) {
         this.store.dispatch(new simulationResultScreenActions.DatatableRowAggregationMethodChanged(
             {
-                simulationId: this.simResultId,
+                simulationId: this.simulationResultId,
                 nodeId: newRow.objectId,
                 aggregationMethod: newRow.aggregationMethod,
                 dataType: newRow.dataType
@@ -416,7 +419,7 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     removeSelectedRows() {
-        this.store.dispatch(new simulationResultScreenActions.DatatableEntryRemoved({ simulationId: this.simResultId, selectedRows: this.selectedRows }));
+        this.store.dispatch(new simulationResultScreenActions.DatatableEntryRemoved({ simulationId: this.simulationResultId, selectedRows: this.selectedRows }));
 
         this.selectedRows = [];
         this.rowSelectionUpdated.emit(this.selectedRows);
@@ -449,6 +452,8 @@ export class ResultDataTableComponent implements OnInit, OnChanges, OnDestroy {
         return out;
     }
 
+    // FIXME: find generic solution for this.
+    // preferably in a way comparable to the visual data handling
     hasResults(node: FlatNode, dataType: string): boolean {
         const aggregatedReportData = node ? node.result.aggregatedReport[this.selectedScenarioId] : null;
         const aggregatedReportDataDataIndex = aggregatedReportData ? Object.keys(aggregatedReportData)[0] : null;

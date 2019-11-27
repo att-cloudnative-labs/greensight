@@ -3,10 +3,12 @@ import 'rxjs/add/observable/throw';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { Utils } from '@app/utils_module/utils';
 import { TreeNode, TreeNodeContentPatch } from '../interfaces/tree-node';
 import { ApiResult } from '../interfaces/api-result';
+import { TreeNodeVersion } from '@app/core_module/interfaces/tree-node-version';
+import { ProcessInterfaceDescription } from '@cpt/capacity-planning-simulation-types/lib';
 
 @Injectable()
 export class TreeService {
@@ -14,11 +16,7 @@ export class TreeService {
 
     baseUrl = Utils.createModelUrl('tree');
 
-    getTree(rootNode: string = 'root'): Observable<TreeNode[]> {
-        return this.http
-            .get<[]>(`${this.baseUrl}/${rootNode}?sparse=false&trashed=false&depth=2`, this.httpOptions)
-            .pipe(catchError((error: any) => Observable.throw(error.json())));
-    }
+    lastProcessUpdate: Date;
 
     getTree2(rootNode: string = 'root', sparse: boolean = false, depth: number = 2): Observable<TreeNode[]> {
         return this.http
@@ -26,35 +24,53 @@ export class TreeService {
             .map(result => result.data);
     }
 
-    getAllTreesWithoutContent(): Observable<TreeNode[]> {
-        return this.http
-            .get<[]>(`${this.baseUrl}/root?sparse=true&trashed=false`, this.httpOptions)
-            .pipe(catchError((error: any) => Observable.throw(error.json())));
-    }
 
-    getTreeNode(payload): Observable<TreeNode[]> {
+    getTree3(nodeId: string, sparse: boolean = true, withChildren: boolean = true, sparseChildren: boolean = true): Observable<TreeNode[]> {
         return this.http
-            .get<[]>(`${this.baseUrl}/${payload}?sparse=false`, this.httpOptions)
-            .pipe(catchError((error: any) => Observable.throw(error.json())));
+            .get<ApiResult<TreeNode[]>>(`${this.baseUrl}/${nodeId}?sparse=${sparse}&withChildren=${withChildren}&sparseChildren=${sparseChildren}`, this.httpOptions)
+            .map(result => result.data);
     }
 
     getSingleTreeNode(nodeId: string): Observable<TreeNode> {
         return this.http
-            .get<ApiResult<TreeNode[]>>(`${this.baseUrl}/${nodeId}?sparse=false&depth=0`, this.httpOptions)
-            .map(result => result.data.filter(node => node.id === nodeId)[0])
-            .pipe(catchError((error: any) => Observable.throw(error.json())));
+            .get<ApiResult<TreeNode[]>>(`${this.baseUrl}/${nodeId}?sparse=false`, this.httpOptions)
+            .map(result => result.data.filter(node => node.id === nodeId)[0]);
     }
 
     getTrash(): Observable<TreeNode[]> {
         return this.http
-            .get<[]>(`${this.baseUrl}/root?sparse=false&trashed=true`, this.httpOptions)
-            .pipe(catchError((error: any) => Observable.throw(error.json())));
+            .get<ApiResult<TreeNode[]>>(`${this.baseUrl}/root/trashed`, this.httpOptions)
+            .map(result => result.data);
     }
 
     getNodeHistory(payload: TreeNode): Observable<TreeNode[]> {
         return this.http
             .get<[]>(`${this.baseUrl}/${payload.id}/history?sparse=true`, this.httpOptions)
             .pipe(catchError((error: any) => Observable.throw(error)));
+    }
+
+    getNodeVersionInfo(nodeId: string): Observable<TreeNodeVersion[]> {
+        return this.http
+            .get<ApiResult<TreeNodeVersion[]>>(`${this.baseUrl}/${nodeId}/history?filter=hasComment&alwaysInclude=first`, this.httpOptions)
+            .map(result => result.data);
+    }
+
+    getLastProcessUpdate(): Date {
+        return this.lastProcessUpdate;
+    }
+
+    getProcessInfo(since?: number): Observable<ProcessInterfaceDescription[]> {
+        let queryString = '';
+        if (since) {
+            queryString = '?since=' + since;
+        }
+        return this.http
+            .get<ApiResult<ProcessInterfaceDescription[]>>(Utils.createModelUrl('processes/') + queryString, { ...this.httpOptions, observe: 'response' }).pipe(
+                tap(resp => {
+                    this.lastProcessUpdate = new Date(resp.headers.get('Date'));
+                }),
+                map(result => result.body.data)
+            );
     }
 
     getTrashedNode(payload: TreeNode): Observable<TreeNode[]> {
@@ -92,7 +108,7 @@ export class TreeService {
     }
 
     patchTreeNode(nodeId: string, patchSet: TreeNodeContentPatch, version: string): Observable<TreeNode> {
-        let url = `${this.baseUrl}/${nodeId}/patchContent?v=${version}`;
+        const url = `${this.baseUrl}/${nodeId}/patchContent?v=${version}`;
         return this.http
             .put<ApiResult<TreeNode>>(url, patchSet, this.httpOptions)
             .map(nodeResult => nodeResult.data);
@@ -105,12 +121,18 @@ export class TreeService {
         }
         return this.http
             .delete<ApiResult<string[]>>(url, this.httpOptions)
-            .map(nodeResult => nodeResult.data)
+            .map(nodeResult => nodeResult.data);
     }
 
-    recoverTreeNode(nodeId: string) {
+    moveNode(nodeId: string, version: string, newParentId: string): Observable<ApiResult<void>> {
+        const url = `${this.baseUrl}/${nodeId}/move?v=${version}&parentId=${newParentId}`;
         return this.http
-            .post<any>(`${this.baseUrl}/${nodeId}/recover`, {}, this.httpOptions)
+            .post<ApiResult<void>>(url, {}, this.httpOptions);
+    }
+
+    recoverTreeNode(nodeId: string, version: string) {
+        return this.http
+            .post<any>(`${this.baseUrl}/${nodeId}/recover?v=${version}`, {}, this.httpOptions)
             .pipe(catchError((error: any) => Observable.throw(error)));
     }
 

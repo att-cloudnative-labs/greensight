@@ -6,6 +6,7 @@ import { isBoolean } from '../cpt-load-ops';
 export var CptPeNotDescription: ProcessInterfaceDescription = {
     objectId: "43ec72f1-14a9-4434-916c-a12c2e230947",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Not',
     inports: {
         'a3714110-1fba-4b01-a1b7-8a8ed7310384': {

@@ -44,7 +44,6 @@ export class UserService implements CanActivate {
 
         const header = new Headers({ 'Content-Type': 'application/json' });
         const requestOptions = new RequestOptions({ headers: header, withCredentials: true });
-
         return this.http
             .post(url, body, requestOptions)
             .map(result => {

@@ -155,3 +155,6 @@ label {
 .readOnly {
     opacity: 0.5;
 }
+.isInClipboard {
+    color: grey;
+}

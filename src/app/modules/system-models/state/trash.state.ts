@@ -65,19 +65,16 @@ export class TrashState {
     loadTrash({ patchState }: StateContext<TrashStateModel>) {
         patchState({ loading: true, loaded: false });
         return this.treeService
-            .getTrash()
-            .pipe(
-                map((response: any) => {
-                    response.data.forEach(node => {
-                        node.trashedDate = Utils.convertUTCToUserTimezone(node.trashedDate);
-                    });
-                    patchState({
-                        nodes: response.data as TreeNode[],
-                        loaded: true,
-                        loading: false
-                    });
-                })
-            );
+            .getTrash().subscribe(trashedNodes => {
+                trashedNodes.forEach(node => {
+                    node.trashedDate = Utils.convertUTCToUserTimezone(node.trashedDate);
+                });
+                patchState({
+                    nodes: trashedNodes,
+                    loaded: true,
+                    loading: false
+                });
+            });
     }
 
     @Action(trashActions.AddTrashedNode)

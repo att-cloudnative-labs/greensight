@@ -1,27 +1,11 @@
 import { v4 as uuid } from 'uuid';
-import { ProcessInterfaceDescription } from '@system-models/models/graph-model.model';
+import { ProcessInterfaceDescription } from '@cpt/capacity-planning-simulation-types';
+import { GraphModel, pidFromGraphModelNode } from '@system-models/models/graph-model.model';
+import { TreeNode } from '@app/core_module/interfaces/tree-node';
+import produce from 'immer';
 
-export async function synchronizeGraphModel(graphModelId, graphModelNodes, processingElements, saveGraphModel) {
-    let gmn;
-    try {
-        // TODO: support better immutable workflows in this process using immer
-        gmn = JSON.parse(JSON.stringify(graphModelNodes.find(x => x.id === graphModelId)));
-    } catch (e) {
-        return;
-    }
+export async function synchronizeGraphModel(graphModel: TreeNode, processingElements: ProcessInterfaceDescription[], saveGraphModel) {
 
-    const pids = function() {
-        const processInterfaceDescriptions: ProcessInterfaceDescription[] = [];
-        processingElements.forEach(pe => {
-            processInterfaceDescriptions.push(ProcessInterfaceDescription.fromProcessingElement(pe));
-        });
-        graphModelNodes.forEach(gmn => {
-            if (gmn.processInterface !== null) {
-                processInterfaceDescriptions.push(ProcessInterfaceDescription.fromGraphModelNode(gmn));
-            }
-        });
-        return processInterfaceDescriptions;
-    };
 
     /*
     * Synchronize a Process
@@ -116,39 +100,28 @@ export async function synchronizeGraphModel(graphModelId, graphModelNodes, proce
         return didUpdate;
     };
 
-    /*
-    * Synchronize a child -- mutates graphModelNodes
-    */
-
-    const synchronizeChild = async (process) => {
-        const index = graphModelNodes.findIndex(x => x.id === process.ref);
-        if (graphModelNodes[index].content) {
-            const updated = await synchronizeGraphModel(process.ref, graphModelNodes, processingElements, saveGraphModel);
-            graphModelNodes[index] = updated;
-        }
-    };
 
     /*
     * Synchronize a Graph Model
     */
 
-    const synchronize = async (gmn) => {
+    const synchronize = async (gmn: TreeNode) => {
         let didUpdateProcess = false;
         let didUpdateConnection = false;
-        if (gmn.content) {
-            Object.keys(gmn.content.processes).forEach(async id => {
-                const process = gmn.content.processes[id];
-                if (process.type === 'GRAPH_MODEL' && process.ref !== graphModelId) {
-                    synchronizeChild(process);
-                }
-                const pid = pids().find(x => x.id === process.ref);
-                didUpdateProcess = synchronizeProcess(process, pid);
-            });
+        const editedNode = produce(gmn, (node => {
+            if (node.content) {
+                Object.keys(node.content.processes).forEach(async id => {
+                    const process = node.content.processes[id];
+                    const pid = processingElements.find(x => x.objectId === process.ref);
+                    didUpdateProcess = synchronizeProcess(process, pid);
+                });
 
-            didUpdateConnection = synchronizeConnections(gmn);
-        }
+                didUpdateConnection = synchronizeConnections(node);
+            }
+        }));
+
         return {
-            updatedGraphModel: gmn,
+            updatedGraphModel: editedNode,
             didUpdate: didUpdateProcess || didUpdateConnection
         };
     };
@@ -157,7 +130,7 @@ export async function synchronizeGraphModel(graphModelId, graphModelNodes, proce
     * Perform the synchronization and call the callback
     */
 
-    const { updatedGraphModel, didUpdate } = await synchronize(gmn);
+    const { updatedGraphModel, didUpdate } = await synchronize(graphModel);
     if (didUpdate) {
         return await saveGraphModel.call(undefined, updatedGraphModel);
     } else {

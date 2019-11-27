@@ -34,7 +34,8 @@ export class BranchService {
                 projectId: node.parentId,
                 isMaster: node.content ? node.content.isMaster : false,
                 startTime: node.content ? node.content.startTime : null,
-                endTime: node.content ? node.content.endTime : null
+                endTime: node.content ? node.content.endTime : null,
+                _treeNode: node
             };
         }
         return null;
@@ -53,7 +54,8 @@ export class BranchService {
                 isMaster: branch.isMaster,
                 startTime: branch.startTime,
                 endTime: branch.endTime
-            }
+            },
+            version: branch._treeNode ? branch._treeNode.version : -1
         };
         return t;
     }
@@ -77,7 +79,7 @@ export class BranchService {
         if (showLoading) {
             this.loaderService.show();
         }
-        return this.treeService.getTree2(projectId, false, 1).map(nodes => {
+        return this.treeService.getTree3(projectId, false, true, false).map(nodes => {
             const branchNodes = nodes.filter(node => node.type === 'FC_SHEET');
             const branches = branchNodes.map(node => this.nodeToBranch(node)).filter(branch => branch !== null);
             if (showLoading) {
@@ -107,7 +109,8 @@ export class BranchService {
     }
 
     updateBranch(updatedBranch: Branch): Observable<Branch> {
-        return this.treeService.updateTreeNode2(this.branchToNode(updatedBranch)).map(node => this.nodeToBranch(node));
+        const node = this.branchToNode(updatedBranch);
+        return this.treeService.updateTreeNode2(node, String(node.version)).map(node => this.nodeToBranch(node));
     }
 
     handleError(err) {

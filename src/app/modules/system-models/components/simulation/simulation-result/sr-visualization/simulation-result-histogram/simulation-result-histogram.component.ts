@@ -1,6 +1,8 @@
 import { Component, OnInit, Input, OnChanges } from '@angular/core';
 import { EChartOption } from 'echarts';
 import * as echarts from 'echarts';
+import { ResultNodeDataSet } from '@system-models/components/simulation/simulation-result/sr-visualization/sr-visualization.component';
+import { HistogramAggeregate } from '@cpt/capacity-planning-simulation-types/lib';
 
 @Component({
     selector: 'app-srs-viz-histogram',
@@ -8,34 +10,27 @@ import * as echarts from 'echarts';
     styleUrls: ['../sr-chart.common.css', './simulation-result-histogram.component.css']
 })
 export class SimulationResultHistogramComponent implements OnChanges {
-    @Input() simResultData;
-    @Input() month: string;
-    @Input() aggregationMethod: string;
-    @Input() title;
-    @Input() aggregatedReportIndex;
+    @Input() dataSet: ResultNodeDataSet;
     chartOption: EChartOption;
     scenarioId: string;
-    @Input() dataType: string;
 
     constructor() { }
 
     ngOnChanges() {
-        const chartName = this.title + ' - ' + this.month;
-        this.scenarioId = Object.keys(this.simResultData.aggregatedReport)[this.aggregatedReportIndex];
-        this.scenarioId = this.scenarioId ? this.scenarioId : Object.keys(this.simResultData.aggregatedReport)[0];
+        const chartName = this.dataSet.title + " " + this.dataSet.date;
         const bins = [];
         const binAG = [];
-        const monthReport = this.simResultData.aggregatedReport[this.scenarioId][this.month];
-        const data = monthReport[this.dataType];
-        const maxValueOfCount = data.HISTOGRAM ? Math.max(...data.HISTOGRAM.buckets.map(o => o.count), 0) + 2 : data.AVG.value;
-        const avg = data[this.aggregationMethod].value;
-        const histogramData = data.HISTOGRAM ? data.HISTOGRAM.buckets : [];
+        const histoData = this.dataSet.mainData[this.dataSet.date] as HistogramAggeregate;
+        const aggData = this.dataSet.data[this.dataSet.date][this.dataSet.aggregationMethod];
+        const maxValueOfCount = Math.max(...histoData.buckets.map(o => o.count), 0) + 2;
+        const avg = aggData.hasOwnProperty('value') ? (aggData as any).value : 0;
+        const histogramData = histoData.buckets || [];
         histogramData.forEach(bucket => {
             if (Object.keys(bucket).length) {
                 bins.push([bucket.min, bucket.max, bucket.count]);
             }
         });
-        binAG.push([avg, avg, maxValueOfCount, this.aggregationMethod]);
+        binAG.push([avg, avg, maxValueOfCount, this.dataSet.aggregationMethod]);
 
         // Histogram
         this.chartOption = {
@@ -47,7 +42,7 @@ export class SimulationResultHistogramComponent implements OnChanges {
             },
             xAxis: {
                 scale: true,
-                name: this.simResultData.name,
+                name: this.dataSet.title,
                 nameLocation: 'middle'
             },
             yAxis: {
@@ -110,7 +105,7 @@ export class SimulationResultHistogramComponent implements OnChanges {
                         [
                             {
                                 // Use the same name with starting and ending point
-                                name: this.aggregationMethod,
+                                name: this.dataSet.aggregationMethod,
                                 coord: [avg, '0']
                             },
                             {
@@ -137,7 +132,7 @@ export class SimulationResultHistogramComponent implements OnChanges {
                         )
                     }
                 },
-                dimensions: [this.aggregationMethod],
+                dimensions: [this.dataSet.aggregationMethod],
                 encode: {
                     x: [0, 1],
                     y: 2,

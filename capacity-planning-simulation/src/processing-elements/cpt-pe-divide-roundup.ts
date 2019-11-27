@@ -6,6 +6,7 @@ import { isNumber, dupl, scaleAspect } from '../cpt-load-ops';
 export var CptPeDivideRoundupDescription: ProcessInterfaceDescription = {
     objectId: "26ec17f3-cce9-4854-a139-49d65ed6dc0e",
     objectType: 'PROCESS_INTERFACE_DESCRIPTION',
+    implementation: 'PROCESSING_ELEMENT',
     name: 'Divide and Round Up',
     inports: {
         '6634faf4-9d9f-4ec8-be06-fa1e65ce05ff': {

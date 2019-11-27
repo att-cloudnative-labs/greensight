@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { ALL_PARAM_TYPES } from '@system-models/interfaces/graph.interface';
+import { ALL_PARAM_TYPES } from '@cpt/capacity-planning-simulation-types';
 import * as gmProcessInportDetailsActions from '@system-models/state/gm-process-inport-details.actions';
 import * as moment from 'moment';
 
@@ -22,7 +22,10 @@ export class GmProcessInportDetailsComponent implements OnInit, AfterViewInit {
         if (this.processInport.requiredTypes.length === 0) {
             return ALL_PARAM_TYPES;
         } else {
-            return this.processInport.requiredTypes;
+            // don't display PE aspect TAG type
+            return this.processInport.requiredTypes.filter(t => t !== 'TAG');
+
+
         }
     }
 

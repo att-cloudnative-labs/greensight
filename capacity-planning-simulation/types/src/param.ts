@@ -1,8 +1,10 @@
 import { ResponseSplit, ResponseSplitEntry } from './object';
 
 export type DataType = 'NUMBER' | 'STRING' | 'BOOLEAN' | 'BREAKDOWN' | 'TAG' | 'DATE';
-export type ParamType = 'NUMBER' | 'STRING' | 'BOOLEAN' | 'BREAKDOWN' | 'TAG' | 'DATE';
+export type ParamType = 'NUMBER' | 'STRING' | 'BOOLEAN' | 'BREAKDOWN' | 'TAG' | 'DATE' | 'DEFAULT';
 export type ConfigType = 'NUMBER' | 'STRING' | 'BOOLEAN' | 'DATE';
+
+export const ALL_PARAM_TYPES = ['NUMBER', 'STRING', 'BOOLEAN', 'BREAKDOWN', 'DATE'];
 
 
 export interface NumberParam {

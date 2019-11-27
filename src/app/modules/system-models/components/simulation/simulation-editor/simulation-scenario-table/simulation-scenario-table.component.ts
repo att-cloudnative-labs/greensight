@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, OnChanges, Output, EventEmitter } from '@angular/core';
 import { TreeNode } from '@app/core_module/interfaces/tree-node';
+import { ProcessInterfaceDescription } from '@cpt/capacity-planning-simulation-types/lib';
 
 
 @Component({
@@ -8,7 +9,7 @@ import { TreeNode } from '@app/core_module/interfaces/tree-node';
     styleUrls: ['./simulation-scenario-table.component.css']
 })
 export class SimulationScenarioTableComponent implements OnInit, OnChanges {
-    @Input() selectedModel: TreeNode;
+    @Input() selectedModelPid: ProcessInterfaceDescription;
     @Input() simulation: TreeNode;
     @Input() scenarioId: string;
     @Input() scenario;
