@@ -1,0 +1,38 @@
+ <input #liveSearchField [(ngModel)] ="searchString"
+           (keydown)="navigateList($event)"
+           (keyup)="searchList($event)"
+           (mousedown)="openSearchDisplay()"
+           (blur)="searchBlurred()"
+           [placeholder]="placeholder"
+    />
+<div *ngIf="showSearch" class="search-display"
+    appTether
+    [appTetherTarget]="liveSearchField"
+    [appTetherTargetAttachment]="'bottom left'"
+    [appTetherAttachment]="'top left'"
+    [appTetherOffset]="'0px 0px'">
+
+    <div class='search-results'>
+
+        <ul>
+            <div *ngIf="!combinedResultCount" class="no-results">
+                No results
+            </div>
+            <li *ngIf="siblingResults.length" class="inline-header">This Folder's Sheets</li>
+            <li *ngFor="let result of siblingResults"
+                live-result-list-entry
+                [item]="result"
+                (resultSelected)="onSelectResult($event)">
+            </li>
+            <li *ngIf="searchResults.length || hasMorePages" class="inline-header">All Forecast Sheets</li>
+            <li *ngFor="let result of searchResults"
+                live-result-list-entry
+                [item]="result"
+                (resultSelected)="onSelectResult($event)">
+            </li>
+            <li *ngIf="searchResults.length === 0 && hasMorePages" class="inline-header">...</li>
+            <li *ngIf="hasMorePages" (click)="addPage()" class="inline-header inline-button">Show More</li>
+        </ul>
+
+    </div>
+</div>

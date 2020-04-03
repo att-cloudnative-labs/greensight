@@ -9,10 +9,10 @@ public class ForecastVariableDescriptor {
   private String variableName;
   private String variableId;
   private String variableUnit;
-  private String projectName;
-  private String projectId;
-  private String projectBranchName;
-  private String projectBranchId;
+  private String sheetName;
+  private String sheetId;
+  private String folderName;
+  private String folderId;
   private String searchKey;
   private String variableType;
 }

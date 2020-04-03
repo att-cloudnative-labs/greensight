@@ -1,0 +1,12 @@
+<div *ngIf="chartSeries.length != 0 && !hide" class="graph">
+    <graph-metrics
+    (toggleDisplayLines)="toggleDisplayTypes($event)"
+    ></graph-metrics>
+    <div class="chart"
+         echarts
+         [options]="chartOptions"
+         [autoResize]="true"
+         (chartInit)="onChartInit($event)"
+         theme="dark"
+    ></div>
+</div>

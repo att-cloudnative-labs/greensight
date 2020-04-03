@@ -1,0 +1,21 @@
+<label>Standard Deviation</label>
+
+<div class="distribution-container" title="Standard Deviation (Gaussian)" [ngClass]="{'': !invalid,  'invalid-expression': invalid}">
+    <div *ngIf="!isExpressionDistribution">
+        <input placeholder="Auto" [(ngModel)]="distribution.staticStdDev" #inputField
+               (keydown)="onKeyDown($event)" (keydown.space)="$event.preventDefault()" (keyup)="onKeyUp()">
+    </div>
+
+    <div *ngIf="isExpressionDistribution" (click)="focusOnExpression()" class="expression">
+        <autocomplete-input #dist_expression
+                [completedWords]="parsedDistributionExpression"
+                [variables]="variableList"
+                [variable-name]="variableName"
+                [isDistributionExpression]="true"
+                [sheetId]="sheetId"
+                (equalsDeleted)="equalsDeleted()"
+                (expressionChanged)="expressionChanged()"
+                (flashInvalid)="flashInvalid()"></autocomplete-input>
+    </div>
+</div>
+

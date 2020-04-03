@@ -1,0 +1,113 @@
+$gridBackgroundColor: rgb(50, 50, 50);
+
+$gridDivisionSize: 180px;
+$gridDivisionLineColor: rgba(0, 0, 0, 0.4);
+$gridDivisionLineThickness: 1px;
+
+$gridSubdivisionSize: 20px;
+$gridSubdivisionLineColor: rgba(255, 255, 255, 0.06);
+$gridSubdivisionLineThickness: 1px;
+
+:host {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+app-graph-control-bar {
+    z-index: 2;
+}
+
+.error-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow: visible;
+    background-color: rgba(116, 116, 116, 0.90);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-message {
+    color: white;
+    text-align: center;
+    font-size: larger;
+    font-weight: 700;
+}
+
+.grid {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: $gridBackgroundColor;
+    background-size: $gridDivisionSize $gridDivisionSize, $gridDivisionSize $gridDivisionSize, $gridSubdivisionSize $gridSubdivisionSize, $gridSubdivisionSize $gridSubdivisionSize;
+    background-position: -$gridDivisionLineThickness -$gridDivisionLineThickness, -$gridDivisionLineThickness -$gridDivisionLineThickness, -$gridSubdivisionLineThickness -$gridSubdivisionLineThickness, -$gridSubdivisionLineThickness -$gridSubdivisionLineThickness;
+    background-image: linear-gradient($gridDivisionLineColor $gridDivisionLineThickness, transparent $gridDivisionLineThickness),
+                      linear-gradient(90deg, $gridDivisionLineColor $gridDivisionLineThickness, transparent $gridDivisionLineThickness),
+                      linear-gradient($gridSubdivisionLineColor $gridSubdivisionLineThickness, transparent $gridSubdivisionLineThickness),
+                      linear-gradient(90deg, $gridSubdivisionLineColor $gridSubdivisionLineThickness, transparent $gridSubdivisionLineThickness);
+}
+
+.processes {
+    pointer-events: none;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    transform: translate(0px, 0px, 1);
+}
+
+.edges {
+    pointer-events: none;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow: visible;
+}
+
+.graph-name {
+    position: absolute;
+    bottom: 0;
+    right: 16px;
+    font-size: 32px;
+    opacity: 0.5;
+    color: white;
+    user-select: none;
+    pointer-events: none;
+}
+
+.ports {
+    padding: 5px;
+    min-height: 20px;
+    display: flex;
+}
+
+.hud {
+    opacity: 0.5;
+    color: white;
+    position: absolute;
+    bottom: 5px;
+    left: 15px;
+    pointer-events: none;
+    text-align: right;
+    line-height: 1.8;
+    user-select: none;
+}
+
+@keyframes stroke {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+#matching-ants {
+    position: absolute;
+}
+
+#marching-ants rect {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2px;
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 4px;
+    animation: stroke 0.2s linear infinite;
+    stroke-dashoffset: 8px;
+}

@@ -1,0 +1,9 @@
+<div class="btn-group mr-4">
+    <button class="btn btn-primary"  [ngClass]="getVersionClass()" (click)="selectVersion(0)"  title="Select Latest"><i class="fa fa-bolt"></i></button>
+    <div class="btn-group" ngbDropdown role="group">
+        <button class="btn btn-primary"  [ngClass]="getReleaseClass()" [disabled]="noReleases()" ngbDropdownToggle title="Select Release - Read-Only"><i class="fa fa-link"></i> {{selectedRelease}}</button>
+        <div class="dropdown-menu" ngbDropdownMenu>
+            <button ngbDropdownItem  (click)="selectRelease(r)"*ngFor="let r of availableReleaseNrs">Release {{r}}</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+<div class="key">
+    <input
+        [id]="sliceKey + slices.indexOf(slice)"
+        type="text"
+        [disabled]="disabled"
+        [value]="slice.key"
+        (change)="changeKey($event)"
+        (keydown)="handleKeydownOnNameInput($event)"
+        #sliceNameInput
+    >
+</div>
+<div class="value">
+    <input
+        [id]="sliceValue + slices.indexOf(slice)"
+        [disabled]="disabled"
+        (keydown)="onKeyDown($event)"
+        (keydown.space)="$event.preventDefault()"
+        [value]="slice.value"
+        (change)="changeValue($event)"
+    >
+</div>
+<div class="remove">
+    <button (click)="removeSlice()" tabindex="-1"><i class="fa fa-times"></i></button>
+</div>

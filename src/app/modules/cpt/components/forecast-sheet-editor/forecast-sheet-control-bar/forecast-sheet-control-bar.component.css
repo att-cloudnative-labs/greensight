@@ -1,0 +1,104 @@
+:host{
+    width:100%;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    max-height:40px;
+}
+
+.control-bar{
+    display: flex;
+    flex: 1;
+    background: -webkit-linear-gradient(360deg, #404040, 10%, #949494  360%);
+    background: -moz-linear-gradient(360deg,#404040, 10%, #949494 360%);
+    background: linear-gradient(360deg, #404040, 10%, #949494 360%);
+    margin-right: 0;
+
+}
+.date-separator{
+    padding-top: 10px;
+}
+
+.right-group{
+    display: flex;
+    flex:1;
+    justify-content: flex-end;
+}
+
+
+button:focus{
+    outline: none;
+}
+
+button{
+    border:none;
+}
+
+input{
+    font-size: 0px;
+    color: rgb(182, 181, 181);
+    border-width: 0px;
+    border-color: transparent;
+}
+
+input:focus{
+    outline: none;
+}
+
+.result-list{
+    background-color:rgb(248, 248, 241);
+    width:450px;
+    z-index: 5;
+    border-radius: 2px;
+
+}
+
+ul {
+    max-height: 277px;
+    overflow-x: hidden;
+    overflow-y:auto;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    width:450px;
+
+}
+
+.export{
+    background: transparent;
+    border:none;
+    padding: 5px;
+    outline: none;
+    color: white;
+}
+
+span {
+    font-size:19px;
+    padding-top: 1px;
+}
+
+app-variable-filter{
+    padding-right: 16px;
+    border-width: 1px;
+}
+
+.date-picker {
+    display: inline-block;
+    width: fit-content;
+    max-width: max-content;
+    color: rgb(7, 0, 0);
+    padding: 5px;
+}
+.date-picker > label{
+
+    padding-right: 5px;
+    color: #9d9d9d;
+
+}
+
+.date-picker-position {
+    position: absolute;
+    z-index: 1
+}
+

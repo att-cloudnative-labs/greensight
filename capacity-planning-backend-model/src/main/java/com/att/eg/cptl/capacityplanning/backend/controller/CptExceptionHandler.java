@@ -1,72 +1,94 @@
 package com.att.eg.cptl.capacityplanning.backend.controller;
 
 import com.att.eg.cptl.capacityplanning.backend.exception.*;
+import com.att.eg.cptl.capacityplanning.backend.rest.RestResponse;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
 public class CptExceptionHandler {
 
+  @SuppressWarnings("rawtypes")
   @ExceptionHandler(UnauthorizedException.class)
-  public void handleUnauthorizedException(HttpServletResponse response, RuntimeException e)
-      throws IOException {
-    response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+  public ResponseEntity<RestResponse> handleUnauthorizedException(
+      HttpServletResponse response, RuntimeException e) throws IOException {
+    RestResponse restResponse = new RestResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
+    return new ResponseEntity<>(restResponse, HttpStatus.UNAUTHORIZED);
   }
 
+  @SuppressWarnings("rawtypes")
   @ExceptionHandler(ForbiddenException.class)
-  public void handleForbiddenException(HttpServletResponse response, RuntimeException e)
-      throws IOException {
-    response.sendError(HttpStatus.FORBIDDEN.value(), e.getMessage());
+  public ResponseEntity<RestResponse> handleForbiddenException(
+      HttpServletResponse response, RuntimeException e) throws IOException {
+    RestResponse restResponse = new RestResponse(HttpStatus.FORBIDDEN, e.getMessage());
+    return new ResponseEntity<>(restResponse, HttpStatus.FORBIDDEN);
   }
 
+  @SuppressWarnings("rawtypes")
   @ExceptionHandler(NotFoundException.class)
-  public void handleNotFoundException(HttpServletResponse response, RuntimeException e)
-      throws IOException {
-    response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+  public ResponseEntity<RestResponse> handleNotFoundException(
+      HttpServletResponse response, RuntimeException e) throws IOException {
+    RestResponse restResponse = new RestResponse(HttpStatus.NOT_FOUND, e.getMessage());
+    return new ResponseEntity<>(restResponse, HttpStatus.NOT_FOUND);
   }
 
+  @SuppressWarnings("rawtypes")
   @ExceptionHandler(BadRequestException.class)
-  public void handleBadRequestException(HttpServletResponse response, RuntimeException e)
-      throws IOException {
-    response.sendError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+  public ResponseEntity<RestResponse> handleBadRequestException(
+      HttpServletResponse response, RuntimeException e) throws IOException {
+    RestResponse restResponse = new RestResponse(HttpStatus.BAD_REQUEST, e.getMessage());
+    return new ResponseEntity<>(restResponse, HttpStatus.BAD_REQUEST);
   }
 
+  @SuppressWarnings("rawtypes")
   @ExceptionHandler(VersionConflictException.class)
-  public void handleVersionConflictException(HttpServletResponse response, RuntimeException e)
-      throws IOException {
-    response.sendError(HttpStatus.CONFLICT.value(), e.getMessage());
+  public ResponseEntity<RestResponse> handleVersionConflictException(
+      HttpServletResponse response, RuntimeException e) throws IOException {
+    RestResponse restResponse = new RestResponse(HttpStatus.CONFLICT, e.getMessage());
+    return new ResponseEntity<>(restResponse, HttpStatus.CONFLICT);
   }
 
+  @SuppressWarnings("rawtypes")
   @ExceptionHandler(DocumentExistsException.class)
-  public void handleDocumentExistsException(HttpServletResponse response, RuntimeException e)
-      throws IOException {
-    response.sendError(HttpStatus.CONFLICT.value(), e.getMessage());
+  public ResponseEntity<RestResponse> handleDocumentExistsException(
+      HttpServletResponse response, RuntimeException e) throws IOException {
+    RestResponse restResponse = new RestResponse(HttpStatus.CONFLICT, e.getMessage());
+    return new ResponseEntity<>(restResponse, HttpStatus.CONFLICT);
   }
 
+  @SuppressWarnings("rawtypes")
   @ExceptionHandler(TrashStateException.class)
-  public void handleTrashStateException(HttpServletResponse response, RuntimeException e)
-      throws IOException {
-    response.sendError(HttpStatus.GONE.value(), e.getMessage());
+  public ResponseEntity<RestResponse> handleTrashStateException(
+      HttpServletResponse response, RuntimeException e) throws IOException {
+    RestResponse restResponse = new RestResponse(HttpStatus.GONE, e.getMessage());
+    return new ResponseEntity<>(restResponse, HttpStatus.GONE);
   }
 
+  @SuppressWarnings("rawtypes")
   @ExceptionHandler(InvalidFilterTypeException.class)
-  public void handleInvalidFilterTypeException(HttpServletResponse response, RuntimeException e)
-      throws IOException {
-    response.sendError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+  public ResponseEntity<RestResponse> handleInvalidFilterTypeException(
+      HttpServletResponse response, RuntimeException e) throws IOException {
+    RestResponse restResponse = new RestResponse(HttpStatus.BAD_REQUEST, e.getMessage());
+    return new ResponseEntity<>(restResponse, HttpStatus.BAD_REQUEST);
   }
 
+  @SuppressWarnings("rawtypes")
   @ExceptionHandler(InvalidInputException.class)
-  public void handleInvalidInputException(HttpServletResponse response, RuntimeException e)
-      throws IOException {
-    response.sendError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+  public ResponseEntity<RestResponse> handleInvalidInputException(
+      HttpServletResponse response, RuntimeException e) throws IOException {
+    RestResponse restResponse = new RestResponse(HttpStatus.BAD_REQUEST, e.getMessage());
+    return new ResponseEntity<>(restResponse, HttpStatus.BAD_REQUEST);
   }
 
+  @SuppressWarnings("rawtypes")
   @ExceptionHandler(FailedDependencyException.class)
-  public void handleFailedDependencyException(HttpServletResponse response, RuntimeException e)
-      throws IOException {
-    response.sendError(HttpStatus.FAILED_DEPENDENCY.value(), e.getMessage());
+  public ResponseEntity<RestResponse> handleFailedDependencyException(
+      HttpServletResponse response, RuntimeException e) throws IOException {
+    RestResponse restResponse = new RestResponse(HttpStatus.FAILED_DEPENDENCY, e.getMessage());
+    return new ResponseEntity<>(restResponse, HttpStatus.FAILED_DEPENDENCY);
   }
 }

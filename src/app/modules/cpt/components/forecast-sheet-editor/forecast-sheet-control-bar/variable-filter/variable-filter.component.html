@@ -1,0 +1,45 @@
+
+<div class="header">
+    <a
+        *ngIf="displayShowAllButton"
+        (click)="showAllVariables()"
+        data-testid="showall"><u>Show All</u></a>
+    <a
+        *ngIf="!displayShowAllButton"
+        (click)="hideAllVariables()"
+        data-testid="hideall"><u>Hide All</u></a>
+    <input #varSearch
+           [(ngModel)]="searchText"
+           placeholder="Filter"
+           (focusin)="showItemList()"
+           (keyup)="showItemList()"
+           (click)="showItemList()"
+           data-testid="search-display-variables"
+           (mouseleave)="leaveSearchBox()" (mouseenter)="enterSearchBox()"
+    >
+    <div class="result-list horizontal-flow" *ngIf="showSearchResults"
+         (mouseleave)="leaveList()" (mouseenter)="enterList()"
+        appTether
+        [appTetherTarget]="varSearch"
+        [appTetherTargetAttachment]="'bottom left'"
+        [appTetherAttachment]="'top left'"
+        [appTetherOffset]="'0px 0px'">
+
+        <div *ngIf="!projectionDisplayItems.length" class="no-results">
+                No results
+        </div>
+
+        <div class="group description">
+            <ul>
+                <li *ngFor="let projectionItem of projectionDisplayItems" data-testid="searched-variables">
+                    <label class="item-name">
+                        <input
+                            type="checkbox"
+                            (click)="toggleSelection($event, projectionItem)"
+                            [checked]="projectionItem.displayed">{{projectionItem.name}}</label>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+

@@ -4,11 +4,14 @@ import com.att.eg.cptl.capacityplanning.backend.dto.AppUserInputDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.UserGroupDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.AccessPermissionDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeDto;
+import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeReleaseDto;
 import com.att.eg.cptl.capacityplanning.backend.model.AppUser;
 import com.att.eg.cptl.capacityplanning.backend.model.UserGroup;
 import com.att.eg.cptl.capacityplanning.backend.model.auth.Role;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.AccessPermission;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.TreeNode;
+import com.att.eg.cptl.capacityplanning.backend.model.treenode.TreeNodeRelease;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,6 +19,21 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DtoToModelConverter {
+
+  public TreeNodeRelease convertDtoToRelease(TreeNodeReleaseDto dto) {
+    TreeNodeRelease trn = new TreeNodeRelease();
+    trn.setObjectId(dto.getObjectId());
+    trn.setVersionId(dto.getVersionId());
+    trn.setOwnerId(dto.getOwnerId());
+    trn.setTimestamp(dto.getTimestamp());
+    trn.setId(dto.getId());
+    trn.setDescription(dto.getDescription());
+    if (dto.getTags() != null) {
+      trn.setTags(new ArrayList<>(dto.getTags()));
+    }
+    return trn;
+  }
+
   public AppUser convertInputDtoToAppUser(AppUserInputDto appUserInputDto) {
     if (appUserInputDto == null) {
       return null;

@@ -5,7 +5,6 @@ import { SimulationConfiguration, SimulationResult, GraphModel } from '@cpt/capa
 import { CptSimulationHarness, getPeRepository } from '@cpt/capacity-planning-simulation';
 import { Variable } from '@cpt/capacity-planning-projection';
 import { ModelService } from './model-service';
-import { ForecastService } from './forecast-service';
 import worker = require('worker_threads')
 
 
@@ -14,15 +13,14 @@ import worker = require('worker_threads')
 console.log("running worker thread");
 
 let modelService = new ModelService();
-let forecastService = new ForecastService();
 let authToken = worker.workerData.authToken;
 let simulationConfiguration: SimulationConfiguration = worker.workerData.config;
-let simulationResult: SimulationResult = worker.workerData.result
+let simulationResult: SimulationResult = worker.workerData.result;
 
 
 let sh = new CptSimulationHarness(
-    (branchId) => forecastService.fetchBranchVariables(authToken, branchId).toPromise(),
-    (graphModelId) => modelService.fetchModel(authToken, graphModelId).toPromise()
+    (sheetId, version) => modelService.fetchSheet(authToken, sheetId, version).toPromise(),
+    (graphModelId, version) => modelService.fetchModel(authToken, graphModelId, version).toPromise()
 );
 
 try {

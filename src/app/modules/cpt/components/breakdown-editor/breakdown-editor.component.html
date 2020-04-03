@@ -1,0 +1,19 @@
+<label>
+    Name:
+    <input
+        type="text"
+        [value]="name"
+        [disabled]="disabled"
+        (change)="changeName($event)"
+    >
+</label>
+    <app-breakdown-editor-row
+        *ngFor="let slice of slices"
+        [slice]="slice"
+        [slices]="slices"
+        [disabled]="disabled"
+        (onAddingSlice)="addSlice()"
+        (onChange)="changeSlice(slice.key, $event)"
+        (onRemove)="removeSlice(slice.key)"
+    ></app-breakdown-editor-row>
+    <button (click)="addSlice()">Add Slice</button>

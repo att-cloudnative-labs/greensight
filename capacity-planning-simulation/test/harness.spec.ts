@@ -4,7 +4,7 @@ import { describe, beforeEach, it } from 'mocha';
 import { expect, should } from 'chai';
 
 import { CptSimulationHarness } from '../src/cpt-simulation-harness';
-import { fetchBranchVariables } from '../src/test-data/forecast-be-shim';
+import { fetchSheetVariables} from '../src/test-data/forecast-be-shim';
 import { fetchModel } from '../src/test-data/model-be-shim';
 import { getSimulationConfiguration } from '../src/test-data/simulation-configurations';
 
@@ -15,7 +15,7 @@ describe("Simulation Harness", () => {
     before("Setting up test variables", () => {
         chai.should();
         chai.use(chaiAsPromised)
-        sh = new CptSimulationHarness(fetchBranchVariables, fetchModel);
+        sh = new CptSimulationHarness(fetchSheetVariables, fetchModel);
     });
 
     it("should be instantiable", () => {

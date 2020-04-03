@@ -3,8 +3,10 @@ package com.att.eg.cptl.capacityplanning.backend.dao;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
+import com.att.eg.cptl.capacityplanning.backend.model.treenode.AggregatedAccessControlInformation;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.TreeNode;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.TreeNodeVersion;
+import com.att.eg.cptl.capacityplanning.backend.service.util.treenode.GraphModelContentOps;
 import com.att.eg.cptl.capacityplanning.backend.util.Constants;
 import com.mongodb.client.result.UpdateResult;
 import java.time.Duration;
@@ -29,28 +31,24 @@ public class TreeNodeHistoryRepositoryImpl implements TreeNodeHistoryRepositoryC
   private static final DateTimeFormatter dateTimeFormatter =
       DateTimeFormatter.ofPattern(Constants.ZONED_DATE_TIME_FORMAT);
 
-  @Override
-  public TreeNodeVersion save(
-      String nodeId, Long version, String userId, @Nullable String comment) {
-    TreeNodeVersion ov = new TreeNodeVersion();
-    ov.setVersionId(version);
-    ov.setObjectId(nodeId);
-    ov.setUserId(userId);
-    ov.setComment(comment);
-    ov.setTimestamp(
-        dateTimeFormatter.format(ZonedDateTime.now(ZoneId.of(Constants.TIMESTAMP_TIME_ZONE))));
-    operations.save(ov);
-
-    return ov;
-  }
-
-  private boolean isMinorUpdate(TreeNodeVersion old, TreeNode update) {
-    if (!old.getUserId().equals(update.getOwnerId())) {
+  private boolean isRedundant(TreeNodeVersion old, TreeNode update) {
+    if (!old.getOwnerId().equals(update.getOwnerId())) {
       return false;
     }
-    if (StringUtils.isNotBlank(old.getComment())) {
+    if (StringUtils.isNotBlank(old.getDescription())) {
       return false;
     }
+    // never overwrite the 1st version
+    if (old.getVersionId().equals(1L)) {
+      return false;
+    }
+
+    // a release could depend on this. so don't delete it
+    // fixme: query releases to see if this is actually true
+    if (old.isReleasable()) {
+      return false;
+    }
+
     ZonedDateTime oldTime = ZonedDateTime.parse(old.getTimestamp());
     ZonedDateTime updateTime = ZonedDateTime.now();
     Duration delta = Duration.between(oldTime, updateTime);
@@ -64,7 +62,11 @@ public class TreeNodeHistoryRepositoryImpl implements TreeNodeHistoryRepositoryC
   }
 
   @Override
-  public TreeNodeVersion save(TreeNode treeNode, String userId, @Nullable String comment) {
+  public TreeNodeVersion save(
+      TreeNode treeNode,
+      String ownerId,
+      AggregatedAccessControlInformation aaci,
+      @Nullable String description) {
 
     // check if this version has been saved before
     // this could happen if a manual comment has been appended earlier
@@ -78,10 +80,16 @@ public class TreeNodeHistoryRepositoryImpl implements TreeNodeHistoryRepositoryC
     TreeNodeVersion alreadySavedNode =
         operations.findOne(treeNodeCurrentVersionQuery, TreeNodeVersion.class);
     if (alreadySavedNode != null) {
+      if (!alreadySavedNode.getDescription().equals(description)) {
+        this.updateDescription(treeNode.getId(), treeNode.getVersion(), ownerId, description);
+        alreadySavedNode.setDescription(description);
+      }
+
       return alreadySavedNode;
     }
 
     // check if the last version saved can be canned
+
     if (treeNode.getVersion() > 1) {
       Query treeNodeLastVersionQuery =
           new Query(
@@ -92,7 +100,7 @@ public class TreeNodeHistoryRepositoryImpl implements TreeNodeHistoryRepositoryC
       treeNodeLastVersionQuery.fields().exclude("object");
       TreeNodeVersion lastVersionNode =
           operations.findOne(treeNodeLastVersionQuery, TreeNodeVersion.class);
-      if (lastVersionNode != null && isMinorUpdate(lastVersionNode, treeNode)) {
+      if (lastVersionNode != null && isRedundant(lastVersionNode, treeNode)) {
         operations.remove(lastVersionNode);
       }
     }
@@ -101,10 +109,12 @@ public class TreeNodeHistoryRepositoryImpl implements TreeNodeHistoryRepositoryC
     ov.setVersionId(treeNode.getVersion());
     ov.setObjectId(treeNode.getId());
     ov.setObject(treeNode);
-    ov.setUserId(userId);
-    ov.setComment(comment);
+    ov.setOwnerId(ownerId);
+    ov.setDescription(description);
+    ov.setAccessControl(aaci);
     ov.setTimestamp(
         dateTimeFormatter.format(ZonedDateTime.now(ZoneId.of(Constants.TIMESTAMP_TIME_ZONE))));
+    ov.setReleasable(GraphModelContentOps.getReleasable(treeNode));
     operations.save(ov);
     return ov;
   }
@@ -126,14 +136,15 @@ public class TreeNodeHistoryRepositoryImpl implements TreeNodeHistoryRepositoryC
 
   // only update comments for versions created by the same user
   @Override
-  public void updateComment(String nodeId, Long version, String userId, String comment) {
+  public void updateDescription(String nodeId, Long version, String ownerId, String description) {
     Query treeNodeQuery =
         new Query(
             Criteria.where("objectId")
                 .is(nodeId)
                 .andOperator(
-                    Criteria.where("versionId").is(version), Criteria.where("userId").is(userId)));
-    Update update = new Update().set("comment", comment);
+                    Criteria.where("versionId").is(version),
+                    Criteria.where("ownerId").is(ownerId)));
+    Update update = new Update().set("description", description);
     UpdateResult ur = operations.updateFirst(treeNodeQuery, update, "treeNodeVersion");
     if (ur.getMatchedCount() != 1) {
       throw new RuntimeException("couldn't find node version");
@@ -148,7 +159,14 @@ public class TreeNodeHistoryRepositoryImpl implements TreeNodeHistoryRepositoryC
                 TreeNodeVersion.class,
                 match(where("objectId").is(nodeId)),
                 sort(Sort.by("versionId")),
-                project("versionId", "objectId", "timestamp", "userId", "comment")),
+                project(
+                    "versionId",
+                    "objectId",
+                    "timestamp",
+                    "ownerId",
+                    "description",
+                    "releasable",
+                    "accessControl")),
             TreeNodeVersion.class);
     return results.getMappedResults();
   }

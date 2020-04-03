@@ -16,7 +16,7 @@ export const testSimulationConfigurationlNames: { [configName: string]: string }
 export const testSimulationConfigurations: { [configurationId: string]: SimulationConfiguration } = {
     "a4e1eca3-96fa-4117-8a41-d0f9bb77e1f8": {
         "metadata": {},
-        "modelRef": "8e9eb803-238c-40f4-ab89-01e8d3f63179",
+        "ref": "8e9eb803-238c-40f4-ab89-01e8d3f63179",
         "monteCarloIterations": null,
         "objectId": "a4e1eca3-96fa-4117-8a41-d0f9bb77e1f8",
         "objectType": "SIMULATION_CONFIGURATION",

@@ -1,0 +1,110 @@
+<div class="control-bar">
+<app-create-release-button [treeNodeId]="graphModel.id" [treeNodeVersion]="graphModel.version"></app-create-release-button>
+<div *ngIf="disableHelpBox"><button class="help-box" style="color: rgba(223, 219, 219, 0.301)"
+        title="shortcuts">
+        <span *ngIf="!showHelpBox" class="fa fa-question" style="font-size:15px;"></span>
+    </button>
+</div>
+<div *ngIf="!disableHelpBox">
+<button #helpBoxTetherAnchor class="help-box"
+                            title="shortcuts"
+                            (click)="toggleDisplayHelpBox()">
+                            <span class="fa fa-question" style="font-size:15px;"></span>
+                    </button>
+<div class="result-list" *ngIf="showHelpBox"
+    appTether
+    [appTetherTarget]="helpBoxTetherAnchor"
+    [appTetherTargetAttachment]="'bottom right'"
+    [appTetherAttachment]="'top left'"
+    [appTetherOffset]="'0px 0px'"
+    (click)="toggleDisplayHelpBox()"
+    >
+<ul>
+    <li class="help-left">
+        Ctrl+c/Ctrl+v
+        <span class="help-right">
+            Copy/Paste components
+        </span>
+    </li>
+
+    <li class="help-left">
+        Ctrl+z
+        <span class="help-right">
+            Undo recent action
+        </span>
+    </li>
+
+    <li class="help-left">
+        Ctrl+Shift+Z
+        <span class="help-right">
+            Redo recent undo
+        </span>
+    </li>
+
+    <li class="help-left">
+        Shift+click on target input
+        <span class="help-right">
+            Removes port connection
+        </span>
+    </li>
+
+    <li class="help-left">
+        Right click+Drag on page
+        <span class="help-right">
+            Selects & moves graph model
+        </span>
+    </li>
+
+    <li class="help-left">
+        Ctrl+Mouse scroll
+        <span class="help-right">
+            Zoom in/out the graph model
+        </span>
+    </li>
+
+    <li class="help-left">
+        Mouse scroll
+        <span class="help-right">
+            Moves graph model
+        </span>
+    </li>
+
+    <li class="help-left">
+        Double click on components
+        <span class="help-right">
+            Moves focus to name edit field
+        </span>
+    </li>
+
+    <li class="help-left">
+        Delete key
+        <span class="help-right">
+            Removes the selected component
+        </span>
+    </li>
+</ul>
+</div>
+</div>
+    <release-selector [nodeId]="graphModel?.id" [releaseNr]="this.releaseNr"></release-selector>
+
+    <div class="right-group" *ngIf="!releaseNr">
+        <div
+            class="port"
+            [appDraggable]="'NEW_INPORT'"
+        >
+            Input
+        </div>
+        <div
+            class="port"
+            [appDraggable]="'NEW_OUTPORT'"
+        >
+            Output
+        </div>
+        <app-graph-processing-element-search
+            [parentNodeId]="graphModel?.parentId"
+            [graphModelId]="graphModel?.id"
+
+            (resultSelected)='onGraphProcessingElementSearchResultSelected($event)'
+        ></app-graph-processing-element-search>
+    </div>
+</div>

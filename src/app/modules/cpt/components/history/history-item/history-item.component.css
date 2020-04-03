@@ -1,0 +1,51 @@
+.history-item {
+    padding: 5px;
+    cursor: pointer;
+    display: inline-flex;
+    width: 100%;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.display-fields {
+    display: inline-flex;
+}
+
+.item-hover{
+    background-color: #383838;
+}
+
+
+.item-info {
+    padding-right: 25px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline;
+}
+
+.action {
+    padding-right: 5px;
+}
+.icon-button:hover{
+    background-color:#606060;
+}
+
+.icon-button {
+    color: #999;
+    height:100%;
+    padding: 0;
+    border:none;
+    background:none;
+    padding-right: 3px;
+    padding-left: 3px;
+}
+
+.edit-buttons {
+    display: flex;
+    justify-content: center;
+}
+
+.active-release {
+    color: green;
+}

@@ -15,8 +15,9 @@ import org.apache.commons.lang.StringUtils;
  * the operation on the dataset (Must be a reduction operation)
  */
 public enum NodeHistoryFilterType {
-  HAS_COMMENT(
-      "hasComment", treeNodeVersion -> StringUtils.isNotBlank(treeNodeVersion.getComment()));
+  HAS_DESCRIPTION(
+      "hasDescription",
+      treeNodeVersion -> StringUtils.isNotBlank(treeNodeVersion.getDescription()));
 
   private String filterName;
   private Function<ObjectVersion<TreeNode>, Boolean> filterOperation;

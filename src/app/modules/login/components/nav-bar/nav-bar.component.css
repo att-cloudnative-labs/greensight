@@ -1,0 +1,72 @@
+.navbar {
+    margin-bottom: 0;
+    border-radius: 0;
+    background-color: black !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,.5);
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}
+
+.title {
+    color: white;
+    font-size: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.5);
+    margin-right: 20px;
+    vertical-align: middle;
+}
+
+
+a {
+    color:white;
+    text-decoration: none;
+
+}
+
+.nav > li > a > img {
+    max-width: 25px;
+}
+
+.nav > li > a{
+    background-color: black;
+}
+
+.navigation-icon {
+    cursor: pointer;
+}
+
+/* TODO: Clean this up once the global styles can be fixed up */
+
+.navbar-nav > li > a {
+    padding: 9px 15px 10px 15px;
+}
+
+.navbar-inverse {
+    border: 0;
+}
+
+.navbar-nav .title a {
+    padding-top: 12px;
+}
+
+.navbar-nav .title img {
+    width: 49px;
+    height: 36px;
+    max-width: 49px !important;
+    vertical-align: top;
+}
+
+.navbar-nav .title span {
+    margin-top: 8px;
+    margin-left: 4px;
+}
+
+.navbar-nav.navbar-right {
+    margin-top: 5px;
+}
+
+.navbar-nav.navbar-right button {
+    margin-left: 10px;
+}
+
+.btn {
+    margin: 5px;
+}

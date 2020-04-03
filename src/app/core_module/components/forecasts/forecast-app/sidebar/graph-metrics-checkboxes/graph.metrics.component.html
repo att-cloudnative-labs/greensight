@@ -1,9 +1,0 @@
-<ul>
-    <li>
-        <label [style.color]="percentilesSaved() ? 'black' : 'grey'"><input [checked]="distributionLines" [disabled]="!percentilesSaved()" type="checkbox" (click)="toggleDistributionLines($event)" data-testid="graphmetric-distribution">Display distributions</label>
-        <span style="color:grey; font-size:13px" *ngIf="!percentilesSaved()">Please select percentiles on <a [routerLink]="['/settings']">settings page</a> to enable</span>
-    </li>
-    <li>
-        <label><input [checked]="breakdownLines" type="checkbox" (click)="toggleBreakdownLines($event)" data-testid="graphmetric-breakdown">Display breakdowns</label>
-    </li>
-</ul>

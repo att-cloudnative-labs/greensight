@@ -1,0 +1,24 @@
+:host {
+    flex: 1;
+    display: flex;
+    position: relative;
+    padding-bottom: 10px;
+    background: #404040;
+    width: 100%;
+    align-items: center;
+}
+
+.fc-sheet-name {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.fc-sheet-icon {
+    padding-right: 5px;
+}
+
+.fc-sheet-delete-button {
+    background-color:#404040;
+    color: white;
+    border: none;
+}

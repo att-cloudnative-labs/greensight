@@ -1,0 +1,18 @@
+<ul>
+    <li (click)="onOpenModel()">Open</li>
+    <div *appHasPermission="modifyPermissionsObj">
+        <div *ngIf="graphModel.type === 'MODEL'">
+            <li (click)="onNewSimulation()">New Simulation</li>
+        </div>
+    </div>
+    <hr>
+    <div *appHasPermission="modifyPermissionsObj">
+        <li (click)="onRenameModel()">Rename</li>
+    </div>
+    <li (click)="onCopyModel()">Copy</li>
+    <div *appHasPermission="deletePermissionsObj">
+        <li (click)="onMoveModel()">Cut</li>
+        <hr>
+        <li (click)="onTrashModel()">Send to Trash</li>
+    </div>
+</ul>      

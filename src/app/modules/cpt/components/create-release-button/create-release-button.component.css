@@ -1,0 +1,29 @@
+:host {
+    display: flex;
+}
+
+.save{
+    background: transparent;
+    border:none;
+    color: white;
+}
+
+.save:focus{
+    outline: none;
+}
+
+button:disabled {
+    opacity: 40%;
+}
+
+
+input{
+    width:300px;
+    padding: 5px 9px;
+    font-size: 14px;
+    color: black;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 4px;
+}

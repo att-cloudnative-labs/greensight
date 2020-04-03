@@ -1,0 +1,18 @@
+:host {
+    padding: 2px 8px;
+}
+
+:host:hover {
+    background-color:lightgray;
+}
+
+:host.active {
+    background-color:lightblue;
+}
+
+.item-name {
+    margin-left: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

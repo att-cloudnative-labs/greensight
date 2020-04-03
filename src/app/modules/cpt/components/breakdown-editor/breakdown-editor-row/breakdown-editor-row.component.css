@@ -1,0 +1,41 @@
+:host {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+input {
+    background-color: rgb(64, 68, 71);
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    padding: 2px 4px;
+    border-radius: 4px;
+    min-width: 0;
+    color: white;
+}
+
+.key {
+    flex: 1;
+}
+
+.key input {
+    width: 100%;
+}
+
+.value {
+    flex: 0 0 100px;
+}
+
+.value input {
+    margin-left: 10px;
+    margin-right: 10px;
+    width: calc(100% - 20px);
+}
+
+.remove {
+    flex: 0 0 30px;
+}
+
+button {
+    color: black;
+}

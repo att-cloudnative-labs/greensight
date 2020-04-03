@@ -52,9 +52,9 @@ export interface RateAggregate {
     value: number;
 }
 
-export type Aggragate = GraphParam | HistogramAggeregate | AspectsAggregate | MessagesAggregate | ResponseAspectsAggregate | RateAggregate;
+export type Aggregate = GraphParam | HistogramAggeregate | AspectsAggregate | MessagesAggregate | ResponseAspectsAggregate | RateAggregate;
 
-export type SimulationNodeDataAggregate = { [method in AggregationMethods]: Aggragate };
+export type SimulationNodeDataAggregate = { [method in AggregationMethods]: Aggregate };
 
 // TODO: define this
 export type SimulationNodeResponseAggregate = SimulationNodeDataAggregate;

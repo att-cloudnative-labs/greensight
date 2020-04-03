@@ -1,0 +1,84 @@
+<div class="sim-panel" *ngIf="sim$ |async as sim">
+    <div *ngIf="!editingEnabled" class="error-overlay">
+        <div class="error-message">
+            <p>The simulation you are editing is out of sync or some other error has occurred.</p>
+            <p>Please reload the simulation to continue making edits.</p>
+        </div>
+    </div>
+
+    <div class="sim-section">
+        <h3>Model</h3>
+        <div class="sim-model-line" >
+        <input [ngClass]="modelNotFound ? 'highlight' : ''" value="{{modelFullName}}" title="{{modelFullName}}" readonly><div class="sim-model-line-div"></div>
+        <tracking-editor *ngIf="graphModelReferenceTracking" [tracking]="graphModelReferenceTracking" (trackingUpdated)="updatedTracking($event)"></tracking-editor>
+        </div>
+    </div>
+    <div  class="sim-forecast-sheets">
+        <h3>Forecast Sheet References</h3>
+        <simulation-forecast-sheet-entry *ngFor="let fcSheetRef of forecastSheets" [forecastSheetRef]="fcSheetRef" [simulationId]="nodeId"></simulation-forecast-sheet-entry>
+
+         <forecast-search-box
+                [siblingReference]="nodeId"
+                title="Add Forecast Sheet"
+                placeholder="Add Forecast Sheet"
+                [dropList]="alreadySelectedForecastSheetIds"
+                (itemSelected)="onForecastSheetSelected($event)"></forecast-search-box>
+
+
+
+    </div>
+
+    <div  class="sim-scenario-tables">
+        <h3>Scenarios</h3>
+            <app-simulation-scenario-table data-testid="scenario-name" *ngFor="let scenarioId of scenarioIds"
+                [simulation]="sim"
+                [scenario]="sim.content.scenarios[scenarioId]"
+                [scenarioId]="scenarioId"
+                [deleteDisabled]="scenarioId == scenarioIds[0]"
+                [reloadOnChange]="reloadScenariosOnChange"
+                                           [variableDescriptors]="variableDescriptors$"
+                (onDeleteScenario)="removeScenario(scenarioId)"
+                (renameScenario)="renameScenario(scenarioId, $event)"></app-simulation-scenario-table>
+        <button class="add-scenario" (click)="addScenario()" [ngClass]="modelNotFound ? 'disable' : ''" [disabled]="modelNotFound" data-testid="add-scenario" title="Add scenario">Add Scenario</button>
+    </div>
+
+    <div class="sim-section">
+        <h3>Parameters</h3>
+        <app-simulation-timeline
+            [simulation]="simulation">
+        </app-simulation-timeline>
+        <h4>Monte Carlo Iterations</h4>
+        <input [(ngModel)]="monteCarloIterations"
+            (blur)="saveMonteCarlo()"
+            type="number" />
+    </div>
+    <div class="sim-section create">
+        <button
+            (click)="createSimulation()" [ngClass]="isNotClickable ? 'disable' : ''" [disabled]="isNotClickable">Run Simulation</button>
+    </div>
+    <h3>Results</h3>
+    <table class="result-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody *ngIf="(childNodes$ | async)?.length">
+            <ng-container *ngFor="let node of (childNodes$ | async)" [ngSwitch]="node.type">
+                <tr>
+                    <app-library-simulation-result
+                        *ngSwitchCase="'SIMULATIONRESULT'"
+                        [simulationResult]="node">
+                    </app-library-simulation-result>
+                </tr>
+            </ng-container>
+        </tbody>
+        <tbody *ngIf="!(childNodes$ | async)?.length">
+            <tr>
+                <td class="no-results" colspan="4">
+                    <span><i>Empty</i></span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

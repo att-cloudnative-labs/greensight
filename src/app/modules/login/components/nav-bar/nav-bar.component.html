@@ -1,0 +1,24 @@
+<nav class="navbar  navbar-expand-lg navbar-light bg-light navbar-expand-md" data-testid="navbar">
+    <div class="container-fluid">
+      <div style="vertical-align: middle;" class="collapse navbar-collapse" id="myNavbar">
+
+        <ul class="nav navbar-nav">
+          <li class="active title  nav-item" data-testid="navbar-home-page">
+            <a href="" routerLink="">
+              <img src="assets/images/att-logo.png">
+              <span>GREENSIGHT</span>
+            </a>
+          </li>
+        </ul>
+
+        <ul class="nav navbar-nav ml-auto">
+          <li class="nav-item">
+              <form class="form-inline float-left">
+                  <button *ngIf=!isLoginPage class="btn btn-primary" type="button"  [routerLink]="['/capacity-planning/settings']">Settings</button>
+                  <button *ngIf=!isLoginPage href="#" class="logout-button btn btn-info" (click)="logout($event)">Logout {{userName}}</button>
+              </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>

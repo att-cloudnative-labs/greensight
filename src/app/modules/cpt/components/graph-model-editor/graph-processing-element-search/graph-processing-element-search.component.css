@@ -1,0 +1,44 @@
+input{
+    width:200px;
+    padding: 5px 9px;
+    font-size: 14px;
+    color: black;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 4px;
+}
+
+input:focus{
+    outline: none;
+}
+
+.result-list{
+    background-color:white;
+    width:200px;
+    z-index: 5;
+}
+
+ul {
+    max-height: 277px;
+    overflow-x: hidden;
+    overflow-y:scroll;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    cursor: pointer;
+}
+
+.inline-header {
+    font-size: small;
+    color: gray;
+    cursor: default;
+}
+
+.inline-button:hover {
+    background-color:lightgray;
+    cursor: pointer;
+}

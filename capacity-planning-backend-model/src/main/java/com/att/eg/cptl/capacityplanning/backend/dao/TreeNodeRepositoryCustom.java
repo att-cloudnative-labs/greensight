@@ -7,6 +7,7 @@ import com.mongodb.client.result.UpdateResult;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.lang.Nullable;
 
@@ -48,4 +49,10 @@ public interface TreeNodeRepositoryCustom {
   TreeNode getNode(String nodeId, boolean sparse);
 
   List<TreeNode> getAll(ProjectionType pt, @Nullable Date updatedAfter, NodeType... nodeTypes);
+
+  List<TreeNode> searchNode(
+      @Nullable String searchTerm,
+      Collection<String> folderIds,
+      Pageable pageable,
+      List<NodeType> nodeTypes);
 }

@@ -10,3 +10,4 @@ src/main/resources/dist-js/
 lib
 *.sublime-project
 *.sublime-workspace
+.idea

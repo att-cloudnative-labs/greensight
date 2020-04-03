@@ -1,0 +1,64 @@
+:host {
+    display: block;
+    flex: 1;
+    padding: 0;
+    background: #404040;
+    overflow: hidden;
+}
+
+.history-panel {
+    height: 100%;
+    width: 100%;
+}
+
+header {
+    display: flex;
+    margin: 8px;
+}
+
+input {
+    flex:1;
+    width: 100%;
+    background-color: #272727;
+    padding: 5px 9px;
+    font-size: 14px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 4px;
+}
+
+header > button {
+    flex: 0 0 32px;
+    border-radius: 4px;
+    margin-left: 8px;
+    font-size: 24px;
+    line-height: 1;
+    background: transparent;
+    border: none;
+}
+
+.history-contents {
+    padding-top: 5px;
+    height: calc(100% - 55px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+app-history-item {
+    cursor: pointer;
+}
+
+app-filter-dropdown{
+    margin-left: 8px;
+    line-height: 1;
+}
+
+:host.isLoading {
+    /* animation: load linear 0.75s infinite alternate; */
+}
+
+.loading {
+    margin: 8px;
+    opacity: 0.25;
+}

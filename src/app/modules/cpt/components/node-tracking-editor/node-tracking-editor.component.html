@@ -1,0 +1,10 @@
+<div class="btn-group mr-4">
+    <button type="button" [disabled]="disabled" (click)="selectedTrackingMode('CURRENT_VERSION')" class="btn btn-primary" [ngClass]="isTracking('CURRENT_VERSION')" title="Track Current Version"><i class="fa fa-bolt"></i></button>
+    <button type="button" [disabled]="disabled" (click)="selectedTrackingMode('LATEST_RELEASE')" class="btn btn-primary" [ngClass]="isTracking('LATEST_RELEASE')" title="Track Latest Release"><i class="fa fa-unlink"></i> {{selectedLatestRelease}}</button>
+    <div class="btn-group" ngbDropdown role="group">
+        <button class="btn btn-primary"   [ngClass]="isTracking('FIXED')" [disabled]="noReleases()" ngbDropdownToggle title="Select Release"><i class="fa fa-link"></i> {{selectedFixedRelease}}</button>
+        <div class="dropdown-menu" ngbDropdownMenu>
+            <button ngbDropdownItem  (click)="selectFixed(r)"*ngFor="let r of availableReleaseNrs">Release {{r}}</button>
+        </div>
+    </div>
+</div>

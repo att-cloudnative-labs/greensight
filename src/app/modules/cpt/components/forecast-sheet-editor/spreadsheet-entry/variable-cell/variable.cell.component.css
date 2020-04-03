@@ -1,0 +1,77 @@
+.relative-container {
+    padding: 0px 5px 0px 5px;
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-expansion {
+    flex: 0 0 20px;
+    cursor: pointer;
+    position: absolute;
+}
+
+.custom-toggle-edit {
+    flex: 0 0 25px;
+    border: 0;
+    border-radius: 4px;
+}
+
+.name {
+    color: black;
+    flex: 1;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    margin-left: 15px;
+    margin-right: 4px;
+}
+
+.name:hover {
+    background:rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(138, 138, 138, 0.5);
+}
+
+.name:focus {
+    background:rgba(255, 255, 255, 0.9);
+    border: 1px solid rgb(138, 138, 138);
+}
+
+.resize-handle {
+    height: 100%;
+    width: 10px;
+    position: absolute;
+    right: -7px;
+    cursor: col-resize;
+}
+
+input::-webkit-inner-spin-button,
+input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.edit {
+    margin-left: 15px;
+    margin-right: 8px;
+   
+}
+
+input:focus {
+    outline: 0;
+}
+
+i {
+    color: rgb(76, 76, 78);
+}

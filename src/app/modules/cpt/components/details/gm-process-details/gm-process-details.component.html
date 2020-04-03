@@ -1,0 +1,33 @@
+<header>
+    <i class="{{icon}}"></i>
+    <div class="name">{{process.name}}</div>
+</header>
+<div>
+    <label>
+        Label:
+        <input
+            type="text"
+            [value]="process.label || ''"
+            [disabled]="readonly"
+            (blur)="saveLabel($event)"
+            (keydown.enter)="saveLabel($event)"
+            #inputElement
+        >
+    </label>
+</div>
+<div *ngIf="process.type === 'GRAPH_MODEL'">
+    <label>
+        Release/Version Tracking:</label>
+    <tracking-editor  [disabled]="readonly" [tracking]="trackingInfo" (trackingUpdated)="updatedTracking($event)">
+
+    </tracking-editor>
+</div>
+
+
+<div *ngIf="process.description">
+    <label>
+        Description:
+        <div class="description">{{process.description}}</div>
+    </label>
+</div>
+

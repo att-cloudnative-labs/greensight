@@ -16,3 +16,4 @@ node-service
 src
 lib/test-data
 test
+.idea

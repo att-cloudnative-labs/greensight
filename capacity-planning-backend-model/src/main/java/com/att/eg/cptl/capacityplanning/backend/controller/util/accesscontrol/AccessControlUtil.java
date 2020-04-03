@@ -3,6 +3,7 @@ package com.att.eg.cptl.capacityplanning.backend.controller.util.accesscontrol;
 import com.att.eg.cptl.capacityplanning.backend.exception.InvalidPermissionsDefinedException;
 import com.att.eg.cptl.capacityplanning.backend.exception.NotFoundException;
 import com.att.eg.cptl.capacityplanning.backend.model.AppUser;
+import com.att.eg.cptl.capacityplanning.backend.model.auth.Role;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,6 +123,9 @@ public class AccessControlUtil {
       AccessControlledTreeObject accessControlledTreeObject,
       List<? extends AccessControlledTreeObject> ancestors,
       List<String> usersGroups) {
+    if (appUser.getRole() == Role.ADMIN && !accessControlledTreeObject.getId().equals("root")) {
+      return Arrays.asList(Permission.values());
+    }
     AccessControlType accessControlType = accessControlledTreeObject.getAccessControl();
     validateAccessControlTypeAndAppUser(accessControlType, appUser);
     if (appUser.getId().equals(accessControlledTreeObject.getOwnerId())
@@ -148,6 +152,29 @@ public class AccessControlUtil {
     return Collections.emptyList();
   }
 
+  public List<Permission> getPermissions(
+      AppUser appUser, AccessControlledObject object, List<String> usersGroupIds) {
+    if (appUser.getRole() == Role.ADMIN) {
+      return Arrays.asList(
+          Permission.READ, Permission.CREATE, Permission.DELETE, Permission.MODIFY);
+    }
+    AccessControlType accessControlType = object.getAccessControl();
+    validateAccessControlTypeAndAppUser(accessControlType, appUser);
+    if (appUser.getId().equals(object.getOwnerId())
+        || AccessControlType.PUBLIC_READ_WRITE.equals(object.getAccessControl())) {
+      return Arrays.asList(Permission.values());
+    }
+    if (AccessControlType.PUBLIC_READ_ONLY.equals(object.getAccessControl())) {
+      return Collections.singletonList(Permission.READ);
+    }
+
+    if (AccessControlType.ADVANCED.equals(object.getAccessControl())) {
+      return getAclPermissions(appUser, object.getAcl(), usersGroupIds);
+    }
+
+    return Collections.emptyList();
+  }
+
   /**
    * Checks if the user has permission for a given Permission type or if the node has one of the
    * given access control types.
@@ -167,6 +194,11 @@ public class AccessControlUtil {
       List<String> usersGroups,
       Permission permissionToCheck,
       AccessControlType... accessControlTypesToCheck) {
+
+    // admins can do whatever (apart from messing with the root node)
+    if (appUser.getRole() == Role.ADMIN && !accessControlledTreeObject.getId().equals("root")) {
+      return true;
+    }
     AccessControlType accessControlType = accessControlledTreeObject.getAccessControl();
     validateAccessControlTypeAndAppUser(accessControlType, appUser);
     if (appUser.getId().equals(accessControlledTreeObject.getOwnerId())) {
@@ -342,6 +374,27 @@ public class AccessControlUtil {
       }
     }
     throw new NotFoundException("Could not find non-inherit ancestor in ancestors list.");
+  }
+
+  public AggregatedAccessControlInformation getAggregatedAccessControl(
+      AccessControlledObject accessControlledObject,
+      List<? extends AccessControlledObject> ancestors) {
+    AccessControlledObject aclNode = null;
+    if (accessControlledObject.getAccessControl() != AccessControlType.INHERIT) {
+      aclNode = accessControlledObject;
+    } else {
+      for (int i = ancestors.size() - 1; i >= 0; i--) {
+        AccessControlledObject ancNode = ancestors.get(i);
+        if (ancNode.getAccessControl() != AccessControlType.INHERIT) {
+          aclNode = ancNode;
+          break;
+        }
+      }
+    }
+    if (aclNode != null) {
+      return AggregatedAccessControlInformation.fromAccessControlledObject(aclNode);
+    }
+    return null;
   }
 
   /**

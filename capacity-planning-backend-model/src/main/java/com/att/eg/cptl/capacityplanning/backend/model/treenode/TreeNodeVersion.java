@@ -5,5 +5,6 @@ import lombok.Data;
 
 @Data
 public class TreeNodeVersion extends ObjectVersion<TreeNode> {
-  private String userName;
+  private AggregatedAccessControlInformation accessControl;
+  private boolean releasable;
 }

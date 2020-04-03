@@ -19,4 +19,6 @@ public class ProcessInterfaceDescription {
   private List<String> dependencies;
   private String parentId;
   private String pathName;
+  private String versionId;
+  private Long releaseNr;
 }

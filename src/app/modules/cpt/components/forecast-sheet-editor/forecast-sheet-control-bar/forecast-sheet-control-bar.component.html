@@ -1,0 +1,42 @@
+<div class="control-bar">
+    <app-create-release-button [disabled]="!!releaseNr" [treeNodeId]="forecastNode?.id" [treeNodeVersion]="forecastNode?.version"></app-create-release-button>
+      <button class="export" data-testid="excel-button"
+        title="export"
+        (click)="onExportForecast()" >
+        <span><i class="fas fa-cloud-download-alt"></i></span>
+      </button>
+
+    <release-selector [nodeId]="nodeId" [releaseNr]="releaseNr"></release-selector>
+
+    <div class="right-group">
+
+            <div class="date-picker">
+                <dp-date-picker
+                                #startDateFc id="startDateFc"
+                                [config]="datePickerConfig"
+                                [(ngModel)]="startDate"
+                                mode="month"
+                                (click)="onStartDateChange($event)"
+                                [theme]="'dp-material dp-main'"
+                                data-testid="start-date"></dp-date-picker>
+            </div>
+        <div class="date-separator">to</div>
+
+            <div class="date-picker" style="padding-left: 6px;">
+                <dp-date-picker #endDateFc id="endDateFc"
+                                [config]="datePickerConfig"
+                                [(ngModel)]="endDate"
+                                mode="month"
+                                (click)="onEndDateChange($event)"
+                                [theme]="'dp-material dp-main'"
+                                data-testid="end-date"></dp-date-picker>
+            </div>
+
+        <app-variable-filter
+            [variableProjections]="uiProjections"
+            (disableClick)="setDisableClick($event)"
+            (hiddenVariableIds)="updateHiddenVariableIds($event)"
+        >
+        </app-variable-filter>
+    </div>
+</div>

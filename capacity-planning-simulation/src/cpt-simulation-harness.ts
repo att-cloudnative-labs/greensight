@@ -2,29 +2,32 @@ import { CptEnvironmentIf, CptSimulationProcessIf, CptOutput, CptSimulationNodeI
 import { CptGraphModel } from './cpt-graph-model';
 import { GraphModel, SimulationConfiguration, SimulationScenario, SimulationNode, SimulationResult, SimulationNodeTypes, UidObject, Process, ProcessInport, ProcessOutport, NumberParam, HistogramAggeregate, SimulationNodeDataAggregate, SimulationNodeAggregatedReport, InportParam, NormalDistNumberParam, DataType, GraphParam, AggregationMethods, SimulationMessage, HistogramBucket, RawNodeDataEntry, AspectNumberParam, Aspect, AspectsAggregate, SimulationMessageRate, MessagesAggregate, AspectParam, ResponseNumberParam, ResponseAspectsAggregate, ResponseAspect } from '@cpt/capacity-planning-simulation-types';
 import { Variable, VariableProjections, renderProjections, VariableType } from '@cpt/capacity-planning-projection';
-import { scaleAspect, dupl } from './cpt-load-ops';
+import { isVarRef } from './cpt-load-ops';
 import { sampleNormal } from './cpt-math-ops';
 import { buildProcessingElement } from './cpt-pe-repository';
-import { isLatencyResponse, responseHistogramAggregation, mergeResponseAspect, flattenResponseAspect, responseSplitHistogramAggregation, getResponseSplitMean, flattenResponseAspectValue } from './cpt-response-ops';
 import { CptDataAggregation } from './cpt-data-aggregation';
 
 import { genMonths } from './cpt-date-ops';
-import { map, reduce, switchMap, zip, concatAll, mergeMap } from 'rxjs/operators';
-import { from, Subject, Observable, Observer, of } from 'rxjs';
-import { SampleStat } from 'essy-stats';
+import { map, reduce, concatAll, mergeMap } from 'rxjs/operators';
+import { from, Subject, Observable, Observer } from 'rxjs';
+import { ForecastSheetReference, ReleaseTrackingUidObject } from "@cpt/capacity-planning-simulation-types/lib";
 
 type CptInportValueSet = { [portId: string]: InportParam };
 type CptSimulationInportValueSet = { [date: string]: CptInportValueSet };
-type CptBranchVariableSet = { [branchId: string]: Variable[] };
+export type SheetVariableLibrary = { [sheetId: string]: { [version: string]: Variable[] } };
+export type SheetProjectionLibrary = { [sheetId: string]: { [version: string]: VariableProjections } };
 
-interface CptBranchVariableTuple {
-    branch: string;
+
+interface CptSheetVariableTuple {
+    sheetId: string;
+    sheetVersion: string;
     variables: Variable[];
 }
 
 
 
 export type GraphModelLibrary = { [id: string]: { [version: string]: GraphModel } };
+type VersionedDependency = { id: string, version?: string };
 
 export class CptSimulationHarness implements CptEnvironmentIf {
 
@@ -40,7 +43,7 @@ export class CptSimulationHarness implements CptEnvironmentIf {
     private curSimMonteCarloIteration?: number;
     private curSimScenarioId: string;
 
-    constructor(private fetchBranchVariables: (branchId: string) => Promise<Variable[]>, private fetchModel: (id: string, version?: string) => Promise<GraphModel>, private logProgressImpl?: (any) => void) {
+    constructor(private fetchSheetVariables: (id: string, version?: string) => Promise<{ version: string, variables: Variable[] }>, private fetchModel: (id: string, version?: string) => Promise<{ version: string, gm: GraphModel }>, private logProgressImpl?: (any) => void) {
 
     }
 
@@ -64,7 +67,7 @@ export class CptSimulationHarness implements CptEnvironmentIf {
     }
 
     private buildGraphModel(processConfiguration: Process, parent: CptSimulationProcessIf): CptGraphModel | Error {
-        let gmDescription = this.graphModels[processConfiguration.ref]['latest'];
+        let gmDescription = this.graphModels[processConfiguration.ref][processConfiguration.versionId];
         if (gmDescription) {
             return new CptGraphModel(gmDescription, processConfiguration, parent);
         }
@@ -94,53 +97,76 @@ export class CptSimulationHarness implements CptEnvironmentIf {
         return false;
     }
 
-    private getSubModelsIds(gm: GraphModel): string[] {
-        let subIds: string[] = [];
+    // also patches the version id (:
+    private getSubModelsIds(gm: GraphModel): VersionedDependency[] {
+        let subIds: VersionedDependency[] = [];
         for (let procId in gm.processes) {
             let proc = gm.processes[procId];
             if (proc.type === 'GRAPH_MODEL') {
-                subIds.push(proc.ref);
+                const v = this.getReferenceTrackingVersion(proc);
+                proc.versionId = v;
+                subIds.push({ id: proc.ref, version: v });
             }
         }
         return subIds;
     }
 
-    private getNeededBranchIds(scenario: SimulationScenario): string[] {
-        let forecastBranchId: string[] = [];
+
+    private getReferenceTrackingVersion(trackingRef: ReleaseTrackingUidObject): string {
+        if (trackingRef.tracking === 'CURRENT_VERSION' || !trackingRef.releaseNr) {
+            return 'latest';
+        } else {
+            return `r${trackingRef.releaseNr}`;
+        }
+    }
+
+    private getNeededSheetDeps(config: SimulationConfiguration, scenario: SimulationScenario): VersionedDependency[] {
+        let forecastSheetDeps: VersionedDependency[] = [];
         for (let inportId in scenario.inports) {
             let inportParam = scenario.inports[inportId];
-            if (inportParam.type === 'FORECAST_VAR_REF') {
-                if (forecastBranchId.indexOf(inportParam.forecastId) < 0) {
-                    forecastBranchId.push(inportParam.forecastId);
+            if (isVarRef(inportParam)) {
+                const p = inportParam;
+                const sheetRef = config.forecasts[p.sheetRefId];
+                const sheetVersion = this.getReferenceTrackingVersion(sheetRef);
+                if (!forecastSheetDeps.find(dep => dep.id === sheetRef.ref && dep.version === sheetVersion)) {
+                    forecastSheetDeps.push({ id: sheetRef.ref, version: sheetVersion });
                 }
             }
         }
-        return forecastBranchId;
+        return forecastSheetDeps;
     }
 
-    private getBranchVariables(fcBranchId: string): Observable<CptBranchVariableTuple> {
+    private getSheetVariables(sheetId: string, version: string): Observable<CptSheetVariableTuple> {
 
-        return from(this.fetchBranchVariables(fcBranchId)).pipe(map<Variable[], CptBranchVariableTuple>(v => { return { branch: fcBranchId, variables: v }; }));
+        return from(this.fetchSheetVariables(sheetId, version)).pipe(map(vars => { return { sheetId: sheetId, variables: vars.variables, sheetVersion: vars.version }; }));
 
     }
 
-    private projectBranches(bvs: CptBranchVariableSet, stepStart: string, stepLast: string): { [branchId: string]: VariableProjections } {
-        let branchProjection: { [branchId: string]: VariableProjections } = {};
-        for (let branchId in bvs) {
-            let variables = bvs[branchId];
-            let projection = renderProjections(variables, stepStart, stepLast);
-            if (projection instanceof Error) {
-                // todo handle err
-            } else {
-                branchProjection[branchId] = projection;
+    private projectSheets(svl: SheetVariableLibrary, stepStart: string, stepLast: string): SheetProjectionLibrary {
+        let sheetProjection: SheetProjectionLibrary = {};
+        for (const sheetId in svl) {
+            for (const sheetVersion in svl[sheetId]) {
+                const variables = svl[sheetId][sheetVersion];
+                let projection = renderProjections(variables, stepStart, stepLast);
+                if (projection instanceof Error) {
+                    // todo handle err
+                } else {
+                    if (!sheetProjection[sheetId]) {
+                        sheetProjection[sheetId] = {};
+                    }
+                    sheetProjection[sheetId][sheetVersion] = projection;
+                }
             }
         }
-        return branchProjection;
+        return sheetProjection;
     }
 
     private getVariableValue(variable: Variable, proj: VariableProjections, date: string): AspectParam | AspectNumberParam | Error {
+        if (!variable) {
+            return Error("Variable does not exist");
+        }
         if (!proj) {
-            return Error("no projection");
+            return Error("No projection");
         }
         let variableId = variable.id;
         let varFrames = proj[variableId];
@@ -206,8 +232,8 @@ export class CptSimulationHarness implements CptEnvironmentIf {
         return Error("could not find variable value for " + variableId + ":" + date);
     }
 
-    private getVariabeleFromBvs(bvs: CptBranchVariableSet, branchId: string, variableId: string): Variable {
-        let variables = bvs[branchId];
+    private getVariableFromProjections(svl: SheetVariableLibrary, sheetId: string, sheetVersion: string, variableId: string): Variable {
+        let variables = svl[sheetId][sheetVersion];
         for (let v of variables) {
             if (v.id === variableId) {
                 return v;
@@ -215,24 +241,33 @@ export class CptSimulationHarness implements CptEnvironmentIf {
         }
         return null;
     }
-    private generateScenarioInputValues(scenario: SimulationScenario, stepStart: string, stepLast: string): Observable<CptSimulationInportValueSet> {
+    private generateScenarioInputValues(conf: SimulationConfiguration, scenario: SimulationScenario, stepStart: string, stepLast: string): Observable<CptSimulationInportValueSet> {
         let months = genMonths(stepStart, stepLast);
-        let o$ = Observable.create((obs: Observer<CptSimulationInportValueSet>) => {
-            from(this.getNeededBranchIds(scenario)).pipe(
-                mergeMap(branchId => this.getBranchVariables(branchId)),
-                reduce<CptBranchVariableTuple, CptBranchVariableSet>((acc, next) => { acc[next.branch] = next.variables; return acc }, {})
-            ).subscribe(bvs => {
+        return new Observable<CptSimulationInportValueSet>((obs: Observer<CptSimulationInportValueSet>) => {
+
+            from(this.getNeededSheetDeps(conf, scenario)).pipe(
+                mergeMap(deps => this.getSheetVariables(deps.id, deps.version)),
+                reduce<CptSheetVariableTuple, SheetVariableLibrary>((acc, next) => {
+                    if (!acc[next.sheetId]) {
+                        acc[next.sheetId] = {};
+                    }
+                    acc[next.sheetId][next.sheetVersion] = next.variables; return acc
+                }, {})
+            ).subscribe(svl => {
                 let sivs: CptSimulationInportValueSet = {};
-                let branchProjection = this.projectBranches(bvs, stepStart, stepLast);
+                const sheetProjectionLibrary = this.projectSheets(svl, stepStart, stepLast);
                 for (let month of months) {
                     let ivs: CptInportValueSet = {};
                     for (let inportId in scenario.inports) {
                         let inportParam = scenario.inports[inportId];
-                        if (inportParam.type !== 'FORECAST_VAR_REF') {
+                        if (!isVarRef(inportParam)) {
                             ivs[inportId] = inportParam;
                         } else {
-                            let variable = this.getVariabeleFromBvs(bvs, inportParam.forecastId, inportParam.variableId);
-                            let fcInportParam = this.getVariableValue(variable, branchProjection[inportParam.forecastId], month);
+                            const sheetRef = conf.forecasts[inportParam.sheetRefId];
+                            const sheetVersion = this.getReferenceTrackingVersion(sheetRef);
+                            let variable = this.getVariableFromProjections(svl, sheetRef.ref, sheetVersion, inportParam.variableId);
+                            const sheetProjection = sheetProjectionLibrary[sheetRef.ref][sheetVersion];
+                            let fcInportParam = this.getVariableValue(variable, sheetProjection, month);
                             if (fcInportParam instanceof Error) {
                                 obs.error(fcInportParam);
                             } else {
@@ -246,17 +281,19 @@ export class CptSimulationHarness implements CptEnvironmentIf {
                 obs.complete();
             }, err => { obs.error(err); });
         });
-        return o$;
     }
 
-    private recursivelyFetchGraphModels(graphModelId: string, version?: string): Observable<GraphModelLibrary> {
-        version = 'latest';
+    private static fixVersion(version: string, releaseNr?: number) {
+        return releaseNr ? `r${releaseNr}` : 'latest';
+    }
 
-        let ms = new Subject<GraphModel>();
+    private recursivelyFetchGraphModels(graphModelId: string, gmVersion: string): Observable<GraphModelLibrary> {
+
+        let ms = new Subject<{ version: string, gm: GraphModel }>();
         let gms: GraphModelLibrary = {};
-        let pending: string[] = [];
+        let pending: VersionedDependency[] = [];
         let o$ = Observable.create((obs: Observer<GraphModelLibrary>) => {
-            ms.subscribe(gm => {
+            ms.subscribe(({ gm, version }) => {
                 // no proper version handling here
                 if (gms[gm.objectId] === undefined || gms[gm.objectId][version] === undefined) {
                     gms[gm.objectId] = {};
@@ -264,12 +301,12 @@ export class CptSimulationHarness implements CptEnvironmentIf {
                 }
                 let subIds = this.getSubModelsIds(gm);
                 for (let subId of subIds) {
-                    if (gms[subId] === undefined || pending.indexOf(subId) < 0) {
+                    if (!gms[subId.id] || !gms[subId.id][subId.version] || !pending.find(d => d.id === subId.id && d.version === subId.version)) {
                         pending.push(subId);
-                        from(this.fetchModel(subId)).subscribe(subgm => { ms.next(subgm); }, err => { ms.error(err); });
+                        from(this.fetchModel(subId.id, subId.version)).subscribe(subgm => { ms.next(subgm); }, err => { ms.error(err); });
                     }
                 }
-                pending = pending.filter(id => id !== gm.objectId);
+                pending = pending.filter(d => !(d.id === gm.objectId && d.version === version));
                 if (!pending.length) {
                     ms.complete();
                 }
@@ -278,10 +315,10 @@ export class CptSimulationHarness implements CptEnvironmentIf {
             }, () => {
                 obs.next(gms);
                 obs.complete();
-            });;
+            });
 
-            pending.push(graphModelId);
-            from(this.fetchModel(graphModelId)).subscribe(gm => { ms.next(gm); }, err => { ms.error(err); });
+            pending.push({ id: graphModelId, version: gmVersion });
+            from(this.fetchModel(graphModelId, gmVersion)).subscribe(gm => { ms.next(gm); }, err => { ms.error(err); });
         });
 
         return o$;
@@ -298,7 +335,7 @@ export class CptSimulationHarness implements CptEnvironmentIf {
         this.logProgress("running scenario " + scenario.objectId);
         let o$ = Observable.create((obs: Observer<string>) => {
             this.curSimScenarioId = scenario.objectId;
-            this.generateScenarioInputValues(scenario, c.stepStart, c.stepLast).subscribe(scenarioInputValues => {
+            this.generateScenarioInputValues(c, scenario, c.stepStart, c.stepLast).subscribe(scenarioInputValues => {
                 try {
                     this.logProgress("fetched all input values");
                     let months = genMonths(c.stepStart, c.stepLast);
@@ -336,7 +373,8 @@ export class CptSimulationHarness implements CptEnvironmentIf {
     public runSimulationConfiguration(c: SimulationConfiguration): Promise<SimulationResult> {
         this.simulationNodes = {};
         let p = new Promise<SimulationResult>((resolve, reject) => {
-            this.recursivelyFetchGraphModels(c.modelRef, c.modelVersion).subscribe(gml => {
+            const rootVersionId = this.getReferenceTrackingVersion(c);
+            this.recursivelyFetchGraphModels(c.ref, rootVersionId).subscribe(gml => {
                 this.logProgress("fetched all models");
                 this.graphModels = gml;
 
@@ -353,14 +391,13 @@ export class CptSimulationHarness implements CptEnvironmentIf {
                     finishedAt: new Date().toString(),
                     nodes: {},
                     scenarios: {}
-                }
-                //of(c.scenarios).pipe(map(scenMap => this.getSingleScenario(scenMap)), switchMap(scenario => this.runSingleScenario(c, scenario.objectId))).subscribe(o => { }, e => { reject(e) }, () => {
+                };
                 let scenarios: SimulationScenario[] = [];
                 for (let scId in c.scenarios) {
                     scenarios.push(c.scenarios[scId]);
                 }
 
-                let rootGraphModelDescription = this.graphModels[c.modelRef]['latest'];
+                let rootGraphModelDescription = this.graphModels[c.ref][rootVersionId];
                 let rootProcess = this.generateRootProcess(rootGraphModelDescription);
                 let rootModel = new CptGraphModel(rootGraphModelDescription, rootProcess);
                 this.logProgress("initializing root model");
@@ -372,14 +409,13 @@ export class CptSimulationHarness implements CptEnvironmentIf {
 
                     let months = genMonths(c.stepStart, c.stepLast);
                     let dataAggregation = new CptDataAggregation(this.simulationNodes, scenarios, months);
-                    let allSimulationNodes = dataAggregation.compute();
 
-                    sr.nodes = allSimulationNodes;
+                    sr.nodes = dataAggregation.compute();
                     sr.finishedAt = new Date().toString();
                     resolve(sr);
 
                 });
-            });
+            }, e => { reject(e); });
         });
         return p;
     }
@@ -449,7 +485,8 @@ export class CptSimulationHarness implements CptEnvironmentIf {
             ref: gm.objectId,
             label: gm.label || "Root Model",
             inports: {},
-            outports: {}
+            outports: {},
+            name: 'root'
         };
         for (let gipId in gm.inports) {
             let gip = gm.inports[gipId];

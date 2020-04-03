@@ -1,5 +1,6 @@
 import { GraphParam, NumberParam, AspectNumberParam, Aspect, NormalDistNumberParam, StringParam, AspectParam, BooleanParam } from '@cpt/capacity-planning-simulation-types';
 import { add } from './cpt-math-ops';
+import { ForecastVariableRefParam, InportParam } from "@cpt/capacity-planning-simulation-types/lib";
 
 export type NumberType = NumberParam | AspectNumberParam | NormalDistNumberParam
 
@@ -56,7 +57,9 @@ export function isAspect(param: GraphParam): param is AspectParam {
 export function isBoolean(param: GraphParam): param is BooleanParam {
     return param && (param.type === 'BOOLEAN');
 }
-
+export function isVarRef(param: InportParam | ForecastVariableRefParam): param is ForecastVariableRefParam {
+    return param && (param.type === 'FORECAST_VAR_REF');
+}
 
 export function aggregateLoad(loads: GraphParam[]): GraphParam {
     if (loads && loads.length > 0) {

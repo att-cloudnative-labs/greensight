@@ -1,0 +1,36 @@
+
+:host {
+  flex: 1;
+  padding: 12px 12px 12px 0;
+}
+
+header {
+  display: inline;
+}
+
+textarea{
+    color: white;
+}
+
+label {
+  font-weight: normal !important;
+  color: white
+}
+
+.node-name {
+  font-size: large;
+    padding: 2px 2px 0 5px;
+    margin: 0 3px 0 3px;
+}
+
+
+.group {
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.group.date-range {
+  display: flex;
+  justify-content: space-between;
+}
+

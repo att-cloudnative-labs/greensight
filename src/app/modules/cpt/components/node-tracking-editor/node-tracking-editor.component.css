@@ -1,0 +1,4 @@
+.btn-primary:disabled{
+    opacity: 1.0;
+    color: gray;
+}

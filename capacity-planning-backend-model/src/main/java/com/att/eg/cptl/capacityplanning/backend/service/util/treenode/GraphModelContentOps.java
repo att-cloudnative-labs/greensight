@@ -2,9 +2,10 @@ package com.att.eg.cptl.capacityplanning.backend.service.util.treenode;
 
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeDto;
 import com.att.eg.cptl.capacityplanning.backend.exception.FailedDependencyException;
-import com.att.eg.cptl.capacityplanning.backend.model.treenode.NodeType;
-import com.att.eg.cptl.capacityplanning.backend.model.treenode.TreeNode;
+import com.att.eg.cptl.capacityplanning.backend.model.treenode.*;
+import com.att.eg.cptl.capacityplanning.backend.util.Constants;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GraphModelContentOps {
   public static List<String> getModelNodePortIds(
@@ -76,22 +77,39 @@ public class GraphModelContentOps {
     return portIds;
   }
 
-  public static List<String> getModelProcModelRefs(Map<String, Object> modelNodeContent) {
-    List<String> modelRefIds = new ArrayList<>();
+  public static List<TreeNodeDependency> extractGraphProcModelDeps(
+      Map<String, Object> modelNodeContent) {
+    List<TreeNodeDependency> deps = new ArrayList<>();
     if (modelNodeContent != null) {
       if (modelNodeContent.get("processes") != null) {
         Map<String, Map<String, Object>> processes =
             (Map<String, Map<String, Object>>) modelNodeContent.get("processes");
         for (Map<String, Object> proc : processes.values()) {
           if ("GRAPH_MODEL".equals(proc.get("type"))) {
-            modelRefIds.add((String) proc.get("ref"));
+            String nodeId = (String) proc.get("ref");
+            String tracking = (String) proc.get("tracking");
+            Integer releaseNr = (Integer) proc.get("releaseNr");
+            TreeNodeDependency d = new TreeNodeDependency();
+            d.setRef(nodeId);
+            if (releaseNr != null) {
+              d.setReleaseNr(new Long(releaseNr));
+            }
+            if (tracking != null) {
+              d.setTrackingMode(TrackingMode.valueOf(tracking));
+            }
+            deps.add(d);
           }
         }
-      } else if (modelNodeContent.get("modelRef") != null) {
-        modelRefIds.add((String) modelNodeContent.get("modelRef"));
       }
     }
-    return modelRefIds;
+
+    return deps;
+  }
+
+  public static List<String> getModelProcModelRefs(Map<String, Object> modelNodeContent) {
+
+    List<TreeNodeDependency> deps = extractGraphProcModelDeps(modelNodeContent);
+    return deps.stream().map(TreeNodeDependency::getRef).collect(Collectors.toList());
   }
 
   // get a map of process port ref id -> process port id for a given port type
@@ -167,5 +185,30 @@ public class GraphModelContentOps {
         }
       }
     }
+  }
+
+  public static boolean getReleasable(TreeNode node) {
+    if (node.getType().equals(NodeType.MODEL)) {
+      Map<String, Object> modelNodeContent = node.getContent();
+      if (modelNodeContent != null) {
+        if (modelNodeContent.get("processes") != null) {
+          Map<String, Map<String, Object>> processes =
+              (Map<String, Map<String, Object>>) modelNodeContent.get("processes");
+          for (Map<String, Object> proc : processes.values()) {
+            if ("GRAPH_MODEL".equals(proc.get("type"))) {
+              String versionId = (String) proc.get("versionId");
+              if (versionId == null || versionId.length() != Constants.OID_LENGTH) {
+                // if we have a graph model process that has no version id or
+                // no release version id, we flag this node as non releasable
+                return false;
+              }
+            }
+          }
+        }
+      }
+      // Graph Model are releasable until believed otherwise
+      return true;
+    }
+    return true;
   }
 }

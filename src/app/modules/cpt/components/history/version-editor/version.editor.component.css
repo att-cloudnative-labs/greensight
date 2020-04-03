@@ -1,0 +1,38 @@
+:host {
+    padding: 12px;
+    width: 100%;
+    background: #404040;
+}
+
+.version-editor-panel {
+    height: 100%;
+    width: 100%;
+}
+
+
+.version-editor-contents {
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+
+label {
+    font-weight: normal !important;
+    color: white
+}
+
+.owner-name {
+    background-color:  #4d4949e3;
+    color: rgb(214, 208, 208);
+    border-radius: 3px;
+    font-size: x-small;
+    padding: 2px 5px 0 2px;
+    font-weight: normal;
+    margin: 0 3px 0 1px;
+}
+
+.node-name {
+    font-size: large;
+}

@@ -1,0 +1,15 @@
+<div class="history-item" data-toggle="popover" data-placement="top" [title]="fullOutput"  [ngClass]="{'item-hover':hovering, 'active-release': isActiveRelease()}"
+     (mouseenter)='onMouseEnter()'
+     (mouseleave)="onMouseLeave()"
+>
+    <div class="display-fields">
+    <div *ngIf="displayFields.includes('icon')" class="item-info icon"><i [ngClass]="historyItem.icon"></i></div>
+    <div *ngIf="displayFields.includes('time')" class="item-info time">{{historyItem.time}}</div>
+    <div *ngIf="displayFields.includes('user')" class="item-info user">{{historyItem.user}}</div>
+    <div *ngIf="displayFields.includes('action')" class="item-info action">{{historyItem.action}}</div>
+    </div>
+    <div *ngIf="hovering" class="edit-buttons">
+        <button title="Edit Version" data-testid="edit-version" (click)="editVersion()" *ngIf="isVersion() && canModify() && isEditableNode()" class="icon-button"><span style="position:relative"><i class="fa fa-pen"></i></span></button>
+        <button title="Edit Release" (click)="editRelease()" *ngIf="isRelease() && canModify() && isGraphModel()" class="icon-button"><span style="position:relative"><i class="fa fa-pen"></i></span></button>
+    </div>
+</div>

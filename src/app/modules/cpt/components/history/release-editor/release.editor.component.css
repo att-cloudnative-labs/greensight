@@ -1,0 +1,52 @@
+:host {
+    padding: 12px;
+    width: 100%;
+    background: #404040;
+}
+
+.create-release-panel {
+    height: 100%;
+    width: 100%;
+}
+
+textarea {
+    color: white;
+}
+
+
+.create-release-contents {
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    height: 100%;
+}
+#edit-release-name {
+    width: 100%;
+}
+
+label {
+    font-weight: normal !important;
+    color: white;
+    margin-top: 5px;
+}
+
+
+
+.node-name {
+    font-size: large;
+}
+
+#create-button {
+    background-color:  #4d4949e3;
+    border-radius: 3px;
+    padding: 2px 5px 0 2px;
+    font-weight: normal;
+    margin: 10px 3px 0 1px;
+}
+
+#create-button:disabled {
+    color: grey;
+}
+#create-release-warning {
+    color: red;
+}

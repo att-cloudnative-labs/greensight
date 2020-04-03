@@ -1,16 +1,31 @@
-import { Injectable, ErrorHandler } from '@angular/core';
-import { Response } from '@angular/http';
-import { Utils } from '@app/utils_module/utils';
+import { Injectable } from '@angular/core';
+import { HttpEvent, HttpInterceptor, HttpHandler, HttpRequest, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Injectable()
-export class GlobalErrorHandler implements ErrorHandler {
-    handleError(error) {
-        // If we receive a 401, force logout.
-        if (error instanceof Response && error.status === 401) {
-            sessionStorage.clear();
-            window.location.reload();
-        } else {
-            throw error;
-        }
+export class GlobalErrorHandler implements HttpInterceptor {
+
+    static counter = 0;
+    intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        return next.handle(request)
+            .pipe(
+                catchError((error: HttpErrorResponse) => {
+                    let errorMessage: string;
+                    const isLoginPage = error.url && error.url.endsWith('login');
+                    // redirect to login page if token is expired
+                    if (error.status === 401 && !isLoginPage) {
+                        errorMessage = `Error: Your session has been expired!\nPlease log back in.`;
+                        if (GlobalErrorHandler.counter === 0) {
+                            GlobalErrorHandler.counter++;
+                            window.alert(errorMessage);
+                        }
+                        sessionStorage.clear();
+                        window.location.reload();
+                    } else {
+                        return throwError(error);
+                    }
+                })
+            );
     }
 }

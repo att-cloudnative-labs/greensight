@@ -1,0 +1,125 @@
+:host {
+    flex: 1;
+    padding: 0;
+    background: #404040;
+    width: 100%;
+    overflow: hidden;
+}
+
+@keyframes load {
+    0% { background-color:#404040; }
+    100% { background-color:#383838; }
+}
+
+:host.isLoading {
+    animation: load linear 0.75s infinite alternate;
+}
+
+.loading {
+    margin: 8px;
+    opacity: 0.25;
+}
+
+.running-sim {
+    display: flex;
+    justify-content: center;
+    margin-top:200px;
+    text-align: center;
+}
+
+.refresh {
+    display: block;
+    margin: 0 auto;
+    margin-top: 10px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    color: white;
+}
+
+.fa-exclamation-triangle {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.refresh:focus{
+    outline: none;
+}
+
+.result-screen {
+    flex:1;
+    display: flex;
+    height: 100%;
+}
+
+app-sr-variable-picker {
+    flex: 0 0 300px;
+    height: 100%;
+    margin-top:18px;
+}
+
+.result-data {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.data-table {
+    flex: 1;
+    overflow: hidden;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.data-chart {
+    flex: 1;
+    overflow: hidden;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.bar {
+    display: flex;
+    align-content: space-between;
+    align-items: center;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    min-height: 46px;
+}
+
+.exportBtn {
+    float: right;
+    margin: 5px;
+    position: relative;
+    color: white;
+}
+
+input[type="checkbox" i] {
+    margin: 3px 4px 3px 4px;
+}
+
+label {
+    font-weight: normal;
+    display: inline;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+}
+
+.checkboxRelative {
+    margin: 10px auto 5px;
+    position: relative;
+    top:0; left:0; right:0; bottom:0;
+}
+
+select {
+    margin: 10px 100px 5px 0;
+    background-color: #404040;
+    padding-left: 2px;
+    color: white;
+}
+
+.scenario {
+    padding-left: 12px;
+    position: relative;
+}

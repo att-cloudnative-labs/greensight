@@ -1,12 +1,13 @@
 package com.att.eg.cptl.capacityplanning.backend.dto.treenode;
 
+import com.att.eg.cptl.capacityplanning.backend.model.NamedOwnerObject;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.NodeType;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.Permission;
 import java.util.List;
 import lombok.Data;
 
 @Data
-public class TreeNodeChildDto {
+public class TreeNodeChildDto implements NamedOwnerObject {
   private String id;
   private String name;
   private NodeType type;

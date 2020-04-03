@@ -4,20 +4,16 @@ import com.att.eg.cptl.capacityplanning.backend.dto.AppUserDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.UserGroupDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.AccessPermissionDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeDto;
+import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeReleaseDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeVersionDto;
-import com.att.eg.cptl.capacityplanning.backend.model.AppUser;
-import com.att.eg.cptl.capacityplanning.backend.model.ForecastVariableDescriptor;
-import com.att.eg.cptl.capacityplanning.backend.model.ProcessInterfaceDescription;
-import com.att.eg.cptl.capacityplanning.backend.model.UserGroup;
+import com.att.eg.cptl.capacityplanning.backend.model.*;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.*;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.NodeType;
 import com.att.eg.cptl.capacityplanning.backend.util.Constants;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -27,6 +23,36 @@ import org.springframework.util.StringUtils;
 public class ModelToDtoConverter {
   private static final DateTimeFormatter dateTimeFormatter =
       DateTimeFormatter.ofPattern(Constants.ZONED_DATE_TIME_FORMAT);
+
+  public TreeNodeReleaseDto convertToTreeNodeReleaseDto(TreeNodeRelease treeNodeRelease) {
+    TreeNodeReleaseDto dto = new TreeNodeReleaseDto();
+    dto.setObjectId(treeNodeRelease.getObjectId());
+    dto.setOwnerId(treeNodeRelease.getOwnerId());
+    dto.setVersionId(treeNodeRelease.getVersionId());
+    dto.setTimestamp(treeNodeRelease.getTimestamp());
+    dto.setId(treeNodeRelease.getId());
+    dto.setReleaseNr(treeNodeRelease.getReleaseNr());
+    dto.setDescription(treeNodeRelease.getDescription());
+    if (treeNodeRelease.getTags() != null) {
+      dto.setTags(new ArrayList<>(treeNodeRelease.getTags()));
+    }
+    return dto;
+  }
+
+  public TreeNodeReleaseDto convertToTreeNodeReleaseDto(TreeNodeLog treeNodeRelease) {
+    TreeNodeReleaseDto dto = new TreeNodeReleaseDto();
+    dto.setObjectId(treeNodeRelease.getBaseNodeId());
+    dto.setOwnerId(treeNodeRelease.getOwnerId());
+    dto.setVersionId(treeNodeRelease.getVersion());
+    dto.setTimestamp(getTimestampString(treeNodeRelease.getLogDate()));
+    dto.setId(treeNodeRelease.getId());
+    dto.setReleaseNr(treeNodeRelease.getReleaseNr());
+    dto.setDescription(treeNodeRelease.getDescription());
+    if (treeNodeRelease.getTags() != null) {
+      dto.setTags(new ArrayList<>(treeNodeRelease.getTags()));
+    }
+    return dto;
+  }
 
   /**
    * Converts a List of AppUser objects to a List of their DTO representations.
@@ -116,12 +142,22 @@ public class ModelToDtoConverter {
   public TreeNodeVersionDto createTreeNodeVersion(TreeNodeVersion versionInfo) {
     TreeNodeVersionDto dto = new TreeNodeVersionDto();
     dto.setId(versionInfo.getId());
-    dto.setComment(versionInfo.getComment());
+    dto.setDescription(versionInfo.getDescription());
     dto.setObjectId(versionInfo.getObjectId());
     dto.setTimestamp(versionInfo.getTimestamp());
-    dto.setUserId(versionInfo.getUserId());
-    dto.setUserName(versionInfo.getUserName());
+    dto.setOwnerId(versionInfo.getOwnerId());
     dto.setVersionId(versionInfo.getVersionId());
+    return dto;
+  }
+
+  public TreeNodeVersionDto createTreeNodeVersion(TreeNodeLog versionInfo) {
+    TreeNodeVersionDto dto = new TreeNodeVersionDto();
+    dto.setId(versionInfo.getId());
+    dto.setDescription(versionInfo.getLogComment());
+    dto.setObjectId(versionInfo.getBaseNodeId());
+    dto.setTimestamp(getTimestampString(versionInfo.getLogDate()));
+    dto.setOwnerId(versionInfo.getOwnerId());
+    dto.setVersionId(versionInfo.getVersion());
     return dto;
   }
 
@@ -131,32 +167,44 @@ public class ModelToDtoConverter {
     return dtos;
   }
 
-  public ForecastVariableDescriptor createForecastVariableDescriptor(
-      TreeNode variableNode, List<TreeNode> ancestors) {
-    if (variableNode.getType() != NodeType.FC_VARIABLE_BD
-        && variableNode.getType() != NodeType.FC_VARIABLE_NUM) {
-      throw new IllegalArgumentException("only accepting variable nodes");
+  public List<ForecastVariableDescriptor> extractForecastVariableDescriptors(
+      TreeNode sheetNode, List<TreeNode> ancestors) {
+    if (sheetNode.getType() != NodeType.FC_SHEET) {
+      throw new IllegalArgumentException("only accepting fc sheet nodes");
     }
-    if (variableNode.getAncestors().size() != 3) {
-      throw new IllegalArgumentException("can only work with level 3 nodes");
+    if (sheetNode.getAncestors().size() != 2) {
+      throw new IllegalArgumentException("can only work with level 2 nodes");
     }
-    TreeNode project = ancestors.get(1);
-    TreeNode sheet = ancestors.get(2);
-    ForecastVariableDescriptor varDesc = new ForecastVariableDescriptor();
-    varDesc.setVariableId(variableNode.getId());
-    varDesc.setVariableName(variableNode.getName());
-    varDesc.setVariableType(
-        variableNode.getType() == NodeType.FC_VARIABLE_BD ? "BREAKDOWN" : "INTEGER");
-    varDesc.setVariableUnit(variableNode.getDescription());
+    ArrayList<ForecastVariableDescriptor> varDescs = new ArrayList<>();
+    TreeNode folderNode = ancestors.get(1);
 
-    varDesc.setProjectBranchId(sheet.getId());
-    varDesc.setProjectBranchName(sheet.getName());
-    varDesc.setProjectId(project.getId());
-    varDesc.setProjectName(project.getName());
+    Map<String, Object> content = sheetNode.getContent();
+    if (content != null) {
+      Map<String, Map<String, Object>> sheetVariables =
+          (Map<String, Map<String, Object>>) content.get("variables");
+      if (sheetVariables != null) {
+        for (Map.Entry<String, Map<String, Object>> variableEntry : sheetVariables.entrySet()) {
+          ForecastVariableDescriptor varDesc = new ForecastVariableDescriptor();
+          varDesc.setVariableId(variableEntry.getKey());
+          varDesc.setVariableName((String) variableEntry.getValue().get("title"));
+          varDesc.setVariableType((String) variableEntry.getValue().get("variableType"));
+          varDesc.setVariableUnit((String) variableEntry.getValue().get("unit"));
+          varDesc.setSheetName(sheetNode.getName());
+          varDesc.setSheetId(sheetNode.getId());
+          varDesc.setFolderId(folderNode.getId());
+          varDesc.setFolderName(folderNode.getName());
+          varDesc.setSearchKey(
+              varDesc.getFolderName()
+                  + "/"
+                  + varDesc.getSheetName()
+                  + "/"
+                  + varDesc.getVariableName());
+          varDescs.add(varDesc);
+        }
+      }
+    }
 
-    varDesc.setSearchKey(project.getName() + "." + sheet.getName() + "." + variableNode.getName());
-
-    return varDesc;
+    return varDescs;
   }
 
   private AccessPermissionDto createAccessPermissionDto(AccessPermission accessPermission) {
@@ -229,6 +277,11 @@ public class ModelToDtoConverter {
     return dateTimeFormatter.format(zonedDateTime);
   }
 
+  private String getTimestampString(Date utcDate) {
+    return getTimestampString(
+        ZonedDateTime.ofInstant(utcDate.toInstant(), ZoneId.of(Constants.TIMESTAMP_TIME_ZONE)));
+  }
+
   public ProcessInterfaceDescription createProcessInterfaceDescription(TreeNode treeNode) {
     if (treeNode.getContent() == null || treeNode.getType() != NodeType.MODEL) {
       return null;
@@ -250,7 +303,38 @@ public class ModelToDtoConverter {
         pid.setParentId(parentId);
       }
     }
+    CombinedId cid = new CombinedId(treeNode.getId());
+    if (cid.isRelease()) {
+      pid.setReleaseNr(cid.getReleaseNr());
+      pid.setObjectId(cid.getNodeId());
+    } else if (cid.isVersion()) {
+      pid.setVersionId(cid.getVersionId().toString());
+    } else {
+      pid.setVersionId("^" + treeNode.getVersion().toString());
+    }
 
     return pid;
+  }
+
+  public TreeNodeTrackingInfo createNodeTrackingInfo(TreeNodeBase treeNode) {
+    if (treeNode == null) {
+      return null;
+    }
+    TreeNodeTrackingInfo tni = new TreeNodeTrackingInfo();
+    tni.setId(treeNode.getId());
+    tni.setName(treeNode.getName());
+    tni.setDescription(treeNode.getDescription());
+    tni.setType(treeNode.getType());
+    tni.setCurrentVersionNr(treeNode.getVersion());
+    List<String> ancestors = treeNode.getAncestors();
+    if (ancestors.size() > 0) {
+      String parentId = ancestors.get(ancestors.size() - 1);
+      if (StringUtils.hasText(parentId)) {
+        tni.setParentId(parentId);
+      }
+    }
+    tni.setProcessDependencies(treeNode.getProcessDependencies());
+
+    return tni;
   }
 }

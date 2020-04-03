@@ -1,10 +1,8 @@
 import { Router } from 'express';
-import { Response, Request, NextFunction } from 'express';
-import { map, reduce, switchMap, catchError } from 'rxjs/operators';
-import { from, Subject, Observable, Observer } from 'rxjs';
-import { SimulationConfiguration, SimulationResult } from '@cpt/capacity-planning-simulation-types';
+import { Response, Request } from 'express';
 
-import { ForecastService } from './forecast-service';
+import { SimulationResult } from '@cpt/capacity-planning-simulation-types';
+
 import { ModelService } from './model-service';
 import { SimulationService } from './simulation-service';
 import { headerAuth } from './auth';
@@ -12,7 +10,6 @@ const packageInfo = require('../package.json')
 
 export const simulationRouter: Router = Router();
 
-let fcService = new ForecastService();
 let modelService = new ModelService();
 let simulationService = new SimulationService();
 simulationRouter.post("/:simConfigId/run", headerAuth, (req: Request, res: Response) => {

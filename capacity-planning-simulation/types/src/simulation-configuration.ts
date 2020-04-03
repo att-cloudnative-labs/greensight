@@ -1,13 +1,21 @@
-import { AspectParam, NumberParam, StringParam, BooleanParam, DateParam, NormalDistNumberParam, AspectNumberParam } from './param';
-import { UidObject } from './object';
+import {
+    AspectParam,
+    NumberParam,
+    StringParam,
+    BooleanParam,
+    DateParam,
+    NormalDistNumberParam,
+    AspectNumberParam,
+    ParamType
+} from './param';
+import { ReleaseTrackingUidObject, UidObject, TrackingModes } from './object';
 
 
 export interface ForecastVariableRefParam {
     type: 'FORECAST_VAR_REF';
     name: string;
     variableId: string;
-    // forecast branch id for now
-    forecastId: string;
+    sheetRefId: string;
     unit?: string;
 }
 
@@ -25,19 +33,39 @@ export interface SimulationScenario extends UidObject {
 
 export type SimulationReportTypes = 'AGGREGATED';
 
+export interface ForecastSheetReference extends ReleaseTrackingUidObject {
+    // from UidObject
+    objectId: string;
+    objectType: 'FC_SHEET_REF';
 
-export interface SimulationConfiguration extends UidObject {
+    // from ReleaseTrackingUidObject
+    releaseNr?: number;
+    tracking?: TrackingModes;
+    ref: string;
+
+    label?: string;
+
+}
+
+export interface SimulationConfiguration extends ReleaseTrackingUidObject {
     // from UidObject
     objectId: string;
     objectType: 'SIMULATION_CONFIGURATION';
 
+    // from ReleaseTrackingUidObject
+    releaseNr?: number;
+    tracking?: TrackingModes;
+    ref: string;
+
     metadata?: any;
 
-    modelRef: string;
     modelVersion?: string;
+    modelName?: string;
     monteCarloIterations?: number;
+    inports?: { [inportId: string]: { types: ParamType[], name: string } };
+    forecasts?: { [fcrefId: string]: ForecastSheetReference };
 
-    // first simultation step date to be simulated
+    // first simulation step date to be simulated
     stepStart: string;
     // last simulation step date to be simulated
     stepLast: string;
@@ -47,4 +75,5 @@ export interface SimulationConfiguration extends UidObject {
     reportType: SimulationReportTypes;
 
     scenarios: { [scenarioId: string]: SimulationScenario };
+
 }

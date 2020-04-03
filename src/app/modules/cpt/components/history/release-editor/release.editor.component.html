@@ -1,0 +1,26 @@
+<div class="create-release-panel">
+    <header style="white-space: nowrap;">
+        <label class="node-name">{{objectName}}</label><label class="owner-name">{{release.ownerName}}</label>
+        <br>
+        <label>Release: {{release.releaseNr}}</label>
+        <br>
+        {{releaseCreateDate}}
+        <br>
+        Version {{release.versionId}}<br>
+
+    </header>
+    <div class="create-release-contents">
+        <div style="margin-top: 20px;">
+            <label for="edit-description">Description:</label><br>
+            <textarea id="edit-description"
+                type="text"
+                cols="55"
+                rows="3"
+                [(ngModel)]="description"
+                      (blur)="saveDescription()"
+            >
+            {{description}}</textarea>
+        </div>
+    </div>
+
+</div>

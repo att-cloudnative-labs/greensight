@@ -1,0 +1,59 @@
+<div class="access-form" *ngIf="displayAccess">
+    <div class="access-options" style="white-space: nowrap;">
+        <div *ngFor="let access of accessControls | keyvalue" style="white-space: nowrap;">
+            <input id="{{access.key}}" type="radio" name="folder-access" value="{{access.key}}" [(ngModel)]="accessType"
+                [checked]="folder.accessControl === access.key" (change)="setAccess(access.key)"><label
+                for="{{access.key}}">{{access.value}}</label>
+            <br></div>
+        <input id=advanced type="radio" name="folder-access" value="ADVANCED" [(ngModel)]="accessType">
+        <label data-testid="acl-advanced" for=advanced> Advanced</label>
+    </div>
+    <div *ngIf="this.accessType === 'ADVANCED'" class="advanced-acl">
+        <table>
+            <th>User or Group</th>
+            <th>Access</th>
+            <th class="close-button-column"></th>
+            <tr>
+                <td class="default-user"><i class="fa fa-user"></i>&nbsp;Owner (<span style="font-style: italic;">{{folder.ownerName}}</span>)</td>
+                <td class="default-user"> Full control</td>
+                <td class="close-button-column"></td>
+            </tr>
+            <tr>
+                <td class="default-user"><i class="fa fa-users"></i>&nbsp;Anyone</td>
+                <td>
+                    <app-anyone-permission-select data-testid="anyone-permission" [anyonePermission]="anyonePermission"
+                         (onUpdateAnyonePermission)="updateAnyonePermission($event)">
+                    </app-anyone-permission-select>
+                </td>
+                <td class="close-button-column"></td>
+            </tr>
+            <tr *ngFor="let accessControl of accessControlRows">
+                <td>
+                    <app-user-picker
+                            (onUpdateUserAccess)="updateAccessControl(accessControl, $event)"
+                            [user]="accessControl.user"
+                            [omit]="omit">
+                    </app-user-picker>
+                </td>
+                <td>
+                    <app-permission-select data-testid="permission"
+                        (onUpdatePermission)="updateUserPermission(accessControl, $event)"
+                        [permission]="accessControl.permission">
+                    </app-permission-select>
+                </td>
+                <td class="close-button-column"><span (click)="removeAccessRow(accessControl)"><i class="fas fa-trash-alt close-button"></i></span></td>
+            </tr>
+            <tr>
+                <td class="add-acl-entry" (click)="addAccessControlRow()">
+                    Click to add
+                </td>
+                <td>
+                </td>
+                <td class="close-button-column"></td>
+            </tr>
+        </table>
+    </div>
+    <div class="save-button">
+        <button (click)="saveAccessChange(folder)">Save</button>
+    </div>
+</div>

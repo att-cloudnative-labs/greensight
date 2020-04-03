@@ -1,12 +1,16 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { LoginComponent } from './core_module/components/login/login.component';
-import { UserService } from './core_module/service/user.service';
+import { LoginComponent } from './modules/login/components/login/login.component';
+import { UserService } from './modules/login/services/user.service';
 
 const routes: Routes = [
+    {
+        path: '',
+        redirectTo: 'login',
+        pathMatch: 'full'
+    },
     { path: 'login', component: LoginComponent },
-    { path: 'system-models', canActivate: [UserService], loadChildren: './modules/system-models/system-models.module#SystemModelsModule' },
-    { path: '#', canActivate: [UserService], loadChildren: './core_module/core.module#CoreModule' }
+    { path: 'capacity-planning', canActivate: [UserService], loadChildren: './modules/cpt/cpt.module#CptModule' }
 ];
 
 @NgModule({

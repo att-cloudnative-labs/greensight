@@ -1,0 +1,52 @@
+<div *ngIf="!editingEnabled" class="error-overlay">
+    <div class="error-message">
+        <p>The forecast you are editing is out of sync or some other error has occurred.</p>
+        <p>Please reload the forecast to continue making edits.</p>
+    </div>
+</div>
+        <app-forecast-sheet-control-bar
+        [forecastNode]="forecastNode"
+        [uiProjections]="uiProjections"
+        (exportForecastCSV)="onDownloadForecastCSV($event)"
+        (disableClick)="setDisableClick($event)"
+        (newDatesReadOnly)="newDatesReadOnly()"
+        (hiddenVariableIds)="updateHiddenVariableIds($event)"
+        [releaseNr]="releaseNr"
+        [nodeId]="nodeId"
+        ></app-forecast-sheet-control-bar>
+        <as-split direction="vertical" gutterSize="6" #split>
+            <as-split-area size="{{spreadsheetSize}}">
+                    <spreadsheet-entry
+                            (onVariableCreate)="createVariable($event)"
+                            (onDeleteVariable)="deleteVariable($event)"
+                            (onUpdateVariable)="updateVariable($event)"
+                            (onUpsertActualValue)="upsertActualValue($event)"
+                            (onUpsertTimesegment)="upsertTimesegment($event)"
+                            (onUpsertSubframe)="upsertSubframe($event)"
+                            (onPaste)="handleSpreadsheetPaste($event)"
+                            [uiProjections]="uiProjections"
+                            [variableList]="forecastVariableList"
+                            [units]="units"
+                            [startDate]="startDate"
+                            [endDate]="endDate"
+                            [disableClick]="disableClick"
+                            [sheetId]="forecastNode?.id"
+                            [processInput]="sheetVisible"
+                            [readonly]="readonly"
+                            (onUpdateVariableTitle)="updateVariableTitle($event)"
+                            >
+                    </spreadsheet-entry>
+            </as-split-area>
+            <as-split-area size="{{graphSize}}">
+                <forecast-graph [hidden]="uiProjections.length == 0"
+                        [uiProjections]="uiProjections"
+                        [startDate]="startDate"
+                        [endDate]="endDate">
+                </forecast-graph>
+            </as-split-area>
+        </as-split>
+<div id="editor-target-{{nodeId}}" data-testid="editor-target">
+</div>
+<div id="autocomplete-target-{{nodeId}}" data-testid="autocomplete-target">
+</div>
+

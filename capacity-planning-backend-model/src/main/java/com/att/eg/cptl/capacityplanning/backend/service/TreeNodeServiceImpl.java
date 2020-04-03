@@ -1,5 +1,7 @@
 package com.att.eg.cptl.capacityplanning.backend.service;
 
+import static com.att.eg.cptl.capacityplanning.backend.service.util.treenode.DependencyOps.getDeepNodeDependencies;
+
 import com.att.eg.cptl.capacityplanning.backend.controller.history.NodeHistoryFilterType;
 import com.att.eg.cptl.capacityplanning.backend.controller.util.accesscontrol.AccessControlUtil;
 import com.att.eg.cptl.capacityplanning.backend.controller.util.trash.TrashUtil;
@@ -20,34 +22,31 @@ import com.att.eg.cptl.capacityplanning.backend.model.converter.DtoToModelConver
 import com.att.eg.cptl.capacityplanning.backend.model.converter.ModelToDtoConverter;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.*;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.AccessControlledTreeObject;
-import com.att.eg.cptl.capacityplanning.backend.service.util.objecthistory.TreeNodeHistoryService;
-import com.att.eg.cptl.capacityplanning.backend.service.util.treenode.DtoOps;
-import com.att.eg.cptl.capacityplanning.backend.service.util.treenode.GraphModelContentOps;
-import com.att.eg.cptl.capacityplanning.backend.service.util.treenode.PatchOps;
+import com.att.eg.cptl.capacityplanning.backend.service.util.treenode.*;
 import com.mongodb.client.result.UpdateResult;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
+import javax.validation.constraints.Null;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 @SuppressWarnings("squid:S1066")
 @Service
-public class TreeNodeServiceImpl implements TreeNodeService {
+public class TreeNodeServiceImpl extends TreeNodeBaseService implements TreeNodeService {
   private static final String TREE_NODE_NOT_FOUND_MESSAGE = "Tree node not found.";
 
-  @Autowired private TreeNodeRepository treeNodeRepository;
-  @Autowired private TreeNodeHistoryRepository treeNodeHistoryRepository;
+  private final TreeNodeRepository treeNodeRepository;
+  private final TreeNodeLogRepository treeNodeLogRepository;
 
   @Resource private ModelToDtoConverter modelToDtoConverter;
 
   @Resource private DtoToModelConverter dtoToModelConverter;
-
-  @Resource private TreeNodeHistoryService treeNodeHistoryService;
 
   @Resource private AccessControlUtil accessControlUtil;
 
@@ -59,6 +58,34 @@ public class TreeNodeServiceImpl implements TreeNodeService {
 
   @Resource private TreeNodeContentValidationUtil treeNodeContentValidationUtil;
 
+  @Autowired
+  public TreeNodeServiceImpl(
+      TreeNodeRepository treeNodeRepository, TreeNodeLogRepository treeNodeLogRepository) {
+    super(treeNodeRepository);
+    this.treeNodeRepository = treeNodeRepository;
+    this.treeNodeLogRepository = treeNodeLogRepository;
+  }
+
+  protected TreeNodeBase getDepNode(TreeNodeDependency dep) {
+    if (dep.getTrackingMode() == null) {
+      return null;
+    }
+    switch (dep.getTrackingMode()) {
+      case FIXED:
+        if (dep.getReleaseNr() == null) {
+          return null;
+        }
+        return this.treeNodeLogRepository.findRelease(dep.getRef(), dep.getReleaseNr(), true);
+      case LATEST_RELEASE:
+        TreeNodeBase rel = this.treeNodeLogRepository.findLatestRelease(dep.getRef(), true);
+        if (rel != null) return rel;
+        // else fall through
+      case CURRENT_VERSION:
+        return this.treeNodeRepository.getNode(dep.getRef(), true);
+    }
+    return null;
+  }
+
   @Override
   public List<TreeNodeDto> getNode(
       String id,
@@ -68,10 +95,40 @@ public class TreeNodeServiceImpl implements TreeNodeService {
       Boolean sparseChildren,
       AppUser user) {
     boolean getTrashed = showTrash;
-    TreeNode node = treeNodeRepository.getNode(id, sparse);
+    CombinedId cId = new CombinedId(id);
+    BaseNodeInfo bni = getNodeForUser(cId.getNodeId(), user, sparse);
+    TreeNode node;
+
+    if ((cId.isRelease() || cId.isVersion()) && withChildren) {
+      throw new IllegalArgumentException("can't get children for release/version");
+    }
+
+    if (cId.isRelease()) {
+      TreeNodeLog release =
+          treeNodeLogRepository.findRelease(cId.getNodeId(), cId.getReleaseNr(), sparse);
+      node = release != null ? release.asTreeNode() : null;
+
+    } else if (cId.isVersion()) {
+      TreeNodeLog version =
+          treeNodeLogRepository.findVersion(cId.getNodeId(), cId.getVersionId(), sparse);
+      TreeNode versionNode = version != null ? version.asTreeNode() : null;
+      // if the versionId === latest, hand out the
+      // main tree node
+      if (versionNode == null) {
+        TreeNode tmpTreeNode = treeNodeRepository.getNode(cId.getNodeId(), sparse);
+        if (tmpTreeNode.getVersion().equals(cId.getVersionId())) {
+          versionNode = tmpTreeNode;
+        }
+      }
+      node = versionNode;
+    } else {
+      node = treeNodeRepository.getNode(id, sparse);
+    }
+
     if (node == null) {
       throw new NotFoundException(TREE_NODE_NOT_FOUND_MESSAGE);
     }
+
     if (getTrashed != trashUtil.isItemTrashed(node)) {
       throw new TrashStateException("Cannot get a node with a diverting request trash state.");
     }
@@ -79,20 +136,18 @@ public class TreeNodeServiceImpl implements TreeNodeService {
     List<TreeNode> ancestors = getAncestors(node);
 
     List<TreeNodeDto> output = new ArrayList<>();
-    List<UserGroup> usersGroups = userGroupRepository.findByUserId(user.getId());
-
-    List<String> usersGroupIds =
-        usersGroups == null
-            ? Collections.emptyList()
-            : usersGroups.stream().map(UserGroup::getId).collect(Collectors.toList());
-    List<Permission> usersPermissionsForThisNode =
-        accessControlUtil.getCurrentUsersPermissionsForThisNode(
-            user, node, ancestors, usersGroupIds);
+    List<Permission> usersPermissionsForThisNode = bni.getPermissions();
     if (!usersPermissionsForThisNode.contains(Permission.READ)) {
       throw new NotFoundException(TREE_NODE_NOT_FOUND_MESSAGE);
     }
 
     if (withChildren) {
+      List<UserGroup> usersGroups = userGroupRepository.findByUserId(user.getId());
+      List<String> usersGroupIds =
+          usersGroups == null
+              ? Collections.emptyList()
+              : usersGroups.stream().map(UserGroup::getId).collect(Collectors.toList());
+
       List<TreeNode> childNodes =
           treeNodeRepository.getChildren(node.getId(), node.getAncestors().size(), sparseChildren);
       childNodes.forEach(
@@ -149,65 +204,141 @@ public class TreeNodeServiceImpl implements TreeNodeService {
     return output;
   }
 
-  public List<ForecastVariableDescriptor> getVariableDescriptors(AppUser user) {
-    List<ForecastVariableDescriptor> vdesc = new ArrayList<>();
-    List<UserGroup> usersGroups = userGroupRepository.findByUserId(user.getId());
+  @Override
+  public List<TreeNodeTrackingInfo> getTrackingInfo(
+      AppUser user,
+      @Nullable Date updatedAfter,
+      @Nullable List<String> nodeIds,
+      @Nullable NodeType nodeType) {
+    List<TreeNodeTrackingInfo> dtos = new ArrayList<>();
 
-    List<String> usersGroupIds =
-        usersGroups == null
-            ? Collections.emptyList()
-            : usersGroups.stream().map(UserGroup::getId).collect(Collectors.toList());
-    List<TreeNode> variableNodes =
-        treeNodeRepository.getAll(
-            TreeNodeRepositoryCustom.ProjectionType.SPARSE,
-            null,
-            NodeType.FC_VARIABLE_BD,
-            NodeType.FC_VARIABLE_NUM);
+    List<String> idsToFetch = new ArrayList<>();
 
-    Map<String, List<TreeNode>> ancestors = getAncestorMap(variableNodes);
-
-    for (TreeNode varNode : variableNodes) {
-      if (accessControlUtil.doesUserHaveReadPermission(
-          user, varNode, ancestors.get(varNode.getId()), usersGroupIds)) {
-        vdesc.add(
-            modelToDtoConverter.createForecastVariableDescriptor(
-                varNode, ancestors.get(varNode.getId())));
+    if (nodeIds != null) {
+      idsToFetch.addAll(nodeIds);
+    } else {
+      if (nodeType != null) {
+        List<TreeNode> trackingNodes =
+            treeNodeRepository.getAll(
+                TreeNodeRepositoryCustom.ProjectionType.SPARSE, updatedAfter, nodeType);
+        idsToFetch.addAll(trackingNodes.stream().map(TreeNode::getId).collect(Collectors.toList()));
+      } else {
+        List<TreeNode> trackingNodes =
+            treeNodeRepository.getAll(
+                TreeNodeRepositoryCustom.ProjectionType.SPARSE,
+                updatedAfter,
+                NodeType.FC_SHEET,
+                NodeType.MODEL);
+        idsToFetch.addAll(trackingNodes.stream().map(TreeNode::getId).collect(Collectors.toList()));
       }
     }
-    return vdesc;
+
+    for (String nodeId : idsToFetch) {
+      // fixme: optimize to only fetch ancestors/user names once
+      BaseNodeInfo bni = getNodeForUser(nodeId, user, true);
+      if (bni != null && hazPermission(bni, Permission.READ)) {
+        TreeNodeLog release = this.treeNodeLogRepository.findLatestRelease(nodeId, true);
+        TreeNodeTrackingInfo nti = modelToDtoConverter.createNodeTrackingInfo(bni.getTreeNode());
+        if (nti != null) {
+          nti.setPathName(bni.getParentName());
+          if (release != null) {
+            nti.setReleaseNr(release.getReleaseNr());
+            nti.setProcessDependencies(release.getProcessDependencies());
+          }
+          ;
+          dtos.add(nti);
+        }
+      }
+    }
+
+    return dtos;
   }
 
   @Override
-  public List<ProcessInterfaceDescription> getProcessInterfaceDescription(
-      AppUser user, @Nullable Date updatedAfter, @Nullable String processId) {
-    List<ProcessInterfaceDescription> dtos = new ArrayList<>();
+  public List<TreeNodeTrackingInfo> search(
+      AppUser user,
+      PageRequest pageRequest,
+      @Nullable String searchTerm,
+      @Nullable List<NodeType> nodeTypes) {
+    List<TreeNodeTrackingInfo> nodesFound = new ArrayList<>();
+
+    // fake a root node so we don't have to query it
+    TreeNode fakeRoot = TreeOps.getFakeRoot();
+
+    // first get all folders and figure out which ones are accessible.
+    // for now we just assume all the subnode inherit the folders access permission
+    List<TreeNode> folders = treeNodeRepository.getChildren("root", 0, true);
     List<UserGroup> usersGroups = userGroupRepository.findByUserId(user.getId());
 
     List<String> usersGroupIds =
         usersGroups == null
             ? Collections.emptyList()
             : usersGroups.stream().map(UserGroup::getId).collect(Collectors.toList());
-    List<TreeNode> pidNodes =
-        treeNodeRepository.getAll(
-            TreeNodeRepositoryCustom.ProjectionType.PID, updatedAfter, NodeType.MODEL);
-    Map<String, List<TreeNode>> ancestors = getAncestorMap(pidNodes);
+    List<TreeNode> accessibleFolders =
+        folders
+            .stream()
+            .filter(
+                f ->
+                    accessControlUtil.doesUserHaveReadPermission(
+                        user, f, Collections.singletonList(fakeRoot), usersGroupIds))
+            .collect(Collectors.toList());
+    List<String> accessibleFolderIds =
+        accessibleFolders.stream().map(TreeNode::getId).collect(Collectors.toList());
+    Map<String, String> folderNames =
+        accessibleFolders.stream().collect(Collectors.toMap(TreeNode::getId, TreeNode::getName));
 
-    for (TreeNode pidNode : pidNodes) {
-      List<Permission> nodePermissions =
-          accessControlUtil.getCurrentUsersPermissionsForThisNode(
-              user, pidNode, ancestors.get(pidNode.getId()), usersGroupIds);
-      if (nodePermissions.indexOf(Permission.READ) > -1) {
-        ProcessInterfaceDescription pidDto =
-            modelToDtoConverter.createProcessInterfaceDescription(pidNode);
-        List<TreeNode> ancestorNodes = ancestors.get(pidNode.getId());
-        if (ancestorNodes.size() > 0) {
-          TreeNode parentNode = ancestorNodes.get(ancestorNodes.size() - 1);
-          pidDto.setPathName(parentNode.getName());
-        }
-        dtos.add(pidDto);
+    List<TreeNode> queriedNodes =
+        treeNodeRepository.searchNode(searchTerm, accessibleFolderIds, pageRequest, nodeTypes);
+
+    for (TreeNode tn : queriedNodes) {
+      TreeNodeTrackingInfo ti = modelToDtoConverter.createNodeTrackingInfo(tn);
+      ti.setPathName(folderNames.get(ti.getParentId()));
+      nodesFound.add(ti);
+    }
+
+    return nodesFound;
+  }
+
+  @Override
+  public List<TreeNodeTrackingInfo> findSiblings(
+      AppUser user,
+      PageRequest pageRequest,
+      String siblingReference,
+      @Nullable List<NodeType> nodeTypes) {
+    // FIXME: no paging implemented yet
+    // FIMXE: build proper DB api to do this query
+
+    BaseNodeInfo bni = getNodeForUser(siblingReference, user, true);
+    assertPermission(bni, Permission.READ);
+
+    String parentId =
+        bni.getTreeNode().getAncestors().get(bni.getTreeNode().getAncestors().size() - 1);
+
+    List<TreeNodeTrackingInfo> nodesFound = new ArrayList<>();
+    List<NodeType> queryNodeTypes =
+        nodeTypes != null ? nodeTypes : Collections.singletonList(NodeType.FOLDER);
+    List<TreeNodeDto> childrenPlusParent = this.getNode(parentId, false, true, true, true, user);
+    Optional<TreeNodeDto> parentOpt =
+        childrenPlusParent.stream().filter(n -> n.getId().equals(parentId)).findFirst();
+    if (parentOpt.isPresent()) {
+      TreeNodeDto parent = parentOpt.get();
+      List<TreeNodeDto> children =
+          childrenPlusParent
+              .stream()
+              .filter(
+                  n ->
+                      n.getParentId().equals(parentId)
+                          && queryNodeTypes.contains(n.getType())
+                          && !n.getId().equals(siblingReference))
+              .collect(Collectors.toList());
+      for (TreeNodeDto tn : children) {
+        TreeNode t = dtoToModelConverter.convertDtoToTreeNode(tn, Collections.emptyList());
+        TreeNodeTrackingInfo ti = modelToDtoConverter.createNodeTrackingInfo(t);
+        ti.setPathName(parent.getName());
+        nodesFound.add(ti);
       }
     }
-    return dtos;
+    return nodesFound;
   }
 
   /**
@@ -270,7 +401,18 @@ public class TreeNodeServiceImpl implements TreeNodeService {
     // figure out if any graph models references any of the id's that we want to delete
     nodeIdsToBeDeleted.forEach(
         nodeId -> {
-          List<TreeNode> dependentGraphModels = treeNodeRepository.findDependentNodes(nodeId);
+          List<String> nodesWithDependentReleases =
+              treeNodeLogRepository.findDependentBaseNodeReleaseIds(nodeId);
+          nodesWithDependentReleases.forEach(
+              baseNodeId -> {
+                if (!nodeIdsToBeDeleted.contains(baseNodeId)) {
+                  throw new FailedDependencyException(
+                      "Reference to one of the items deleted exists in "
+                          + "the Release of another graph model. Can't perform update.");
+                }
+              });
+          List<TreeNode> dependentGraphModels =
+              treeNodeRepository.findDependentNodesByType("MODEL", nodeId);
           dependentGraphModels.forEach(
               depModel -> {
                 boolean isTrashedNode =
@@ -280,7 +422,7 @@ public class TreeNodeServiceImpl implements TreeNodeService {
                 if (!nodeIdsToBeDeleted.contains(depModel.getId()) && !isTrashedNode) {
                   throw new FailedDependencyException(
                       "Reference to one of the items deleted exists in"
-                          + "another graph model. Can't perform update.");
+                          + " another graph model. Can't perform update.");
                 }
               });
         });
@@ -333,6 +475,16 @@ public class TreeNodeServiceImpl implements TreeNodeService {
         user, node, mainNodeAncestors, usersGroupIds)) {
       throw new ForbiddenException(
           "User does not have the privileges required to recover this node.");
+    }
+
+    ArrayList<String> siblingNames = new ArrayList<String>();
+    List<TreeNode> siblingNodes = treeNodeRepository.getChildren(parent);
+    siblingNodes.forEach(
+        s -> {
+          siblingNames.add(s.getName());
+        });
+    if (siblingNames.contains(node.getName())) {
+      throw new DocumentExistsException("A node with this name already exists. Cannot restore.");
     }
 
     List<TreeNode> restorableChildNodes =
@@ -409,18 +561,30 @@ public class TreeNodeServiceImpl implements TreeNodeService {
           "A node with this ID already exists. The ID can be omitted for auto-generation.");
     }
 
+    ArrayList<String> siblingNames = new ArrayList<String>();
+    List<TreeNode> siblingNodes = treeNodeRepository.getChildren(parentNode);
+    String originalName = treeNode.getName();
+    siblingNodes.forEach(
+        s -> {
+          siblingNames.add(s.getName());
+        });
+    if (siblingNames.contains(treeNode.getName())) {
+      // Automatically rename the node if the name is already taken
+      int index = 1;
+      do {
+        treeNode.setName(originalName + " " + Integer.toString(index++));
+      } while (siblingNames.contains(treeNode.getName()));
+    }
     treeNodeRepository.insert(treeNode);
 
-    // fixme: we should be able to get away without re-fetching the new node
-    TreeNode savedTreeNode = treeNodeRepository.getNode(treeNode.getId(), true);
+    treeNode.setVersion(0L);
     parentNodeAncestors.add(parentNode);
     List<Permission> usersPermissionsForThisNode =
         accessControlUtil.getCurrentUsersPermissionsForThisNode(
-            user, savedTreeNode, parentNodeAncestors, usersGroupIds);
+            user, treeNode, parentNodeAncestors, usersGroupIds);
 
-    TreeNodeDto savedTreeNodeDto =
-        convertToAndEnrichTreeNodeDto(treeNode, usersPermissionsForThisNode, parentNodeAncestors);
-    return savedTreeNodeDto;
+    return convertToAndEnrichTreeNodeDto(
+        treeNode, usersPermissionsForThisNode, parentNodeAncestors);
   }
 
   /**
@@ -459,12 +623,13 @@ public class TreeNodeServiceImpl implements TreeNodeService {
     List<TreeNode> mainNodeAncestors = getAncestors(currentNode);
 
     TreeNode parent = mainNodeAncestors.get(mainNodeAncestors.size() - 1);
-    // fixme introduce move node api as we can't move node here atm
+
     if (!treeNodeDto.getParentId().equals(parent.getId())) {
       throw new IllegalArgumentException("can't change parent id");
     }
-
-    checkVersionNumber(currentNode, versionNumber);
+    if (versionNumber != null) {
+      checkVersionNumber(currentNode, versionNumber);
+    }
 
     List<UserGroup> usersGroups = userGroupRepository.findByUserId(user.getId());
 
@@ -493,18 +658,40 @@ public class TreeNodeServiceImpl implements TreeNodeService {
       }
     }
 
-    if (!sparse && currentNode.getType() == NodeType.MODEL) {
+    // are we changing the nodes name?
+    if (currentNode.getName().compareTo(treeNodeDto.getName()) != 0) {
+      // check if one of the siblings uses the name
+      ArrayList<String> siblingNames = new ArrayList<>();
+      List<TreeNode> siblingNodes = treeNodeRepository.getChildren(parent);
+      siblingNodes.forEach(
+          s -> {
+            siblingNames.add(s.getName());
+          });
+      if (siblingNames.contains(treeNodeDto.getName())) {
+        throw new DocumentExistsException(
+            "A node with this name already exists. Please choose a different name.");
+      }
+      // change the name in all releases
+      treeNodeLogRepository.renameReleases(currentNode.getId(), treeNodeDto.getName());
+    }
+
+    if (!sparse) {
       currentNode.setContent(treeNodeDto.getContent());
-      currentNode.setProcessDependencies(
-          GraphModelContentOps.getModelProcModelRefs(currentNode.getContent()));
-      List<String> removedPortIds =
-          GraphModelContentOps.getRemovedPortIds(currentNode, treeNodeDto);
-      if (!removedPortIds.isEmpty()) {
-        // fixme make this smarter
-        List<TreeNode> dependentGraphModels =
-            treeNodeRepository.findDependentNodes(currentNode.getId());
-        GraphModelContentOps.throwExceptionIfPortRefAppearsInConnections(
-            dependentGraphModels, removedPortIds);
+      List<String> deepDependencies = getDeepNodeDependencies(currentNode, this::getDepNode);
+      if (deepDependencies.contains(currentNode.getId())) {
+        throw new IllegalArgumentException("there is a cyclic dependency in this node");
+      }
+      currentNode.setProcessDependencies(deepDependencies);
+      if (currentNode.getType() == NodeType.MODEL) {
+        List<String> removedPortIds =
+            GraphModelContentOps.getRemovedPortIds(currentNode, treeNodeDto);
+        if (!removedPortIds.isEmpty()) {
+          // fixme make this smarter
+          List<TreeNode> dependentGraphModels =
+              treeNodeRepository.findDependentNodes(currentNode.getId());
+          GraphModelContentOps.throwExceptionIfPortRefAppearsInConnections(
+              dependentGraphModels, removedPortIds);
+        }
       }
     }
 
@@ -514,19 +701,18 @@ public class TreeNodeServiceImpl implements TreeNodeService {
       currentNode.setAccessControl(currentNode.getAccessControl());
     }
 
+    // save a copy of the old node
+    treeNodeLogRepository.insertVersion(NodeLogOps.create(currentNode, user, ""));
+
     dtoToModelConverter.updateTreeNodeFromDto(currentNode, treeNodeDto, sparse);
     treeNodeRepository.save(currentNode);
-    // fixme: this should be async
-    treeNodeHistoryRepository.save(currentNode, user.getId(), "");
 
     TreeNode savedTreeNode = treeNodeRepository.getNode(currentNode.getId(), true);
     List<Permission> usersPermissionsForThisNode =
         accessControlUtil.getCurrentUsersPermissionsForThisNode(
             user, savedTreeNode, mainNodeAncestors, usersGroupIds);
-    TreeNodeDto savedTreeNodeDto =
-        convertToAndEnrichTreeNodeDto(
-            savedTreeNode, usersPermissionsForThisNode, mainNodeAncestors);
-    return savedTreeNodeDto;
+    return convertToAndEnrichTreeNodeDto(
+        savedTreeNode, usersPermissionsForThisNode, mainNodeAncestors);
   }
 
   @Override
@@ -535,87 +721,66 @@ public class TreeNodeServiceImpl implements TreeNodeService {
       AppUser user,
       List<NodeHistoryFilterType> activeFilters,
       boolean alwaysIncludeFirst) {
-    TreeNode node = treeNodeRepository.getNode(nodeId, true);
-    List<TreeNode> mainNodeAncestors = getAncestors(node);
-    if (node == null) {
-      throw new NotFoundException(TREE_NODE_NOT_FOUND_MESSAGE);
-    }
+    BaseNodeInfo bni = getNodeForUser(nodeId, user, true);
+    assertPermission(bni, Permission.READ);
 
-    List<UserGroup> usersGroups = userGroupRepository.findByUserId(user.getId());
+    List<TreeNodeLog> versions = treeNodeLogRepository.findVersions(nodeId, true);
 
-    List<String> usersGroupIds =
-        usersGroups == null
-            ? Collections.emptyList()
-            : usersGroups.stream().map(UserGroup::getId).collect(Collectors.toList());
+    // the latest version is our main node
+    versions.add(TreeNodeLog.from(bni.getTreeNode()));
 
-    if (!accessControlUtil.doesUserHaveReadPermission(
-        user, node, mainNodeAncestors, usersGroupIds)) {
-      throw new ForbiddenException(
-          "User does not have the privileges required to view this node's history.");
-    }
-
-    List<TreeNodeVersion> versions = treeNodeHistoryRepository.getVersionInfo(nodeId);
-    List<TreeNodeVersionDto> versionsDto;
+    List<TreeNodeLog> usedVersions = new ArrayList<>();
     // FIXME: adjust filters to new tree node versions
-    if (activeFilters.size() > 0 && activeFilters.get(0).toString().equals("hasComment")) {
-      List<TreeNodeVersion> usedVersions = new ArrayList<>();
-      for (TreeNodeVersion v : versions) {
-        if (StringUtils.isNotBlank(v.getComment())
-            || (v.getVersionId().equals(1L) && alwaysIncludeFirst)) {
+    if (activeFilters.size() > 0 && activeFilters.get(0).toString().equals("hasDescription")) {
+
+      long firstVersion = Long.MAX_VALUE;
+      for (TreeNodeLog v : versions) {
+        if (v.getVersion() < firstVersion) {
+          firstVersion = v.getVersion();
+        }
+        if (firstVersion == 0L) break;
+      }
+      for (TreeNodeLog v : versions) {
+        if (StringUtils.isNotBlank(v.getLogComment())
+            || (v.getVersion().equals(firstVersion) && alwaysIncludeFirst)) {
           usedVersions.add(v);
         }
       }
-      versionsDto = modelToDtoConverter.createTreeNodeVersionsDto(usedVersions);
-
     } else {
-      versionsDto = modelToDtoConverter.createTreeNodeVersionsDto(versions);
+      usedVersions = versions;
     }
 
-    DtoOps.addVersionUserNames(versionsDto, this.userMongoRepository);
+    List<TreeNodeVersionDto> versionsDto = new ArrayList<>();
+    for (TreeNodeLog v : usedVersions) {
+      TreeNodeVersionDto vDto = modelToDtoConverter.createTreeNodeVersion(v);
+      vDto.setCurrentUserAccessPermissions(bni.getPermissions());
+      versionsDto.add(vDto);
+    }
+
+    DtoOps.lookupOwnerNames(versionsDto, this.userMongoRepository);
 
     return versionsDto;
   }
 
   /**
-   * Edit the comment for a specific previous version of an object.
+   * Edit the description for a specific previous version of an object.
    *
    * @param nodeId The primary key of the object.
    * @param versionNumber The incremental number identifying the previous version of the object.
-   * @param comment The string forming the comment on this version.
+   * @param description The string forming the description on this version.
    */
   @Override
-  public void editCommentForVersion(
-      String nodeId, Long versionNumber, String comment, AppUser user) {
-    TreeNode node = treeNodeRepository.getNode(nodeId, true);
-    List<TreeNode> mainNodeAncestors = getAncestors(node);
-    if (node == null) {
+  public void updateDescription(
+      String nodeId, Long versionNumber, String description, AppUser user) {
+    BaseNodeInfo bni = getNodeForUser(nodeId, user, true);
+    assertPermission(bni, Permission.MODIFY);
+
+    TreeNodeLog version = treeNodeLogRepository.findVersion(nodeId, versionNumber, true);
+    if (version == null) {
       throw new NotFoundException(TREE_NODE_NOT_FOUND_MESSAGE);
     }
 
-    List<UserGroup> usersGroups = userGroupRepository.findByUserId(user.getId());
-
-    List<String> usersGroupIds =
-        usersGroups == null
-            ? Collections.emptyList()
-            : usersGroups.stream().map(UserGroup::getId).collect(Collectors.toList());
-
-    if (!accessControlUtil.doesUserHaveModifyPermission(
-        user, node, mainNodeAncestors, usersGroupIds)) {
-      throw new ForbiddenException("User does not have the privileges update this node's history.");
-    }
-    if (versionNumber < node.getVersion()) {
-      // update an old version
-      treeNodeHistoryRepository.updateComment(nodeId, versionNumber, user.getId(), comment);
-    } else if (versionNumber.equals(node.getVersion())) {
-      // create a new version with this comment
-      TreeNode fullNode = treeNodeRepository.getNode(nodeId, false);
-      treeNodeHistoryRepository.save(fullNode, user.getId(), comment);
-    } else {
-
-    }
-
-    // todo: for now we just allow for users which created the version
-    // to edit the comment.
+    treeNodeLogRepository.updateLogComment(version.getId(), description);
   }
 
   @Override
@@ -650,7 +815,11 @@ public class TreeNodeServiceImpl implements TreeNodeService {
 
   @Override
   public void patchContentForNode(
-      String nodeId, Long versionNumber, TreeNodeContentPatch treeNodeContentPatch, AppUser user) {
+      String nodeId,
+      Long versionNumber,
+      TreeNodeContentPatch treeNodeContentPatch,
+      AppUser user,
+      @Null String description) {
     if (StringUtils.isBlank(nodeId)) {
       throw new BadRequestException("Blank versionId in request.");
     }
@@ -687,9 +856,13 @@ public class TreeNodeServiceImpl implements TreeNodeService {
         user, node, mainNodeAncestors, usersGroupIds)) {
       throw new ForbiddenException("User does not have the privileges required to edit this node.");
     }
+    AggregatedAccessControlInformation aaci =
+        accessControlUtil.getAggregatedAccessControl(node, mainNodeAncestors);
+
     // FIXME: if patching fails we will end up with a unneeded version
     // in the history
-    treeNodeHistoryRepository.save(node, user.getId(), "");
+    treeNodeLogRepository.insertVersion(
+        NodeLogOps.create(node, user, description != null ? description : ""));
 
     /*
      * FIXME: it would be way better to build a mongodb update command
@@ -705,8 +878,11 @@ public class TreeNodeServiceImpl implements TreeNodeService {
       GraphModelContentOps.throwExceptionIfPortRefAppearsInConnections(
           dependentGraphModels, removedPortIds);
     }
-
-    node.setProcessDependencies(GraphModelContentOps.getModelProcModelRefs(node.getContent()));
+    List<String> deepDependencies = getDeepNodeDependencies(node, this::getDepNode);
+    if (deepDependencies.contains(node.getId())) {
+      throw new IllegalArgumentException("there is a cyclic dependency in this node");
+    }
+    node.setProcessDependencies(deepDependencies);
 
     treeNodeRepository.save(node);
   }
@@ -755,6 +931,17 @@ public class TreeNodeServiceImpl implements TreeNodeService {
           "User does not have the privileges required to move this node to new parent.");
     }
 
+    ArrayList<String> siblingNames = new ArrayList<String>();
+    List<TreeNode> siblingNodes = treeNodeRepository.getChildren(newParentNode);
+    siblingNodes.forEach(
+        s -> {
+          siblingNames.add(s.getName());
+        });
+    if (siblingNames.contains(node.getName())) {
+      throw new DocumentExistsException(
+          "A node with this name already exists. Please choose a different name.");
+    }
+
     List<String> newAncestors = new ArrayList<>(newParentNode.getAncestors());
     newAncestors.add(newParentNode.getId());
 
@@ -778,6 +965,130 @@ public class TreeNodeServiceImpl implements TreeNodeService {
         throw new BadRequestException("failed to move node.");
       }
     }
+  }
+
+  @Override
+  public TreeNodeDto copyNode(
+      String nodeId, Long versionNumber, String newParentId, String newNodeName, AppUser user) {
+    BaseNodeInfo sourceNode = getNodeForUser(nodeId, user, false);
+    hazPermission(sourceNode, Permission.READ);
+    BaseNodeInfo targetNode = getNodeForUser(newParentId, user, true);
+    hazPermission(targetNode, Permission.MODIFY);
+
+    if (targetNode.getTreeNode().getType() != NodeType.FOLDER) {
+      throw new BadRequestException("TreeNode can only be copied into a folder.");
+    }
+
+    String copiedNodeName = sourceNode.getTreeNode().getName() + " - copy";
+
+    ArrayList<String> siblingNames = new ArrayList<String>();
+    List<TreeNode> siblingNodes = treeNodeRepository.getChildren(targetNode.getTreeNode());
+    siblingNodes.forEach(
+        s -> {
+          siblingNames.add(s.getName());
+        });
+    if (siblingNames.contains(copiedNodeName)) {
+      throw new DocumentExistsException(
+          "A node with this name already exists. Please choose a different name.");
+    }
+
+    TreeNode copiedTreeNode = sourceNode.getTreeNode();
+    List<String> newAncestors =
+        sourceNode
+            .getTreeNode()
+            .getAncestors()
+            .subList(0, sourceNode.getTreeNode().getAncestors().size() - 1);
+    newAncestors.add(newParentId);
+    copiedTreeNode.setAncestors(newAncestors);
+    copiedTreeNode.setId(this.generateGuid());
+    copiedTreeNode.setVersion(0L);
+    copiedTreeNode.setName(copiedNodeName);
+    this.treeNodeRepository.insert(copiedTreeNode);
+
+    List<TreeNodeLog> releases = this.treeNodeLogRepository.findReleases(nodeId, false);
+    releases.forEach(
+        (r) -> {
+          r.setId(generateGuid());
+          r.setBaseNodeId(copiedTreeNode.getId());
+          r.setAncestors(copiedTreeNode.getAncestors());
+          r.setOwnerId(user.getId());
+          r.setName(copiedNodeName);
+        });
+    this.treeNodeLogRepository.insert(releases);
+
+    TreeNodeDto nodeDto =
+        modelToDtoConverter.createTreeNodeDto(copiedTreeNode, targetNode.getPermissions());
+    nodeDto.setParentId(newParentId);
+    // i guess it's always a folder for now.
+    nodeDto.setParentType(NodeType.FOLDER);
+    return nodeDto;
+  }
+
+  @Override
+  public TreeNodeDto copyFolder(String folderId, String newFolderName, AppUser user) {
+    BaseNodeInfo sourceFolder = getNodeForUser(folderId, user, true);
+    hazPermission(sourceFolder, Permission.READ);
+
+    if (sourceFolder.getTreeNode().getType() != NodeType.FOLDER) {
+      throw new BadRequestException("copyFolder source node has to be a folder.");
+    }
+
+    String targetFolderUuid = generateGuid();
+    Map<String, String> nodeIdMap = new HashMap<>();
+    List<TreeNodeLog> targetReleases = new ArrayList<>();
+    List<TreeNode> targetNodes = new ArrayList<>();
+
+    List<TreeNode> sourceChildNodes =
+        treeNodeRepository.getChildren(
+            folderId, sourceFolder.getTreeNode().getAncestors().size(), false);
+    for (TreeNode sourceNode : sourceChildNodes) {
+      String sourceNodeId = sourceNode.getId();
+      TreeNode targetNode = makeTreeNodeUniqueAgain(sourceNode, targetFolderUuid);
+      targetNodes.add(targetNode);
+      nodeIdMap.put(sourceNodeId, targetNode.getId());
+      List<TreeNodeLog> sourceNodeReleases =
+          this.treeNodeLogRepository.findReleases(sourceNodeId, false);
+      sourceNodeReleases.forEach(
+          (r) -> {
+            r.setId(generateGuid());
+            r.setBaseNodeId(targetNode.getId());
+            r.setOwnerId(user.getId());
+            r.setAncestors(targetNode.getAncestors());
+            targetReleases.add(r);
+          });
+    }
+    for (TreeNode targetNode : targetNodes) {
+      DependencyOps.updateDependencies(targetNode, nodeIdMap);
+    }
+    for (TreeNodeLog targetRelease : targetReleases) {
+      DependencyOps.updateDependencies(targetRelease, nodeIdMap);
+    }
+
+    TreeNode targetFolder = sourceFolder.getTreeNode();
+    targetFolder.setId(targetFolderUuid);
+    targetFolder.setOwnerId(user.getId());
+    targetFolder.setAncestors(Collections.singletonList("root"));
+    targetFolder.setName(sourceFolder.getTreeNode().getName() + " - copy");
+
+    treeNodeRepository.insert(targetFolder);
+    treeNodeRepository.insert(targetNodes);
+    treeNodeLogRepository.insert(targetReleases);
+
+    TreeNodeDto targetFolderDto =
+        modelToDtoConverter.createTreeNodeDto(targetFolder, sourceFolder.getPermissions());
+    targetFolderDto.setParentId("root");
+    targetFolderDto.setParentType(NodeType.FOLDER);
+    return targetFolderDto;
+  }
+
+  private TreeNode makeTreeNodeUniqueAgain(TreeNode sourceTreeNode, String parentId) {
+    List<String> newAncestors =
+        sourceTreeNode.getAncestors().subList(0, sourceTreeNode.getAncestors().size() - 1);
+    newAncestors.add(parentId);
+    sourceTreeNode.setAncestors(newAncestors);
+    sourceTreeNode.setId(this.generateGuid());
+    sourceTreeNode.setVersion(0L);
+    return sourceTreeNode;
   }
 
   /**
@@ -865,16 +1176,6 @@ public class TreeNodeServiceImpl implements TreeNodeService {
   }
 
   /**
-   * Generate a GUID String.
-   *
-   * @return A unique string.
-   */
-  private String generateGuid() {
-    UUID uuid = UUID.randomUUID();
-    return uuid.toString();
-  }
-
-  /**
    * Convert a TreeNode to a DTO representation and add any additional fields not readily available
    * on the model object.
    *
@@ -943,38 +1244,5 @@ public class TreeNodeServiceImpl implements TreeNodeService {
       throw new VersionConflictException(
           "version mismatch " + referencedVersionNumber + "!=" + node.getVersion());
     }
-  }
-
-  private List<TreeNode> getAncestors(TreeNode node) {
-    List<TreeNode> ancestorNodes =
-        new ArrayList<>(
-            treeNodeRepository.getNodes(
-                TreeNodeRepositoryCustom.ProjectionType.SPARSE, node.getAncestors()));
-    ancestorNodes.sort(
-        (n1, n2) ->
-            node.getAncestors().indexOf(n1.getId()) - node.getAncestors().indexOf(n2.getId()));
-    return ancestorNodes;
-  }
-
-  private Map<String, List<TreeNode>> getAncestorMap(List<TreeNode> nodes) {
-    Map<String, List<TreeNode>> ancestorMap = new HashMap<>();
-    Map<String, TreeNode> ancestors = new HashMap<>();
-    for (TreeNode node : nodes) {
-      for (String ancestorId : node.getAncestors()) {
-        ancestors.putIfAbsent(ancestorId, null);
-      }
-    }
-    List<TreeNode> ancestorNodes =
-        treeNodeRepository.getNodes(
-            TreeNodeRepositoryCustom.ProjectionType.SPARSE, ancestors.keySet());
-    for (TreeNode augAnc : ancestorNodes) {
-      ancestors.put(augAnc.getId(), augAnc);
-    }
-    for (TreeNode node : nodes) {
-      List<TreeNode> nodesAncestors =
-          node.getAncestors().stream().map(ancestors::get).collect(Collectors.toList());
-      ancestorMap.put(node.getId(), nodesAncestors);
-    }
-    return ancestorMap;
   }
 }

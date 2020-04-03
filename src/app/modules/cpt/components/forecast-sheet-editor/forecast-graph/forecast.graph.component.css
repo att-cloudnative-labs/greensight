@@ -1,0 +1,13 @@
+
+
+.graph {
+    height: 96%;
+    width: 100%;
+    overflow: hidden;
+}
+
+
+.chart {
+    height: 100%;
+    width: 100%;
+}

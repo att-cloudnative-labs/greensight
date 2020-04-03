@@ -1,0 +1,25 @@
+<div class="version-editor-panel">
+    <header style="white-space: nowrap;">
+        <label class="node-name">{{objectName}}</label>
+        <span>&nbsp;</span>
+        <label class="owner-name">{{version.ownerName}}</label>
+        <br>
+        Version {{version.versionId}}<br>
+        {{date}}
+    </header>
+    <div class="version-editor-contents">
+        <div style="margin-top: 20px;">
+            <label>Description:</label><br>
+            <textarea
+                data-testid="version-description"
+                type="text"
+                cols="55"
+                rows="3"
+                [(ngModel)]="description"
+                (blur)="saveComment()">
+            >{{description}}</textarea>
+        </div>
+
+    </div>
+
+</div>

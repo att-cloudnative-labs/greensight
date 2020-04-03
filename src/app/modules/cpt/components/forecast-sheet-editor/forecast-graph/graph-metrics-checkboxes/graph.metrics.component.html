@@ -1,0 +1,23 @@
+<span>
+    <div> 
+    <label style="padding-right:20px"
+        [style.color]="percentilesSaved() ? 'white' : 'grey'">
+        <input 
+            [checked]="distributionLines"
+            [disabled]="!percentilesSaved()" 
+            type="checkbox" 
+            (click)="toggleDistributionLines($event)"
+            data-testid="graphmetric-distribution">Display distributions
+    </label>
+</div>
+
+<div>
+    <label>
+        <input 
+            [checked]="breakdownLines" 
+            type="checkbox" 
+            (click)="toggleBreakdownLines($event)"
+            data-testid="graphmetric-breakdown">Display breakdowns
+    </label>
+</div>
+</span>

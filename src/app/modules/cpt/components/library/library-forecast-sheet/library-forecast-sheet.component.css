@@ -1,0 +1,109 @@
+.fa-chart-line {
+    margin-right: 1px;
+    margin-left: 6px;
+    color: #999;
+}
+
+.graph-model-label{
+    user-select: none;
+    white-space: nowrap;
+    padding: 2px 0 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    width: 100%;
+    justify-content: space-between;
+    padding-right: 4px;
+    padding-left: 22px;
+}
+
+.highlighted{
+    cursor: pointer;
+    background-color: #383838;
+}
+
+.selected {
+    background-color: #428bca;
+}
+
+.selected > .fa {
+    color: white;
+}
+
+/* .selected > * .icon-button {
+    color: white;
+} */
+
+.model-name {
+    display: inline-flex;
+    user-select: none;
+    min-width: 0px;
+    overflow: hidden;
+}
+
+.model-name-icon {
+    min-width: min-content;
+    overflow: hidden;
+    display: inline;
+}
+
+.model-name-label {
+    min-width: 0px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline;
+    padding-left: 4px;
+}
+
+app-edit-in-place {
+    display: inline-block;
+    margin-top: -3px;
+}
+
+app-edit-in-place input {
+    padding: 2px 4px;
+    box-sizing: border-box;
+}
+
+.icon-button:hover{
+    background-color:#ffffff6d;
+    color: rgb(43, 43, 43);
+}
+
+.icon-button {
+    color: white;
+    height:100%;
+    padding: 0;
+    border:none;
+    border-radius: 2px;
+    background:none;
+    padding-right: 3px;
+    padding-left: 3px;
+}
+
+.icon-button:focus{
+    outline: 0;
+}
+
+.popup-menu{
+    display: block;
+    position: absolute;
+    box-shadow: 9px 14px 32px -8px rgba(0,0,0,0.75);
+}
+
+.more-graph-model-options{
+    display: inline;
+}
+
+.highlighted .graph-model-options{
+    display: block;
+}
+
+.graph-model-options{
+    margin-right: 2px;
+    margin-top: -2px;
+}
+
+.isInClipboard {
+    color: grey;
+}

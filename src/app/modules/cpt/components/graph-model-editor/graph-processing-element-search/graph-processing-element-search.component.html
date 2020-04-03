@@ -1,0 +1,53 @@
+<input #graphSearch
+        [(ngModel)]="searchString"
+        [placeholder]="placeholder"
+        (focusin)="searchList($event)"
+        (focusout)="closeSearch()"
+        (keydown)="navigateList($event)"
+        (keyup)="searchList($event)">
+    <div class="result-list" *ngIf="showSearchResults"
+        appTether
+        [appTetherTarget]="graphSearch"
+        [appTetherTargetAttachment]="'bottom left'"
+        [appTetherAttachment]="'top left'"
+        [appTetherOffset]="'0px 0px'">
+
+        <div *ngIf="!combinedResultCount" class="no-results">
+            No results
+        </div>
+
+        <ul>
+            <li *ngIf="peSearchResults.length" class="inline-header">Processing Elements</li>
+            <li *ngFor="let result of peSearchResults"
+                app-graph-search-result
+                [item]="result"
+                [itemName] = "itemName(result)"
+                title="{{itemName(result)}}"
+                [disabled]="false"
+                (resultSelected)="onSelectResult($event)">
+            </li>
+            <li *ngIf="displayShowAllPEs" class="inline-header inline-button" (click)="showAllPEs()">Show All PEs</li>
+            <li *ngIf="!displayShowAllPEs" class="inline-header inline-button" (click)="showImportantPEs()">Show Important PEs</li>
+
+            <li *ngIf="siblingSearchResults.length" class="inline-header">This Folder's Models</li>
+            <li *ngFor="let result of siblingSearchResults"
+                app-graph-search-result
+                [item]="result"
+                [itemName] = "itemName(result)"
+                title="{{itemName(result)}}"
+                [disabled]="result.disabled"
+                (resultSelected)="onSelectResult($event)">
+            </li>
+            <li *ngIf="searchResults.length || hasMorePages" class="inline-header">All Models</li>
+            <li *ngFor="let result of searchResults"
+                app-graph-search-result
+                [item]="result"
+                [itemName] = "itemName(result)"
+                title="{{itemName(result)}}"
+                [disabled]="result.disabled"
+                (resultSelected)="onSelectResult($event)">
+            </li>
+            <li *ngIf="searchResults.length === 0 && hasMorePages" class="inline-header">...</li>
+            <li *ngIf="hasMorePages" (click)="addPage()" class="inline-header inline-button">Show More</li>
+        </ul>
+    </div>

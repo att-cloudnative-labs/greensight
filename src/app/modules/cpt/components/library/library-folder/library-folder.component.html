@@ -1,0 +1,63 @@
+<div (contextmenu)="openContextMenu($event)" #folderElement
+    (click)="onClick()"
+    (mouseenter)='onMouseEnter()'
+    (mouseleave)="onMouseLeave()"
+    [class.highlighted]='isHighlighted'
+    [class.selected]="isSelected"
+    class="folder-label"
+    [class.isInClipboard]='isInClipboard'
+>
+
+    <div class="folder-name" style="display: inline;" *ngIf="isRename">
+        <div class="folder-name-icon">
+            <span (click)="toggleExpanded($event)" class="folder-icon">
+                <i *ngIf="isExpanded" class="fa fa-folder-open" [class.readOnly]='isReadOnly'></i>
+                <i *ngIf="!isExpanded" class="fa fa-folder" [class.readOnly]='isReadOnly'></i>
+                <i *ngIf="isPrivate" class="fa fa-lock"></i>
+            </span>
+        </div>
+        <app-edit-in-place [value]="folder.name" (onSubmit)="renameFolder($event)" (onCancel)="onCancelRename()"></app-edit-in-place>
+        <label *ngIf="!isOwner" [class.selected]="isSelected" class="display-owner" title="{{folder.ownerName}}">{{folder.ownerName}}</label>
+    </div>
+    <div class="folder-name" [title]="folder.name" *ngIf="!isRename">
+        <div class="folder-name-icon">
+            <span (click)="toggleExpanded($event)" class="folder-icon">
+                <i *ngIf="isExpanded" class="fa fa-folder-open" [class.readOnly]='isReadOnly'></i>
+                <i *ngIf="!isExpanded" class="fa fa-folder" [class.readOnly]='isReadOnly'></i>
+                <i *ngIf="isPrivate" class="fa fa-lock"></i>
+            </span>
+        </div>
+        <div class="folder-name-label">{{folder.name}} <label *ngIf="!isOwner" [class.selected]="isSelected" class="display-owner" title="{{folder.ownerName}}">{{folder.ownerName}}</label></div>
+    </div>
+    <div *ngIf="isHighlighted && !isRename && userRoleId !== 'READ_ONLY'" class="pull-right folder-options">
+        <div *appHasPermission="createPermissionsObj">
+            <button title="New Model" (click)="addModel($event)" class="icon-button"><span style="position:relative"><i class="fa fa-cube"></i><i class="fa fa-plus" style="color:#00cc00"></i></span></button>
+            <button title="New Forecast Sheet" (click)="addForecastSheet($event)" class="icon-button"><span style="position:relative"><i class="fa fa-chart-line"></i><i class="fa fa-plus" style="color:#00cc00"></i></span></button>
+            <!--<button title="New Template" (click)="addTemplate($event)" class="icon-button"><span style="position:relative"><i class="fa fa-cubes"></i><i class="fa fa-plus" style="color:#52e7e7"></i></span></button>-->
+        </div>
+        <div class="more-folder-options">
+            <button #optionsbutton [id]="'options-'+folder.id" class="icon-button dropdown-button" (click)="openContextMenu($event)"><i class="fa fa-ellipsis-h"></i></button>
+        </div>
+    </div>
+</div>
+
+<ul *ngIf="isExpanded">
+    <li class="empty" *ngIf="!(childNodes$ | async)?.length">
+        <i>{{loadingOrEmpty | async }}</i>
+    </li>
+    <li *ngFor="let node of (childNodes$ | async)" [ngSwitch]="node.type">
+        <app-library-graph-model *ngSwitchCase="'MODEL'" [graphModel]="node" [libChildrenNodes]="(childNodes$ | async)"></app-library-graph-model>
+        <app-library-simulation *ngSwitchCase="'SIMULATION'" [simulation]="node" [libChildrenNodes]="(childNodes$ | async)"></app-library-simulation>
+        <app-library-forecast-sheet *ngSwitchCase="'FC_SHEET'" [sheet]="node" [libChildrenNodes]="(childNodes$ | async)"></app-library-forecast-sheet>
+    </li>
+</ul>
+
+<ng-template #contextMenu let-close="close">
+    <app-library-folder-popup-menu
+        (renameFolder)="openFolderRenameMode()"
+        [folder]="folder"
+        data-testid="library-folder-pop-up-menu"
+        (closePopup)="close();"
+        (createNode)="createNode($event)">
+    </app-library-folder-popup-menu>
+</ng-template>

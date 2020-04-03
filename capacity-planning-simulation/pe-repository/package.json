@@ -1,15 +1,22 @@
 {
   "name": "@cpt/capacity-planning-simulation-pe-repository",
-  "version": "0.0.720",
+  "version": "0.0.900",
   "description": "A Repository for CPT Processing Elements",
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc"
   },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@egbitbucket.dtvops.net:7999/cptl/capacity-planning-simulation.git"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@cpt/capacity-planning-simulation-types": "file:../types",
+    "@cpt/capacity-planning-simulation-types": "0.0.900",
     "typescript": "^3.3.3"
+  },
+  "publishConfig": {
+    "registry": "http://npmcache.aeg.cloud"
   }
 }

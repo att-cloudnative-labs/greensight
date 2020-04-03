@@ -1,0 +1,41 @@
+input {
+  background-color: rgb(64, 68, 71);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(170, 170, 170);
+  padding: 2px 4px;
+  border-radius:4px;
+}
+
+select {
+    background-color: rgb(64, 68, 71);
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    padding: 2px 4px;
+    border-radius:4px;
+}
+
+textarea {
+    background-color: rgb(64, 68, 71);
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    position: center;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    box-sizing: border-box;
+    padding: 12px;
+    border-radius:4px;
+}
+
+.owner-name {
+    background-color:  #4d4949e3;
+    color: rgb(214, 208, 208);
+    border-radius: 3px;
+    font-size: x-small;
+    padding: 2px 5px 0 2px;
+    font-weight: normal;
+    margin: 0 3px 0 1px;
+}

@@ -1,0 +1,13 @@
+<ul>
+    <li (click)="onOpenForecastSheet()">Open</li>
+    <hr>
+    <div *appHasPermission="modifyPermissionsObj">
+        <li (click)="onRenameForecastSheet()">Rename</li>
+    </div>
+    <li (click)="onCopyForecastSheet()">Copy</li>
+    <div *appHasPermission="deletePermissionsObj">
+        <li (click)="onMoveForecastSheet()">Cut</li>
+        <hr>
+        <li (click)="onTrashForecastSheet()">Send to Trash</li>
+    </div>
+</ul>      

@@ -1,0 +1,7 @@
+<button *ngIf="!showDescriptionInput" title="Save as Public Release" class="save" [disabled]="disabled" (click)="saveClicked()"><span class=" fa fa-save fa-lg"></span></button>
+<input *ngIf="showDescriptionInput"
+        #DescriptionInput
+        placeholder="What changed?"
+        (keydown.enter)="saveDescription($event)"
+       (keydown.escape)="discardDescription($event)"
+        (blur)="saveDescription($event)"/>

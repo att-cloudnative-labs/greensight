@@ -1,0 +1,145 @@
+:host {
+    flex: 1;
+    display: flex;
+    position: relative;
+    padding: 0;
+    background: #404040;
+    overflow-y: auto;
+}
+
+.sim-panel, .sim-scenario-tables, .sim-section, .sim-forecast-sheets {
+    margin:10px;
+}
+
+.result-table {
+    border: solid 1px white;
+    width: 100%;
+}
+
+th {
+    background-color: #272727;
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+
+th:first {
+    border-left: none;
+}
+
+tr:nth-child(even) {
+    background-color: #4C4C4C;
+}
+
+.no-results {
+    text-align: center;
+    font-size: medium;
+    height: 40px;
+    border-left: 1px solid rgb(170, 170, 170);
+}
+
+.sim-panel {
+    height: calc(100% - 20px);
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.scenario-placeholder {
+    border: 1px solid white;
+    height:200px;
+}
+
+.create {
+    margin-top:30px;
+}
+
+.disable{
+    color: gray;
+}
+.model-release-link{
+    padding-left: 5px;
+}
+
+input {
+    color:black;
+    width:200px;
+    padding: 5px 9px;
+    font-size: 14px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 4px;
+}
+
+.highlight {
+    color: red;
+    font-style: italic;
+}
+
+input:focus {
+    outline: none;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+app-graph-processing-element-search {
+    color:black
+}
+
+label {
+    vertical-align: top;
+}
+
+button {
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(88, 87, 87);
+    border-radius:4px;
+    color: rgb(29, 24, 24);
+}
+
+.add-scenario {
+    margin-top: 10px;
+}
+
+button:focus {
+    outline: none;
+}
+
+.error-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow: visible;
+    background-color: rgba(116, 116, 116, 0.95);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-message {
+    color: white;
+    text-align: center;
+    font-size: larger;
+    font-weight: 700;
+}
+
+
+.sim-model-line{
+    display: flex;
+}
+
+.sim-model-line-div{
+    flex-grow: 1;
+}
+
+tracking-editor {
+    margin-right: 25px;
+}

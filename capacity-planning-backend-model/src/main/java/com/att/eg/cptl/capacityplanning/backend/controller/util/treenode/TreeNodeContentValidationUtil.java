@@ -154,12 +154,15 @@ public class TreeNodeContentValidationUtil {
                               .put("objectId", String.class)
                               .put("objectType", String.class)
                               .put("ref", String.class)
-                              .put("version", String.class)
+                              .put("versionId", String.class)
                               .put("label", String.class)
                               .put("inports", Map.class)
                               .put("type", String.class)
                               .put("outports", Map.class)
                               .put("metadata", Object.class)
+                              .put("name", String.class)
+                              .put("tracking", String.class)
+                              .put("releaseNr", Number.class)
                               .build(),
                           false,
                           false);
@@ -211,19 +214,24 @@ public class TreeNodeContentValidationUtil {
         simulationContent -> {
           checkForRequiredAndUnrecognisedFields(
               simulationContent,
-              Arrays.asList("modelRef", "stepStart", "stepLast"),
+              Arrays.asList("ref", "stepStart", "stepLast"),
               ImmutableMap.<String, Class>builder()
                   .put("id", String.class)
                   .put("objectId", String.class)
                   .put("objectType", String.class)
                   .put("modelVersion", String.class)
-                  .put("modelRef", String.class)
+                  .put("modelName", String.class)
                   .put("monteCarloIterations", Number.class)
                   .put("metadata", Object.class)
                   .put("stepStart", String.class)
                   .put("stepLast", String.class)
                   .put("scenarios", Map.class)
                   .put("reportType", String.class)
+                  .put("inports", Map.class)
+                  .put("ref", String.class)
+                  .put("tracking", String.class)
+                  .put("releaseNr", Number.class)
+                  .put("forecasts", Object.class)
                   .build(),
               false,
               false);

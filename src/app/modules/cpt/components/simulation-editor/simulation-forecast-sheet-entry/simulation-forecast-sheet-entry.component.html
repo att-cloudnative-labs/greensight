@@ -1,0 +1,8 @@
+
+    <p class="fc-sheet-name">
+        <i class="fc-sheet-icon fa fa-chart-line"></i>{{sheetName}}
+    </p>
+    <tracking-editor class="fc-tracking-editor" *ngIf="treeNodeTracking" (trackingUpdated)="updatedTracking($event)" [tracking]="treeNodeTracking">
+
+    </tracking-editor>
+    <button (click)="deleteForecastSheet()" class="fc-sheet-delete-button" title="Delete Forecast Sheet Reference"><i class="fa fa-times"></i></button>

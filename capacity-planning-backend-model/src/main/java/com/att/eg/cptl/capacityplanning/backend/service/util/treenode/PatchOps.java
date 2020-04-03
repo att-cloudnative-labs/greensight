@@ -19,9 +19,9 @@ public class PatchOps {
     Map<String, Object> fieldsToUpdate = treeNodeContentPatch.getUpdated();
     Map<String, Object> fieldsToDelete = treeNodeContentPatch.getDeleted();
 
+    deleteFieldsInContent(nodeContent, fieldsToDelete);
     addFieldsToContent(nodeContent, fieldsToAdd);
     updateFieldsInContent(nodeContent, fieldsToUpdate);
-    deleteFieldsInContent(nodeContent, fieldsToDelete);
   }
 
   public static Map<String, Object> cloneContent(Map<String, Object> content) {
@@ -41,7 +41,19 @@ public class PatchOps {
             Map<String, Object> arrayAddList = (Map<String, Object>) entry.getValue();
             List<Object> l = new ArrayList<>((List) content.get(entry.getKey()));
             for (Map.Entry<String, Object> updateEntry : arrayAddList.entrySet()) {
-              // ignoring the index for adding. i guess that's ok (:)
+              try {
+                int listIndex = Integer.parseInt(updateEntry.getKey());
+                if (updateEntry.getValue() instanceof Map
+                    && l.size() >= listIndex + 1
+                    && l.get(listIndex) instanceof Map) {
+                  addFieldsToContent(
+                      (Map<String, Object>) l.get(listIndex),
+                      (Map<String, Object>) updateEntry.getValue());
+                  continue;
+                }
+              } catch (NumberFormatException | IndexOutOfBoundsException e) {
+              }
+
               l.add(updateEntry.getValue());
             }
             content.put(entry.getKey(), l);
@@ -100,11 +112,20 @@ public class PatchOps {
     if (fieldsToDelete != null) {
       for (Map.Entry<String, Object> entry : fieldsToDelete.entrySet()) {
         if ((content.get(entry.getKey()) instanceof List)) {
-          Map<String, Object> arrayDeleteList = (Map<String, Object>) entry.getValue();
+          Map<String, Object> arrayDeleteMap = (Map<String, Object>) entry.getValue();
+          List<Map.Entry<String, Object>> arrayDeleteList =
+              new ArrayList(arrayDeleteMap.entrySet());
+          arrayDeleteList.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
           List<Object> l = new ArrayList<>((List) content.get(entry.getKey()));
-          for (Map.Entry<String, Object> updateEntry : arrayDeleteList.entrySet()) {
+          for (Map.Entry<String, Object> updateEntry : arrayDeleteList) {
             // FIXME: this is most likely broken for multiple deletes
-            l.remove(Integer.parseInt(updateEntry.getKey()));
+            if (updateEntry.getValue() == null) {
+              l.remove(Integer.parseInt(updateEntry.getKey()));
+            } else {
+              deleteFieldsInContent(
+                  (Map<String, Object>) l.get(Integer.parseInt(updateEntry.getKey())),
+                  (Map<String, Object>) updateEntry.getValue());
+            }
           }
           content.put(entry.getKey(), l);
           continue;

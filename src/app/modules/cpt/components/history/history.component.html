@@ -1,0 +1,29 @@
+<div
+    class="loading"
+    *ngIf="!(historyHasLoaded$ | async) && (isSelectedNodeATreeNode())"
+>
+    Loading...
+</div>
+
+<div class="history-panel" *ngIf="(historyHasLoaded$ | async) && (isSelectedNodeATreeNode())"
+    appElementResizeDetector
+    (onSizeChanged)=sizeChanged($event)>
+    <header>
+        <input [(ngModel)]="searchString" placeholder="Search">
+
+        <app-filter-dropdown class="pull-right"
+            [options]="filterOptions"
+                             [selections]="selectedFilter"
+                             (selectionsUpdated)="filterSelectionUpdated($event)"
+            labelKey="name"></app-filter-dropdown>
+    </header>
+
+    <div class="history-contents">
+        <div *ngFor="let historyItem of historyItems">
+            <app-history-item
+                *ngIf="isFilteredForDisplay(historyItem)"
+                [historyItem]="historyItem"
+                [displayFields]="displayFields"></app-history-item>
+        </div>
+    </div>
+</div>

@@ -6,31 +6,23 @@ import com.att.eg.cptl.capacityplanning.backend.controller.history.NodeHistoryFi
 import com.att.eg.cptl.capacityplanning.backend.controller.util.RestResponseUtil;
 import com.att.eg.cptl.capacityplanning.backend.dao.UserMongoRepository;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeDto;
-import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeHistoryDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeVersionDto;
 import com.att.eg.cptl.capacityplanning.backend.exception.InvalidFilterTypeException;
 import com.att.eg.cptl.capacityplanning.backend.exception.NotFoundException;
 import com.att.eg.cptl.capacityplanning.backend.model.AppUser;
-import com.att.eg.cptl.capacityplanning.backend.model.ObjectHistory;
-import com.att.eg.cptl.capacityplanning.backend.model.ObjectVersion;
 import com.att.eg.cptl.capacityplanning.backend.model.TreeNodeContentPatch;
 import com.att.eg.cptl.capacityplanning.backend.model.converter.ModelToDtoConverter;
-import com.att.eg.cptl.capacityplanning.backend.model.treenode.TreeNode;
+import com.att.eg.cptl.capacityplanning.backend.model.treenode.NodeType;
 import com.att.eg.cptl.capacityplanning.backend.rest.RestResponse;
 import com.att.eg.cptl.capacityplanning.backend.service.TreeNodeService;
 import com.att.eg.cptl.capacityplanning.backend.service.UserAuthenticationService;
 import com.att.eg.cptl.capacityplanning.backend.util.IncomingRequestUtils;
 import io.micrometer.core.annotation.Timed;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -212,11 +204,11 @@ public class TreeNodeController {
 
   @PutMapping(value = "/tree/{nodeId}/history", produces = MediaType.APPLICATION_JSON_VALUE)
   @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_READ_AND_WRITE')")
-  public ResponseEntity<RestResponse> editNodeVersionComment(
+  public ResponseEntity<RestResponse> updateVersion(
       HttpServletRequest request,
       @PathVariable("nodeId") String nodeId,
       @RequestParam("version") Long versionId,
-      @RequestBody Map<String, String> commentBody) {
+      @RequestBody Map<String, String> descriptionBody) {
     String token = getTokenFromRequest(request);
     Optional<AppUser> optionalUser = userAuthenticationService.findUserByToken(token);
     if (!optionalUser.isPresent()) {
@@ -224,8 +216,8 @@ public class TreeNodeController {
     }
     AppUser user = optionalUser.get();
 
-    String comment = commentBody.get("comment");
-    treeNodeService.editCommentForVersion(nodeId, versionId, comment, user);
+    String description = descriptionBody.get("description");
+    treeNodeService.updateDescription(nodeId, versionId, description, user);
     return RestResponseUtil.createResponse(HttpStatus.OK);
   }
 
@@ -254,7 +246,8 @@ public class TreeNodeController {
       HttpServletRequest request,
       @PathVariable("nodeId") String nodeId,
       @RequestBody TreeNodeContentPatch treeNodeContentPatch,
-      @RequestParam(value = "v", required = false) Long versionId) {
+      @RequestParam(value = "v", required = false) Long versionId,
+      @RequestParam(value = "description", required = false) String description) {
     final String token = IncomingRequestUtils.getTokenFromRequest(request);
 
     Optional<AppUser> optionalUser = userAuthenticationService.findUserByToken(token);
@@ -263,7 +256,7 @@ public class TreeNodeController {
     }
     AppUser user = optionalUser.get();
 
-    treeNodeService.patchContentForNode(nodeId, versionId, treeNodeContentPatch, user);
+    treeNodeService.patchContentForNode(nodeId, versionId, treeNodeContentPatch, user, description);
 
     return RestResponseUtil.createResponse(HttpStatus.OK);
   }
@@ -288,45 +281,76 @@ public class TreeNodeController {
     return RestResponseUtil.createResponse(HttpStatus.OK);
   }
 
+  @PostMapping(value = "/tree/{nodeId}/copyNode", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_READ_AND_WRITE')")
+  public ResponseEntity<RestResponse> copyNode(
+      HttpServletRequest request,
+      @PathVariable("nodeId") String nodeId,
+      @RequestParam(value = "v") Long versionId,
+      @RequestParam(value = "parentId") String parentId,
+      @RequestParam(value = "name", required = false) String newName) {
+    final String token = IncomingRequestUtils.getTokenFromRequest(request);
+
+    Optional<AppUser> optionalUser = userAuthenticationService.findUserByToken(token);
+    if (!optionalUser.isPresent()) {
+      return RestResponseUtil.createResponse(HttpStatus.UNAUTHORIZED);
+    }
+    AppUser user = optionalUser.get();
+
+    return RestResponseUtil.createResponse(
+        HttpStatus.OK, treeNodeService.copyNode(nodeId, versionId, parentId, newName, user));
+  }
+
+  @PostMapping(value = "/tree/{folderId}/copyFolder", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_READ_AND_WRITE')")
+  public ResponseEntity<RestResponse> copyFolder(
+      HttpServletRequest request,
+      @PathVariable("folderId") String folderId,
+      @RequestParam(value = "name", required = false) String newName) {
+    final String token = IncomingRequestUtils.getTokenFromRequest(request);
+
+    Optional<AppUser> optionalUser = userAuthenticationService.findUserByToken(token);
+    if (!optionalUser.isPresent()) {
+      return RestResponseUtil.createResponse(HttpStatus.UNAUTHORIZED);
+    }
+    AppUser user = optionalUser.get();
+
+    return RestResponseUtil.createResponse(
+        HttpStatus.OK, treeNodeService.copyFolder(folderId, newName, user));
+  }
+
+  @GetMapping(value = "/tree", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_READ_ONLY','ROLE_READ_AND_WRITE')")
+  public ResponseEntity<RestResponse> searchNodes(
+      HttpServletRequest request,
+      @RequestParam(value = "size", required = false, defaultValue = "50") int size,
+      @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+      @RequestParam(value = "q", required = false) String searchTerm,
+      @RequestParam(value = "siblingReference", required = false) String siblingRef,
+      @RequestParam(value = "nodeType", required = false, defaultValue = "FOLDER")
+          List<NodeType> nodeTypes) {
+    String token = getTokenFromRequest(request);
+    Optional<AppUser> optionalUser = userAuthenticationService.findUserByToken(token);
+    if (!optionalUser.isPresent()) {
+      return RestResponseUtil.createResponse(HttpStatus.UNAUTHORIZED);
+    }
+    AppUser user = optionalUser.get();
+
+    PageRequest pr = PageRequest.of(page, size);
+    if (siblingRef != null) {
+      return RestResponseUtil.createResponse(
+          HttpStatus.OK, treeNodeService.findSiblings(user, pr, siblingRef, nodeTypes));
+    } else {
+      return RestResponseUtil.createResponse(
+          HttpStatus.OK, treeNodeService.search(user, pr, searchTerm, nodeTypes));
+    }
+  }
+
   private Map<String, Object> generateVersionNumberResultMap(
       TreeNodeDto treeNodeDto, int versionNumber) {
     Map<String, Object> resultMap = new HashMap<>();
     resultMap.put("node", treeNodeDto);
     resultMap.put("versionNumber", versionNumber);
     return resultMap;
-  }
-
-  private TreeNodeHistoryDto createTreeNodeHistoryDtoFromObjectHistory(
-      ObjectHistory<TreeNode> nodeHistory, boolean sparse) {
-    Map<String, Optional<AppUser>> idToUserMapping = new HashMap<>();
-    TreeNodeHistoryDto treeNodeHistoryDto = new TreeNodeHistoryDto();
-    treeNodeHistoryDto.setId(nodeHistory.getId());
-    treeNodeHistoryDto.setObjectId(nodeHistory.getObjectId());
-    List<ObjectVersion<TreeNodeDto>> previousVersionDtos = new ArrayList<>();
-    for (ObjectVersion<TreeNode> previousVersion : nodeHistory.getPreviousVersions()) {
-      ObjectVersion<TreeNodeDto> previousVersionDto = new ObjectVersion<>();
-      previousVersionDto.setComment(previousVersion.getComment());
-      previousVersionDto.setTimestamp(previousVersion.getTimestamp());
-      previousVersionDto.setUserId(previousVersion.getUserId());
-      if (StringUtils.isNotBlank(previousVersionDto.getUserId())) {
-        if (idToUserMapping.get(previousVersionDto.getUserId()) == null) {
-          idToUserMapping.put(
-              previousVersion.getUserId(),
-              Optional.ofNullable(userRepository.findById(previousVersion.getUserId()).get()));
-        }
-      }
-      previousVersionDto.setVersionId(previousVersion.getVersionId());
-      TreeNodeDto treeNodeOutputDto =
-          modelToDtoConverter.createTreeNodeDto(
-              previousVersion.getObject(), Collections.emptyList());
-      treeNodeOutputDto.setVersion((long) previousVersion.getVersionId());
-      previousVersionDto.setObject(treeNodeOutputDto);
-      if (sparse && previousVersionDto.getObject() != null) {
-        previousVersionDto.getObject().setContent(null);
-      }
-      previousVersionDtos.add(previousVersionDto);
-    }
-    treeNodeHistoryDto.setPreviousVersions(previousVersionDtos);
-    return treeNodeHistoryDto;
   }
 }

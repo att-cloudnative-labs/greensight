@@ -77,15 +77,20 @@ public class LogRequestFilter extends OncePerRequestFilter implements Ordered {
     Object path = trace.get("path");
     Object statusCode = trace.get("statusCode");
 
-    LOGGER.info(
-        "method = "
-            + method
-            + " path = "
-            + path
-            + " statusCode= "
-            + statusCode
-            + " trace = "
-            + trace);
+    // avoid logging credentials
+    if (path.toString().equals("/login")) {
+      LOGGER.info("method = " + method + " path = " + path + " statusCode= " + statusCode);
+    } else {
+      LOGGER.info(
+          "method = "
+              + method
+              + " path = "
+              + path
+              + " statusCode= "
+              + statusCode
+              + " trace = "
+              + trace);
+    }
   }
 
   protected Map<String, Object> getTrace(HttpServletRequest request, int status) {

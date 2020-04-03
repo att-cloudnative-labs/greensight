@@ -1,0 +1,35 @@
+<div
+    class="loading"
+    *ngIf="!(treeHasLoaded$ | async)"
+>
+    Loading...
+</div>
+
+<ng-container *ngIf="(treeHasLoaded$ | async)">
+    <header>
+        <app-search-filter></app-search-filter>
+
+        <button class="create-folder-button" (click)="addNewFolder()" title="New folder">
+            <i class="fas fa-folder-plus"></i>
+        </button>
+    </header>
+
+    <div class="library-contents">
+        <div *ngIf="(searchString$ | async)?.length">
+            <app-library-search></app-library-search>
+        </div>
+
+        <ng-container *ngIf="!(searchString$ | async)?.length">
+            <div class="no-folders" *ngIf="!(topLevelNodes$ | async)?.length">
+                No folders
+            </div>
+
+            <app-library-folder *ngFor='let node of (topLevelNodes$ | async)' [folder]='node'></app-library-folder>
+
+        </ng-container>
+    </div>
+
+    <div class='trash' (click)="openTrashTab()">
+        <span class="fa fa-trash"></span>Trash
+    </div>
+</ng-container>

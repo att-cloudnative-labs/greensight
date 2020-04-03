@@ -1,0 +1,33 @@
+:host {
+    display: inline-block;
+}
+
+.completed-word {
+    color: white;
+    font-weight: bold;
+    padding: 0.225em;
+    border: 0px;
+    margin: -0.13em;
+}
+
+.operator {
+    font-weight: bold;
+    color: rgb(0, 204, 255);
+    border: 0px;
+    padding: 0.225em;
+    margin: -0.13em;
+}
+
+.const-value {
+    color: #80f123;
+    border: 0px;
+    padding: 0.225em;
+    margin: -0.13em;
+}
+
+.equals {
+    color: red;
+    border: 0px;
+    padding: 0.225em;
+    margin: -0.13em;
+}

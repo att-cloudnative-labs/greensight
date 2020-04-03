@@ -1,0 +1,31 @@
+button {
+    border: 0;
+    background: none;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    padding: 2px 5px;
+    color: white;
+}
+
+button:focus {
+    outline: 0;
+}
+
+:host.in-only button i, :host.both  button i {
+    margin-right: 9px;
+}
+
+:host.out-only button {
+    flex-direction: row-reverse;
+}
+
+:host.out-only button i {
+    margin-left: 9px;
+}
+
+:host.both {
+    flex: 100%;
+    display: flex;
+    justify-content: center;
+}

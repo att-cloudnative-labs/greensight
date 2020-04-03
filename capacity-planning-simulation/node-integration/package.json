@@ -6,15 +6,22 @@
   "scripts": {
     "build": "tsc"
   },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@egbitbucket.dtvops.net:7999/cptl/capacity-planning-simulation.git"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "typescript": "^3.3.3"
   },
+  "publishConfig": {
+    "registry": "http://npmcache.aeg.cloud"
+  },
   "dependencies": {
-    "@cpt/capacity-planning-simulation": "file:../",
-    "@cpt/capacity-planning-simulation-pe-repository": "file:../pe-repository",
-    "@cpt/capacity-planning-simulation-types": "file:../types",
+    "@cpt/capacity-planning-simulation": "0.0.1",
+    "@cpt/capacity-planning-simulation-pe-repository": "0.0.350",
+    "@cpt/capacity-planning-simulation-types": "0.0.350",
     "@types/node": "^11.11.7",
     "@types/request-promise-native": "^1.0.15",
     "request": "^2.88.0",

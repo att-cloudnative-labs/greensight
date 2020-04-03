@@ -1,0 +1,40 @@
+<div #inputExpression class="hoist" [ngStyle]="width != undefined ? {'width': width} : {'width':'100%'}"
+     [ngClass]="{'': !invalidExpression,  'invalid-expression': invalidExpression}" (click)="focusOnExpression()">
+        <autocomplete-input #expression
+                [constantInput]="constantInput"
+                [completedWords]="parsedExpression"
+                [variables]="variableList"
+                [variable-name]="variable.content.title"
+                [sheetId]="sheetId"
+                (widthChanged)="onWidthChanged($event)"
+                (expressionChanged)="expressionChanged()"
+                (equalsDeleted)="equalsDeleted()"
+                (flashInvalid)="flashInvalid()"></autocomplete-input>
+</div>
+
+<div class="horizontal-flow"
+    #expressionEditor
+    *ngWormhole="'#editor-target-'+sheetId"
+    appTether
+    [appTetherTarget]="inputExpression"
+    [appTetherTargetAttachment]="'bottom left'"
+    [appTetherAttachment]="'top left'"
+    [appTetherOffset]="'0px 0px'">
+    <div class="column">
+        <div class="group distribution">
+                <time-seg-distribution
+                        [distribution]="tempDist"
+                        [variable-list]="variableList"
+                        [variable-name]="variable.content.title"
+                        [parentIsExpression]="true"
+                        [sheetId]="sheetId"
+                        [fwdKeyEvent]="fwdKeyEvent">
+                </time-seg-distribution>
+        </div>
+
+        <div class="group description">
+            <label>Description</label>
+            <textarea [(ngModel)]="timesegment.description" type="text"></textarea>
+        </div>
+    </div>
+</div>

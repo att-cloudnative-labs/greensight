@@ -1,6 +1,0 @@
-<button  *ngIf="!showCommentInput"  title="save" class="save" (click)="setCommentInputVisible()"><span class=" fa fa-save fa-lg"></span></button>
-<input *ngIf="showCommentInput" 
-        #commentInput 
-        placeholder="What changed?"
-        (keydown.enter)="saveComment($event)"
-        (blur)="saveComment($event)"/>

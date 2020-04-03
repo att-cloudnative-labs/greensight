@@ -10,6 +10,8 @@ public class Constants {
   public static final String AUTHORIZATION = "Authorization";
   public static final String TIMESTAMP_TIME_ZONE = "UTC";
   public static final String ZONED_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssX";
+  public static final int UUID_LENGTH = 36;
+  public static final int OID_LENGTH = 24;
 
   private Constants() {
     // private constructor to hide implicit public no-args one.

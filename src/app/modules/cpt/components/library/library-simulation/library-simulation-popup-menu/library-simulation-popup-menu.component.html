@@ -1,0 +1,11 @@
+<ul *appHasPermission="readPermissionsObj">
+    <li (click)="onOpenModel()">Open</li>
+    <hr>
+    <li *appHasPermission="modifyPermissionsObj" (click)="onRenameModel()">Rename</li>
+     <li (click)="onCopySimConfig()">Copy</li>
+    <div *appHasPermission="trashPermissionsObj">
+        <li (click)="onMoveSimConfig()">Cut</li>
+        <hr>
+        <li (click)="onTrashModel()">Send to Trash</li>
+    </div>
+</ul>

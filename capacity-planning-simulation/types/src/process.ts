@@ -1,5 +1,5 @@
 import { Inport, Outport, Port, GraphParam, GraphConfig } from './graph';
-import { UidObject, NodeTypes } from './object';
+import { UidObject, NodeTypes, ReleaseTrackingUidObject, TrackingModes } from './object';
 
 export type ProcessTypes = 'PROCESSING_ELEMENT' | 'GRAPH_MODEL';
 export type ProcessNodeType = NodeTypes;
@@ -38,6 +38,9 @@ export interface ProcessInterfaceDescription extends UidObject {
     dependencies?: string[];
     parentId?: string;
     pathName?: string;
+    versionId?: string;
+    releaseNr?: number;
+
 }
 
 export type ProcessInterfaceDescriptionRepository = { [id: string]: ProcessInterfaceDescription }
@@ -47,7 +50,7 @@ export interface ProcessPort {
     ref: string;
     // identify the template used to create this port
     templateId?: string;
-    // identify ports instatiated by a single template
+    // identify ports instantiated by a single template
     templateGroupId?: string;
     // apply configuration to dynamic ports
     config?: GraphConfig;
@@ -79,19 +82,24 @@ export interface ProcessInport extends ProcessPort, UidObject {
 // is represented by a process.
 // all the process ports get a graph specific UUID and will
 // reference the Processes Port ID internally
-export interface Process extends UidObject {
+export interface Process extends ReleaseTrackingUidObject {
     // from UidObject
     objectId: string;
     objectType: 'PROCESS';
 
-    type: ProcessTypes;
+    // from ReleaseTrackingUidObject
+    releaseNr?: number;
+    tracking?: TrackingModes;
     ref: string;
+
+    type: ProcessTypes;
     // if not set assume latest
-    version?: string;
+    versionId?: string;
     label?: string;
     metadata?: any;
     inports: { [id: string]: ProcessInport };
     outports: { [id: string]: ProcessOutport };
+    name: string;
 }
 
 function getMaxPortIndex(src: { [id: string]: Port }): number {

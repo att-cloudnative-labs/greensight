@@ -72,7 +72,8 @@ describe("Processing Element Repository", () => {
                 type: 'PROCESSING_ELEMENT',
                 ref: peId,
                 inports: {},
-                outports: {}
+                outports: {},
+                name: pid.name
             }
             let fakeParent = genTestParent();
             let pe = buildProcessingElement(peProcess, fakeParent);

@@ -1,16 +1,16 @@
 import { Variable } from '@cpt/capacity-planning-projection';
 import { testForecastVariables } from './forcast-variables';
 
-export function fetchBranchVariables(branchId: string): Promise<Variable[]> {
-
-    let p = new Promise<Variable[]>((resolve, reject) => {
-        if (testForecastVariables[branchId]) {
-            resolve(testForecastVariables[branchId]);
+export function fetchSheetVariables(id: string, version?: string): Promise<{ version: string, variables: Variable[] }> {
+    return new Promise<{ version: string, variables: Variable[] }>((resolve, reject) => {
+        if (testForecastVariables[id]) {
+            resolve({ variables: testForecastVariables[id], version: 'latest' });
         } else {
-            reject("no such branch");
+            reject("no such sheet");
         }
+
+
     });
-    return p;
 }
 
 export function emptyFetchBranchVariables(branchId: string): Promise<Variable[]> {

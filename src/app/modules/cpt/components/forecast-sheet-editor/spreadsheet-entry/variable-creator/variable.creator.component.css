@@ -1,0 +1,41 @@
+:host {
+    text-align: left;
+    display: block;
+    color: black;
+}
+
+a {
+    position: absolute;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    line-height: 0;
+    padding-left: 13px;
+    text-align: left;
+    color: black;
+}
+
+input.name::-webkit-inner-spin-button,
+input.name::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input.name {
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    border: 0;
+    text-align: left;
+    padding: 10px;
+    background: transparent;
+}
+
+input.name:focus {
+    outline: 0;
+}
+
+::placeholder {
+    color: grey;
+    opacity: 1;
+  }

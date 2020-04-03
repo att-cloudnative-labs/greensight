@@ -1,0 +1,127 @@
+:host{
+    pointer-events: all;
+    position: absolute;
+    user-select: none;
+}
+
+:host.isSelected:before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    top: -6px;
+    left: -6px;
+    right: -6px ;
+    bottom: -6px;
+    border: 5px solid #ffe100;
+    border-radius: 6px;
+}
+
+.process {
+    padding-top: 0.2px;
+    padding-bottom: 0.2px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    box-sizing: border-box;
+    height: 100%;
+}
+
+.inner {
+    background: rgba(40, 40, 40, 0.9);
+    margin: 3px;
+    border-radius: 4px;
+}
+
+.header {
+    background: linear-gradient(to bottom, #8e8e8e, #484848);
+    color: white;
+    z-index: 1;
+    border-radius: 4px 4px 0 0;
+    padding: 0 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.name.hasLabel {
+    color: #bdbdbd;
+    font-style: italic;
+}
+.name.linkDisplaying {
+    opacity: 0.3;
+}
+
+.dim-release {
+    opacity: 0.3;
+}
+
+.ports {
+    padding: 5px;
+    min-height: 20px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.inports, .outports {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.outports {
+    align-items: flex-end;
+}
+
+:host.PROCESSING_ELEMENT .header {
+    background: linear-gradient(to bottom, #943695, #790097);
+}
+
+:host.GRAPH_MODEL .header {
+    background: linear-gradient(to bottom, #363795, #005C97);
+}
+
+.error-warning-node {
+    height: 70px;
+}
+
+.node-header {
+    text-align: center;
+}
+
+svg {
+    display: block;
+    margin: auto;
+}
+
+svg text {
+    font-family: FontAwesome;
+}
+
+.overlay {
+    position: absolute;
+    background: rgba(100,100,100,0);
+    top:0px;
+}
+
+.overlay > app-gm-process-port {
+    position: absolute;
+    margin-top: 32px;
+    margin-left: 12px;
+}
+
+.display-node-label {
+    max-width: 100px;
+    white-space: nowrap;
+    overflow:hidden;
+    text-overflow: ellipsis;
+}
+
+.icon-button {
+    background: transparent;
+    border-width: 0px;
+    color: white;
+}
+
+.link-holder {
+    z-index: 10;
+    position: absolute;
+    right: 2px;
+}

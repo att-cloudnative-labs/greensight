@@ -1,0 +1,29 @@
+:host{
+    padding-left: 10px;
+}
+
+input[type=text] {
+    width: 120px;
+    padding: 2px 2px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-image: initial;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+label {
+    font-weight: normal;
+    display: block;
+    padding-right: 4px;
+}
+
+div {
+    display: inline-block;
+    margin-top: 6px;
+}
+
+span {
+    white-space: nowrap;
+}

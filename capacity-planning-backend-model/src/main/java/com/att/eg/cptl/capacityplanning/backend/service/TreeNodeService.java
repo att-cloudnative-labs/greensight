@@ -3,12 +3,12 @@ package com.att.eg.cptl.capacityplanning.backend.service;
 import com.att.eg.cptl.capacityplanning.backend.controller.history.NodeHistoryFilterType;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeVersionDto;
-import com.att.eg.cptl.capacityplanning.backend.model.AppUser;
-import com.att.eg.cptl.capacityplanning.backend.model.ForecastVariableDescriptor;
-import com.att.eg.cptl.capacityplanning.backend.model.ProcessInterfaceDescription;
-import com.att.eg.cptl.capacityplanning.backend.model.TreeNodeContentPatch;
+import com.att.eg.cptl.capacityplanning.backend.model.*;
+import com.att.eg.cptl.capacityplanning.backend.model.treenode.NodeType;
 import java.util.Date;
 import java.util.List;
+import javax.validation.constraints.Null;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.lang.Nullable;
 
 public interface TreeNodeService {
@@ -20,8 +20,6 @@ public interface TreeNodeService {
    * @param showTrash true to show only trashed nodes, false to exclude trashed nodes.
    * @param sparse false to return child nodes with their content field, false to omit content on
    *     child nodes.
-   * @param depth limits the nodes in the response to a given depth eg. 2 would show as far as
-   *     grandchild nodes and 3 as far as great grandchild nodes.
    * @return The node if it exists.
    */
   List<TreeNodeDto> getNode(
@@ -90,14 +88,14 @@ public interface TreeNodeService {
       boolean alwaysIncludeFirst);
 
   /**
-   * Edit the comment for a specific version in this node's history.
+   * Update the description for a specific version in this node's history.
    *
    * @param nodeId The ID of the node to edit the comment for.
-   * @param versionId The version ID to edit the comment for.
-   * @param comment The new comment.
+   * @param versionNumber The version ID to edit the comment for.
+   * @param description The new comment.
    * @param user The user who initiated the edit.
    */
-  void editCommentForVersion(String nodeId, Long versionNumber, String comment, AppUser user);
+  void updateDescription(String nodeId, Long versionNumber, String description, AppUser user);
 
   /**
    * Restore a specific version of the given node.
@@ -110,12 +108,34 @@ public interface TreeNodeService {
   int restoreVersionFromHistory(String nodeId, Long versionNumber, AppUser user);
 
   void patchContentForNode(
-      String nodeId, Long versionNumber, TreeNodeContentPatch treeNodeContentPatch, AppUser user);
+      String nodeId,
+      Long versionNumber,
+      TreeNodeContentPatch treeNodeContentPatch,
+      AppUser user,
+      @Null String description);
 
   void moveNode(String nodeId, Long versionNumber, String newParentId, AppUser user);
 
-  List<ForecastVariableDescriptor> getVariableDescriptors(AppUser user);
+  TreeNodeDto copyNode(
+      String nodeId, Long versionNumber, String newParentId, String newNodeName, AppUser user);
 
-  List<ProcessInterfaceDescription> getProcessInterfaceDescription(
-      AppUser user, @Nullable Date updatedAfter, @Nullable String processId);
+  TreeNodeDto copyFolder(String folderId, String newFolderName, AppUser user);
+
+  List<TreeNodeTrackingInfo> getTrackingInfo(
+      AppUser user,
+      @Nullable Date updatedAfter,
+      @Nullable List<String> processIds,
+      @Nullable NodeType nodeType);
+
+  List<TreeNodeTrackingInfo> search(
+      AppUser user,
+      PageRequest pageRequest,
+      @Nullable String searchTerm,
+      @Nullable List<NodeType> nodeTypes);
+
+  List<TreeNodeTrackingInfo> findSiblings(
+      AppUser user,
+      PageRequest pageRequest,
+      String siblingReference,
+      @Nullable List<NodeType> nodeTypes);
 }

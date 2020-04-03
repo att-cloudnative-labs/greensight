@@ -43,4 +43,7 @@ public interface TreeNodeRepository
 
   @Query(value = "{'processDependencies': ?0}")
   List<TreeNode> findDependentNodes(String nodeId);
+
+  @Query(value = "{'type': ?0, 'processDependencies': ?1}")
+  List<TreeNode> findDependentNodesByType(String type, String nodeId);
 }

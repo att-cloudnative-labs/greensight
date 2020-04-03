@@ -22,7 +22,8 @@ export function generatePeProcess(pid: ProcessInterfaceDescription): Process {
         type: 'PROCESSING_ELEMENT',
         ref: pid.objectId,
         inports: {},
-        outports: {}
+        outports: {},
+        name: pid.name
     }
 
     processPopulateStaticPorts(peProcess, pid, getRandom);
@@ -74,7 +75,8 @@ export function genTestParent(): CptSimulationProcessIf {
         type: 'GRAPH_MODEL',
         ref: 'parent',
         inports: {},
-        outports: {}
+        outports: {},
+        name: 'parent'
     }
     let cptsimproc: CptSimulationProcessIf = {
         proc: parentProcess,

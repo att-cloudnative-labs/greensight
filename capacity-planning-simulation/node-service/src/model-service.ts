@@ -26,6 +26,10 @@ interface TreeNodeResponse {
     status: string,
 }
 
+interface SheetContent {
+    variables: { [varId: string]: any };
+}
+
 
 export class ModelService {
     beModelHost: string = process.env.BACKEND_MODEL_HOST || "127.0.0.1";
@@ -119,15 +123,17 @@ export class ModelService {
         }));
     }
 
-    public fetchModel(authToken: string, modelId: string): Observable<GraphModel> {
-        return this.getTreeNode(authToken, modelId).pipe(map(tn => {
-            let gm = tn.content as GraphModel
+    public fetchModel(authToken: string, modelId: string, version?: string): Observable<{ version: string, gm: GraphModel }> {
+        const requestId = version && version !== 'latest' ? `${modelId}@${version}` : modelId;
+        return this.getTreeNode(authToken, requestId).pipe(map(tn => {
+            let gm = tn.content as GraphModel;
             gm.objectId = modelId;
             gm.objectType = 'GRAPH_MODEL';
             if (!gm.label) {
                 gm.label = tn.name;
             }
-            return gm;
+            let reportVersion = version ? version : "latest";
+            return { gm: gm, version: reportVersion };
         }));
     }
 
@@ -162,6 +168,27 @@ export class ModelService {
 
         };
         return this.postTreeNode(authToken, node);
+    }
+
+
+    public fetchSheet(authToken: string, sheetId: string, version?: string): Observable<{ version: string, variables: Variable[] }> {
+        const requestId = version && version !== 'latest' ? `${sheetId}@${version}` : sheetId;
+        return this.getTreeNode(authToken, requestId).pipe(map(tn => {
+            let variables: Variable[] = [];
+            const sheetContent = tn.content as SheetContent;
+            for (const variableId in sheetContent.variables) {
+                const variable = sheetContent.variables[variableId];
+                const varSerialized = { ...variable, id: variable.objectId, name: variable.title };
+                let v = Variable.deserialize(varSerialized);
+                if (v instanceof Error) {
+                    // ignore for now
+                } else {
+                    variables.push(v);
+                }
+            }
+            let reportVersion = version ? version : "latest";
+            return { variables: variables, version: reportVersion };
+        }));
     }
 
     public fetchBranchVariables(authToken: string, branchId: string): Observable<Variable[]> {

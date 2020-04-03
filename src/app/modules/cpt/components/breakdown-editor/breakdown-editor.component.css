@@ -1,0 +1,21 @@
+input {
+    background-color: rgb(64, 68, 71);
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    padding: 2px 4px;
+    border-radius:4px;
+    color: white;
+}
+
+label {
+    display: block;
+}
+
+button {
+    color: black;
+    border-radius: 4px;
+    display: block;
+    margin-bottom: 10px;
+}
+

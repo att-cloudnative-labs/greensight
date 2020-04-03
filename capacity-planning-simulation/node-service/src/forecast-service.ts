@@ -15,7 +15,7 @@ interface VariableNode {
 
 export class ForecastService {
     beFcHost: string = process.env.BACKEND_FC_HOST || "127.0.0.1";
-    beFcPort: number = parseInt(process.env.BACKEN_FC_PORT || "8080");
+    beFcPort: number = parseInt(process.env.BACKEN_FC_PORT || "8443");
 
     public fetchBranchVariables(authToken: string, branchId: string): Observable<Variable[]> {
         let o$ = Observable.create((obs: Observer<Variable[]>) => {

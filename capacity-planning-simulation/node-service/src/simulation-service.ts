@@ -16,8 +16,8 @@ export class SimulationService {
         let modelService = new ModelService();
 
         let sh = new CptSimulationHarness(
-            (branchId) => modelService.fetchBranchVariables(authToken, branchId).toPromise(),
-            (graphModelId) => modelService.fetchModel(authToken, graphModelId).toPromise(),
+            (sheetId, version) => modelService.fetchSheet(authToken, sheetId, version).toPromise(),
+            (graphModelId, version) => modelService.fetchModel(authToken, graphModelId, version).toPromise(),
             console.log
         );
 

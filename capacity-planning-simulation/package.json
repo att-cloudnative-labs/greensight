@@ -1,11 +1,15 @@
 {
   "name": "@cpt/capacity-planning-simulation",
-  "version": "0.0.720",
+  "version": "0.0.900",
   "description": "A Library for System Simulation",
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha --require ts-node/register test/**/*spec.ts",
     "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@egbitbucket.dtvops.net:7999/cptl/capacity-planning-simulation.git"
   },
   "author": "",
   "license": "ISC",
@@ -19,9 +23,12 @@
     "ts-node": "^7.0.1",
     "typescript": "^3.3.3"
   },
+  "publishConfig": {
+    "registry": "http://npmcache.aeg.cloud"
+  },
   "dependencies": {
-    "@cpt/capacity-planning-projection": "file:capacity-planning-projection",
-    "@cpt/capacity-planning-simulation-types": "file:types",
+    "@cpt/capacity-planning-projection": "0.0.20",
+    "@cpt/capacity-planning-simulation-types": "0.0.900",
     "essy-distribution": "^1.1.22",
     "essy-stats": "^1.0.30",
     "mersenne-twister": "^1.1.0",

@@ -4,8 +4,8 @@ import com.att.eg.cptl.capacityplanning.backend.dao.UserGroupRepository;
 import com.att.eg.cptl.capacityplanning.backend.dao.UserMongoRepository;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.AccessPermissionDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeDto;
-import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeVersionDto;
 import com.att.eg.cptl.capacityplanning.backend.model.AppUser;
+import com.att.eg.cptl.capacityplanning.backend.model.NamedOwnerObject;
 import com.att.eg.cptl.capacityplanning.backend.model.UserGroup;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.AccessIdType;
 import java.util.*;
@@ -81,16 +81,16 @@ public class DtoOps {
   }
 
   // FIXME: unify with function above
-  public static void addVersionUserNames(
-      List<TreeNodeVersionDto> dtos, UserMongoRepository userRepo) {
+  public static <T extends NamedOwnerObject> void lookupOwnerNames(
+      List<T> dtos, UserMongoRepository userRepo) {
     Map<String, AppUser> userMap = new HashMap<>();
     if (dtos == null || dtos.size() < 1) {
       return;
     }
 
     // figure out which user and groups we need
-    for (TreeNodeVersionDto dto : dtos) {
-      userMap.putIfAbsent(dto.getUserId(), null);
+    for (NamedOwnerObject dto : dtos) {
+      userMap.putIfAbsent(dto.getOwnerId(), null);
     }
 
     // fetch them
@@ -104,9 +104,9 @@ public class DtoOps {
     }
 
     // apply to dtos
-    for (TreeNodeVersionDto dto : dtos) {
+    for (NamedOwnerObject dto : dtos) {
       try {
-        dto.setUserName(userMap.get(dto.getUserId()).getUsername());
+        dto.setOwnerName(userMap.get(dto.getOwnerId()).getUsername());
       } catch (NullPointerException ignored) {
       }
       ;

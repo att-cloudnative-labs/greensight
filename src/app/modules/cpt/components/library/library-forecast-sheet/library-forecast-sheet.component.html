@@ -1,0 +1,38 @@
+<div (contextmenu)="openContextMenu($event)" #modelElement
+    (click)="onClick()"
+    (mouseenter)='onMouseEnter()'
+    (mouseleave)="onMouseLeave()"
+    [class.highlighted]='isHighlighted'
+    [class.isInClipboard]='isInClipboard'
+    [class.selected]="isSelected"
+    (dblclick)="doubleClick()"
+    class="graph-model-label">
+
+
+    <div class="model-name" style="display: inline;" *ngIf="isRename">
+        <div class="model-name-icon"><span class="fa fa-chart-line"></span></div>
+        <app-edit-in-place [value]="sheet.name" (onSubmit)="renameForecastSheet($event)" (onCancel)="onCancelRename()"></app-edit-in-place>
+    </div>
+    <div class="model-name" [title]="sheet.name" *ngIf="!isRename">
+        <div class="model-name-icon"><span class="fa fa-chart-line"></span></div>
+        <div class="model-name-label">{{sheet.name}}</div>
+    </div>
+    <div *ngIf="isHighlighted && !isRename && userRoleId !== 'READ_ONLY'" class="pull-right graph-model-options">
+        <div *appHasPermission="modifyPermissionsObj" class="more-graph-model-options">
+         </div>
+        <button title="Open Forecast Sheet" (click)="doubleClick()" class="icon-button"><span style="position:relative"><i class="fa fa-external-link-alt"></i></span></button>
+        <div class="more-graph-model-options">
+            <button #optionsbutton [id]="'options-'+sheet.id" (click)="openContextMenu($event)" class="icon-button dropdown-button"><i class="fa fa-ellipsis-h"></i></button>
+        </div>
+    </div>
+</div>
+
+<ng-template #contextMenu let-close="close">
+    <app-library-forecast-sheet-popup-menu
+        (closePopup)="close();"
+        (openForecastSheet)="doubleClick()"
+        (renameForecastSheet)="openSheetRenameMode()"
+        [sheet]="sheet"
+        data-testid="app-library-forecast-sheet-popup-menu">
+    </app-library-forecast-sheet-popup-menu>
+</ng-template>

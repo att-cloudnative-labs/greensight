@@ -1,0 +1,80 @@
+:host {
+    color:black;
+}
+
+.selected-label {
+    background-color: white;
+    color:black;
+    padding: 5px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.selected-label div {
+    display: flex;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-display {
+    z-index: 1000;
+    width: 500px;
+    background-color: white;
+    padding:8px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 4px;
+}
+
+.search-results{
+    display: flex;
+    flex-direction: column;
+}
+
+span {
+    display: inline-flex;
+    flex: 1;
+    margin: auto;
+    justify-content: flex-end;
+}
+
+
+input {
+    color:black;
+    width:200px;
+    padding: 5px 9px;
+    font-size: 14px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 4px;
+}
+
+ul {
+    max-height: 277px;
+    overflow-x: hidden;
+    overflow-y:scroll;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    cursor: pointer;
+}
+
+.inline-header {
+    font-size: small;
+    color: gray;
+    cursor: default;
+}
+
+.inline-button:hover {
+    background-color:lightgray;
+    cursor: pointer;
+}

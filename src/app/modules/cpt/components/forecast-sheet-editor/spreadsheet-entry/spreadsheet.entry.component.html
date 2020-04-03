@@ -1,0 +1,136 @@
+<div #spreadsheet class="spreadsheet" (scroll)="onScroll()" [style.pointer-events]="this.disableClick ? 'none' : 'all'">
+    <table class="spreadsheet-interface">
+        <thead>
+        <tr>
+            <th scope="col" class="cornerstone" [style.width.px] = "leftColumnStyle">
+                <cell-resize-handler [resizeId]= "'resize-th'" (onColumnResize)="handleColumnResize($event)"></cell-resize-handler>
+            </th>
+            <th *ngFor="let date of projectionKeys" style="width:112px;">
+                <header-cell
+                        [date]="date.month"></header-cell>
+            </th>
+        </tr>
+        </thead>
+        <tbody data-testid="spreadsheet-body">
+        <ng-container *ngFor="let projection of uiProjections; let projectionIndex=index">
+            <tr *ngIf="projection.display">
+                <td [style.background-color]="projection.color ? projection.color : projection.variable.variableModel.color">
+                    <variable-cell
+                            [variable]="projection.variable"
+                            [projection]="projection"
+                            [allVariables]="variableList"
+                            (onExpandToggle)="projection.isExpanded = !projection.isExpanded"
+                            (onOpenInspector)="this.selection = []"
+                            [isExpanded]="projection.isExpanded"
+                            [units]="units"
+                            [startDate]="startDate"
+                            [sheetId] = "sheetId"
+                            [readonly] = "readonly"
+                            (onVariableNameClicked)="clearFrameSelection()"
+                            (onUpdateVariable)="onUpdateVariable($event)"
+                            (onDeleteVariable)="onDeleteVariable($event)"
+                            (onUpdateVariableTitle)="onUpdateVariableTitle($event)"></variable-cell>
+                            <cell-resize-handler [resizeId]= "'resize-td-' + projection.id" (onColumnResize)="handleColumnResize($event)"></cell-resize-handler>
+                </td>
+                <td *ngFor="let frame of projection.frames; let colIndex=index">
+                    <frame-cell
+                            (paste)="pastingEvent($event)"
+                            [frame]="frame"
+                            [variable]="projection.variable"
+                            [variableList]="variableList"
+                            [selected]="isSelectedCell(frame)"
+                            [sheetId]="sheetId"
+                            (onUpsertActualValue) = "onUpsertActualValue($event, projection.variable, frame.date)"
+                            (onUpsertTimesegment) = "onUpsertTimesegment($event, projection.variable, frame.date)"
+                            (frameCellClicked)="onFrameCellClicked($event, projection.variable, projectionIndex, colIndex)"
+                            (onShowEdit)="onShowEdit($event)"
+                            (frameCellDoubleClicked)="onFrameCellDoubleClicked()"></frame-cell>
+                </td>
+            </tr>
+            <ng-container *ngIf="projection.isExpanded && projection.display">
+                <tr [class]="'subframe index-'+i" *ngFor="let subframeName of projection.subframeNames; let i=index;">
+                    <td class="subframe-row_label-cell" [style.background-color]="projection.color">
+                        <subframe-label-cell
+                                [class]="'subframe index-'+i"
+                                [ngClass]="{'last': i == projection.subframeNames.length -1}"
+                                [label]="subframeName"></subframe-label-cell>
+                                <cell-resize-handler [resizeId]="'resize-' + projection.variable.id + 'subframe-'+i" (onColumnResize)="handleColumnResize($event)"></cell-resize-handler>
+                    </td>
+                    <td class="subframe-cell" *ngFor="let frame of projection.frames; let colIndex=index" [ngClass]="{'selected':isSelected(frame, subframeName), 'is-past': frame.isPast}">
+                        <subframe-cell
+                                [ngClass]="{'last': i == projection.subframeNames.length -1}"
+                                [class]="'subframe index-'+i"
+                                [subframe]="getSubFrame(frame, subframeName)"
+                                [variable]="projection.variable"
+                                [hasTimesegment]="frame.timeSegment && frame.timeSegment.date === frame.date"
+                                [frame]="frame"
+                                [isFrameEditorOpen]="showEdit"
+                                (subframeCellClicked) = "onSubFrameCellClicked($event, projection.variable, i, colIndex, projectionIndex)"
+                                (subframeCellDoubleClicked) = "onSubFrameCellDoubleClicked()"
+                                (subframeEnterEdit) = "onSubFrameEnterEdit()"
+                                (subframeLeaveEdit) = "onSubFrameLeaveEdit()"
+                                (onUpsertSubframe)= "onUpsertSubframe($event, frame, projection.variable, subframeName)"
+                        ></subframe-cell>
+                    </td>
+                </tr>
+            </ng-container>
+        </ng-container>
+
+        <tr class="empty">
+            <td>
+                <variable-creator *ngIf="!readonly"
+                    [variableList]="variableList"
+                    (onVariableCreate)="processingVariableCreation($event)"
+                    (onVariableNameClicked)="clearFrameSelection()"
+                    ></variable-creator>
+                <cell-resize-handler [resizeId]= "'resize-create-td'" (onColumnResize)="handleColumnResize($event)"></cell-resize-handler>
+            </td>
+
+            <td *ngFor="let date of projectionKeys">
+                <blank-cell
+                        [isPast]="date.isPast"></blank-cell>
+            </td>
+
+
+        </tr>
+
+        <tr *ngFor="let blankLine of blankLineCountTimes; let i =index" class="empty">
+            <td>
+                <cell-resize-handler [resizeId]= "'resize-blank-td-'+i" (onColumnResize)="handleColumnResize($event)"></cell-resize-handler>
+            </td>
+
+            <td *ngFor="let date of projectionKeys">
+                <blank-cell
+                    [isPast]="date.isPast"></blank-cell>
+            </td>
+
+        </tr>
+
+        </tbody>
+    </table>
+    <a class="btnDeleteConfirmation btn btn-primary hidden" data-toggle="modal" data-target="#delete-warning-modal"></a>
+    <div class="modal-container">
+        <div class="modal" id="delete-warning-modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="header-button btn pull-right" data-dismiss="modal">x</button>
+                        <h3 class="modal-title">Confirmation</h3>
+                    </div>
+
+                    <div class="modal-body">
+                        <h5 class="modal-title">The start of this deletion has already past. Do you want to delete actual value or projected value or both?</h5>
+                    </div>
+                    <br>
+                    <div class="modal-footer">
+                        <div class="pull-right">
+                            <button type="button" class="btn btn-default" data-dismiss="modal" (click)="deleteValue('projected')">Projected</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal" (click)="deleteValue('actual')">Actual</button>
+                            <button type="button" class="btn btn-danger" data-dismiss="modal" (click)="deleteValue()">Both</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
