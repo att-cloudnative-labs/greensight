@@ -15,10 +15,10 @@ export interface Port {
     // hint what configuration will be expected
     // for dynamic ports
     configType?: ConfigType;
-    // ordering hint, mainly for processing elements ports
-    // as graph ports will use the ports y-pos for ordering
-    // this is per port-type. i.e. inport and outport have indepedent
-    // indexes
+/*   ordering hint, mainly for processing elements ports
+     as graph ports will use the ports y-pos for ordering
+     this is per port-type. i.e. inport and outport have indepedent
+     indexes */
     index?: number;
 }
 
