@@ -63,6 +63,12 @@ export class DockableStackComponent implements OnInit, OnChanges {
             return 'fa fa-chart-bar';
         } else if (component === 'ForecastEditorComponent') {
             return 'fa fa-chart-line';
+        } else if (component === 'SettingsEditorComponent') {
+            return 'fa fa-cog';
+        } else if (component === 'UserEditorComponent') {
+            return 'fa fa-user';
+        } else if (component === 'UserGroupEditorComponent') {
+            return 'fa fa-users';
         } else {
             return '';
         }

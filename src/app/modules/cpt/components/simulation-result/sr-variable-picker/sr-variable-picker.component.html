@@ -1,5 +1,5 @@
-<div class="header">
-    <div class="tabs">
+<div class="header" *ngIf="visible">
+    <div class="tabs" >
         <div id="sr-tree-tab" class='tab'
             (click)='onTabClick("tree")'
             [class.active]='selectedTab === "tree"'
@@ -27,12 +27,12 @@
     </div>
 </div>
 
-<div class="panels" [hidden]="selectedTab !== 'tree'">
-    <app-sr-tree [results]="simResult" [selectedScenarioId]="selectedScenarioId" [simResultId]="simResultId" [dataType]="'data'"></app-sr-tree>
+<div class="panels" [hidden]="selectedTab !== 'tree'" *ngIf="visible">
+    <app-sr-tree [result]="simResult" [selectedScenarioId]="selectedScenarioId" [simResultId]="simResultId" [dataType]="'data'"></app-sr-tree>
 </div>
-<div class="panels" [hidden]="selectedTab !== 'responses'">
-    <app-sr-tree [results]="simResult" [selectedScenarioId]="selectedScenarioId" [simResultId]="simResultId" [dataType]="'response'"></app-sr-tree>
+<div class="panels" [hidden]="selectedTab !== 'responses'" *ngIf="visible">
+    <app-sr-tree [result]="simResult" [selectedScenarioId]="selectedScenarioId" [simResultId]="simResultId" [dataType]="'response'"></app-sr-tree>
 </div>
-<div class="panels" [hidden]="selectedTab !== 'error-warning'">
-    <app-sr-error-warning-list [results]="simResult"></app-sr-error-warning-list>
+<div class="panels" [hidden]="selectedTab !== 'error-warning'" *ngIf="visible">
+    <app-sr-error-warning-list [result]="simResult"></app-sr-error-warning-list>
 </div>

@@ -1,0 +1,25 @@
+<div>
+    <div data-testid="timezone">
+       <label>Client Timezone</label>
+        <select class="form-control tzSelect" (change)="tzUpdate($event)" [(ngModel)]="timezone">
+        <option *ngFor="let tz of utcList" [ngValue]="tz.tzCode">{{tz.tzDescription}}</option>
+        </select>
+    </div>
+    <div>Display Precision Variables</div>
+    <div class="btn-group mr-4" data-testid="precision">
+        <button type="button" (click)="setVarPrecision(0)" class="btn btn-primary" [ngClass]="varPrecisionClass(0)" title="No Decimals">0</button>
+        <button type="button" (click)="setVarPrecision(1)" class="btn btn-primary" [ngClass]="varPrecisionClass(1)" title=".1">1</button>
+        <button type="button" (click)="setVarPrecision(2)" class="btn btn-primary" [ngClass]="varPrecisionClass(2)" title=".01">2</button>
+        <button type="button" (click)="setVarPrecision(3)" class="btn btn-primary" [ngClass]="varPrecisionClass(3)" title=".001">3</button>
+    </div>
+
+    <div>Display Precision Breakdown Variables</div>
+    <div class="btn-group mr-4" data-testid="breakdown precision">
+        <button type="button" (click)="setBdPrecision(0)" class="btn btn-primary" [ngClass]="bdPrecisionClass(0)" title="No Decimals">0</button>
+        <button type="button" (click)="setBdPrecision(1)" class="btn btn-primary" [ngClass]="bdPrecisionClass(1)" title=".1">1</button>
+        <button type="button" (click)="setBdPrecision(2)" class="btn btn-primary" [ngClass]="bdPrecisionClass(2)" title=".01">2</button>
+        <button type="button" (click)="setBdPrecision(3)" class="btn btn-primary" [ngClass]="bdPrecisionClass(3)" title=".001">3</button>
+    </div>
+    <div>Display Percentiles</div>
+    <input data-testid="percentile" [(ngModel)]="sigmaTxt" (focusout)="sigmaUpdate($event)">
+</div>               

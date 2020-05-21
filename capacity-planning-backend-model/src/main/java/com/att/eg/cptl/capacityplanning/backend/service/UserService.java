@@ -18,15 +18,17 @@ public interface UserService {
 
   AppUser getUserByName(String username);
 
-  void addUser(AppUserInputDto appUserInputDto);
+  AppUser addUser(AppUserInputDto appUserInputDto);
 
   AppUser updateUser(String userId, AppUserInputDto appUserInputDto, boolean allowRoleChange);
 
-  void deleteUser(String userId);
+  void deleteUser(String userId, AppUser user);
 
   LoginOutputDto loginUser(LoginInputDto loginInput);
 
   Map<String, Object> getSettingsForUser(String userId);
 
   void addSettingToUser(String userId, SettingDto settingDto);
+
+  boolean usesLdap();
 }

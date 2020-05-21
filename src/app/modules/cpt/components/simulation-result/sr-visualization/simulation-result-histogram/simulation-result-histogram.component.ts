@@ -2,7 +2,7 @@ import { Component, OnInit, Input, OnChanges } from '@angular/core';
 import { EChartOption } from 'echarts';
 import * as echarts from 'echarts';
 import { ResultNodeDataSet } from '@cpt/components/simulation-result/sr-visualization/sr-visualization.component';
-import { HistogramAggeregate } from '@cpt/capacity-planning-simulation-types/lib';
+import { HistogramAggregate } from '@cpt/capacity-planning-simulation-types/lib';
 
 @Component({
     selector: 'app-srs-viz-histogram',
@@ -20,7 +20,7 @@ export class SimulationResultHistogramComponent implements OnChanges {
         const chartName = this.dataSet.title + " " + this.dataSet.date;
         const bins = [];
         const binAG = [];
-        const histoData = this.dataSet.mainData[this.dataSet.date] as HistogramAggeregate;
+        const histoData = this.dataSet.mainData[this.dataSet.date] as HistogramAggregate;
         const aggData = this.dataSet.data[this.dataSet.date][this.dataSet.aggregationMethod];
         const maxValueOfCount = Math.max(...histoData.buckets.map(o => o.count), 0) + 2;
         const avg = aggData.hasOwnProperty('value') ? (aggData as any).value : 0;

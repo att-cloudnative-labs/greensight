@@ -14,7 +14,7 @@
     <div class="column">
         <div class="group growth">
             <label>Growth Rate (MoM)</label>
-            <input style="color: black" #growthInput type="number" (focus)="onGrowthInputFocus($event)" (blur)="onGrowthInputBlur($event)" (keydown)="onGrowthInputKeyDown($event)">
+            <input data-testid="growth-input" style="color: black" #growthInput type="number" (focus)="onGrowthInputFocus($event)" (blur)="onGrowthInputBlur($event)" (keydown)="onGrowthInputKeyDown($event)">
         </div>
 
         <div class="group distribution">

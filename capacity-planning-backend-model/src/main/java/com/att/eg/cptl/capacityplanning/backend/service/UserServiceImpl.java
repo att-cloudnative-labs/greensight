@@ -48,6 +48,10 @@ public class UserServiceImpl implements UserService {
   @Value("${ldap.enabled:false}")
   private boolean ldapEnabled;
 
+  public boolean usesLdap() {
+    return this.ldapEnabled;
+  }
+
   @Override
   public List<AppUser> getAllUsers() {
     return userMongoRepository.findAll();
@@ -59,7 +63,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public void addUser(AppUserInputDto appUserInputDto) {
+  public AppUser addUser(AppUserInputDto appUserInputDto) {
     if (StringUtils.isBlank(appUserInputDto.getPassword())) {
       throw new BadRequestException("Password cannot be blank or omitted.");
     }
@@ -70,7 +74,7 @@ public class UserServiceImpl implements UserService {
       throw new UserExistsException(
           "User with username \"" + user.getUsername() + "\" already exists.");
     }
-    userMongoRepository.save(user);
+    return userMongoRepository.save(user);
   }
 
   @Override
@@ -107,7 +111,15 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public void deleteUser(String userId) {
+  public void deleteUser(String userId, AppUser user) {
+    if (userId.equals(user.getId())) {
+      throw new IllegalArgumentException("can't delete yourself");
+    }
+    Optional<AppUser> dbUser = userMongoRepository.findById(userId);
+    if (!dbUser.isPresent()) {
+      throw new UserNotFoundException("User with id \"" + userId + "\" does not exist.");
+    }
+
     removeUserFromUserGroups(userId);
     userMongoRepository.deleteById(userId);
   }
@@ -169,6 +181,7 @@ public class UserServiceImpl implements UserService {
         LoginOutputDto loginOutputDto = new LoginOutputDto();
         loginOutputDto.setUserId(appUser.getId());
         loginOutputDto.setToken(userSession.getId());
+        loginOutputDto.setRole(appUser.getRole());
 
         return loginOutputDto;
       }
@@ -185,6 +198,7 @@ public class UserServiceImpl implements UserService {
           LoginOutputDto loginOutputDto = new LoginOutputDto();
           loginOutputDto.setToken(userSession.getId());
           loginOutputDto.setUserId(appUser.getId());
+          loginOutputDto.setRole(appUser.getRole());
 
           return loginOutputDto;
         }

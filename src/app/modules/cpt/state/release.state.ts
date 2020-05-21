@@ -41,6 +41,8 @@ export class ReleaseState {
         );
     }
 
+
+    @Action(releaseActions.ReleaseFetchGraphModel)
     @Action(releaseActions.ReleaseFetch)
     fetchRelease(ctx: StateContext<ReleaseStateModel>, { payload: { nodeId, releaseNr } }: releaseActions.ReleaseFetch) {
         const releases = ctx.getState().releases;

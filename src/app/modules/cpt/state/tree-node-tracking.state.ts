@@ -8,7 +8,7 @@ import { ReleaseCreated } from '@cpt/state/release.actions';
 import { TreeNodeInfo } from '@cpt/interfaces/tree-node-tracking';
 import { LoadTrackingInfo } from '@cpt/state/tree-node-tracking.actions';
 import { CreatedTreeNode, CreateTreeNode } from '@cpt/state/tree.actions';
-import { RenameFolderCommitted } from '@cpt/state/library.actions';
+import { RenameFolderCommitted, RenameForecastSheetEscaped } from '@cpt/state/library.actions';
 
 
 export class TreeNodeTrackingStateModel {
@@ -69,6 +69,7 @@ export class TreeNodeTrackingState {
     @Action(CreatedTreeNode)
     @Action(CreateTreeNode)
     @Action(RenameFolderCommitted)
+    @Action(RenameForecastSheetEscaped)
     loadTracking(
         { patchState }: StateContext<TreeNodeTrackingStateModel>,
     ) {

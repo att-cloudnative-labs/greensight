@@ -2,21 +2,13 @@ package com.att.eg.cptl.capacityplanning.backend.model;
 
 public class SoftwareVersionInfo {
 
-  private String softwareVersion;
   private String groupId;
   private String artifactId;
   private String version;
+  private String authMode;
 
   public SoftwareVersionInfo() {
     super();
-  }
-
-  public String getSoftwareVersion() {
-    return softwareVersion;
-  }
-
-  public void setSoftwareVersion(String modelVersion) {
-    this.softwareVersion = modelVersion;
   }
 
   public String getGroupId() {
@@ -41,5 +33,13 @@ public class SoftwareVersionInfo {
 
   public void setVersion(String version) {
     this.version = version;
+  }
+
+  public void setAuthMode(String authMode) {
+    this.authMode = authMode;
+  }
+
+  public String getAuthMode() {
+    return authMode;
   }
 }

@@ -6,6 +6,7 @@ import { Store, Actions, ofActionSuccessful } from '@ngxs/store';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import { PermissionsObject } from '@app/modules/cpt/interfaces/permissions';
 import * as clipboardActions from '@app/modules/cpt/state/clipboard.actions';
+import { Utils } from '@cpt/lib/utils';
 
 @Component({
     selector: 'app-library-simulation-menu',
@@ -54,8 +55,11 @@ export class LibrarySimulationPopupMenuComponent implements OnInit, OnDestroy {
         this.closePopup.emit();
     }
 
-    onDuplicateModel() {
+    onCopyLink() {
+        Utils.copyNodeUrlToClipboard(this.simulation.id);
+        this.closePopup.emit();
     }
+
 
     onMoveSimConfig() {
         const actions: any[] = [new libraryActions.SimulationClicked(this.simulation), new clipboardActions.NodesCut()];

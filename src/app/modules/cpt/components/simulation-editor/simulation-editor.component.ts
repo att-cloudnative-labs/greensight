@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Store, Actions, ofActionSuccessful, Select } from '@ngxs/store';
 import { TreeState } from '@cpt/state/tree.state';
-import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
 import { TreeNode } from '@cpt/interfaces/tree-node';
 import { GraphProcessingElementSearchComponent } from '../graph-model-editor/graph-processing-element-search/graph-processing-element-search.component';
 import { map, filter, take } from 'rxjs/operators';
@@ -60,6 +60,7 @@ export class SimulationEditorComponent implements OnInit, OnDestroy {
 
     graphModelReferenceTracking: TreeNodeReferenceTracking;
 
+    editorVisible$ = new BehaviorSubject<boolean>(false);
 
     constructor(private store: Store, private actions: Actions, private simulationService: SimulationService) {
         this.sim$$ = new ReplaySubject<TreeNode>(1);
@@ -271,11 +272,11 @@ export class SimulationEditorComponent implements OnInit, OnDestroy {
 
 
     enableUserInput() {
-
+        this.editorVisible$.next(true);
     }
 
     disableUserInput() {
-
+        this.editorVisible$.next(false);
     }
 
     updatedTracking(tnt: TreeNodeReferenceTracking) {
@@ -293,7 +294,7 @@ export class SimulationEditorComponent implements OnInit, OnDestroy {
     }
 
     onForecastSheetSelected(newSheet: TreeNodeInfo) {
-        this.store.dispatch(new simulationActions.AddedForecastSheetClicked({ simulationId: this.nodeId, forecastSheetId: newSheet.id, releaseNr: newSheet.releaseNr }));
+        this.store.dispatch(new simulationActions.AddedForecastSheetClicked({ simulationId: this.nodeId, forecastSheetId: newSheet.id, releaseNr: newSheet.releaseNr, label: newSheet.name }));
     }
 
     renameScenario(scenarioId, newName) {
@@ -359,6 +360,9 @@ export class SimulationEditorComponent implements OnInit, OnDestroy {
             .subscribe(resp => {
                 const simResultId = resp.resultId;
                 this.store.dispatch(new simulationActions.SimulationResultCreated(simResultId));
+            }, error => {
+                // FIXME: create a proper place outside of the component to handle this
+                this.store.dispatch(new simulationActions.SimulationResultCreationFailed({ simulationId: this.simulation.id, error: error }));
             });
     }
 

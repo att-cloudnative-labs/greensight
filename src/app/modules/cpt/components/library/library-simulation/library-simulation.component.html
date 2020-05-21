@@ -14,7 +14,7 @@
         </div>
         <div class="simulation-name" [title]="simulation.name" *ngIf="!isRename">
             <div class="simulation-name-icon"><span class="far fa-clock"></span></div>
-            <div class="simulation-name-label">{{simulation.name}}</div>
+            <div class="simulation-name-label" data-testid="sim-name">{{simulation.name}}</div>
         </div>
         <div *ngIf="isHighlighted && !isRename && userRoleId !== 'READ_ONLY'" class="pull-right simulation-options">
             <button title="Open Simulation" (click)="doubleClick()" class="icon-button"><span style="position:relative"><i class="fa fa-external-link-alt"></i></span></button>

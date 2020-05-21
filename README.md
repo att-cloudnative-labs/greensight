@@ -67,18 +67,19 @@ For Development / Deployment infrastructure:
 			** cd capacity-planning-projection
 				*** npm i
 				*** tsc
-			** cd ../types
+			** cd ../capacity-planning-simulation-types
 				*** npm i
 				*** tsc
-			** cd ../pe-repository
+			** cd ../capacity-planning-simulation-pe-repository
 				*** npm i
 				*** tsc
-			** cd ../
+			** cd ../capacity-planning-simulation
 				*** npm i
 				*** tsc
-			** cd ./node-service
+			** cd ./capacity-planning-simulation-node-service
 				*** npm i
 				*** npm run-script build
+				*** node --experimental-worker www.js
 
 	5- building frontend:
 			* cd ../../

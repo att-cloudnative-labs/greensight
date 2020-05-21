@@ -1,0 +1,16 @@
+:host {
+    display: flex;
+    margin-left: 5px;
+}
+
+i {
+    margin-right: 5px;
+}
+
+.error {
+    color: red;
+}
+.warning {
+    color: yellow;
+}
+

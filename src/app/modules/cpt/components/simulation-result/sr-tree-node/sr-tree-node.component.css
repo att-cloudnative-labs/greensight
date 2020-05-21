@@ -57,6 +57,10 @@
     color: grey;
 }
 
+.child-warning {
+    opacity: 10%;
+}
+
 :host.selected .name {
     color: #cacaca;
 }

@@ -44,7 +44,10 @@ public class ModelToDtoConverter {
     dto.setObjectId(treeNodeRelease.getBaseNodeId());
     dto.setOwnerId(treeNodeRelease.getOwnerId());
     dto.setVersionId(treeNodeRelease.getVersion());
-    dto.setTimestamp(getTimestampString(treeNodeRelease.getLogDate()));
+    if (treeNodeRelease.getLogDate() != null) {
+      dto.setTimestamp(getTimestampString(treeNodeRelease.getLogDate()));
+    }
+
     dto.setId(treeNodeRelease.getId());
     dto.setReleaseNr(treeNodeRelease.getReleaseNr());
     dto.setDescription(treeNodeRelease.getDescription());
@@ -155,7 +158,9 @@ public class ModelToDtoConverter {
     dto.setId(versionInfo.getId());
     dto.setDescription(versionInfo.getLogComment());
     dto.setObjectId(versionInfo.getBaseNodeId());
-    dto.setTimestamp(getTimestampString(versionInfo.getLogDate()));
+    if (versionInfo.getLogDate() != null) {
+      dto.setTimestamp(getTimestampString(versionInfo.getLogDate()));
+    }
     dto.setOwnerId(versionInfo.getOwnerId());
     dto.setVersionId(versionInfo.getVersion());
     return dto;
@@ -279,7 +284,9 @@ public class ModelToDtoConverter {
 
   private String getTimestampString(Date utcDate) {
     return getTimestampString(
-        ZonedDateTime.ofInstant(utcDate.toInstant(), ZoneId.of(Constants.TIMESTAMP_TIME_ZONE)));
+        ZonedDateTime.ofInstant(
+            utcDate != null ? utcDate.toInstant() : (new Date()).toInstant(),
+            ZoneId.of(Constants.TIMESTAMP_TIME_ZONE)));
   }
 
   public ProcessInterfaceDescription createProcessInterfaceDescription(TreeNode treeNode) {

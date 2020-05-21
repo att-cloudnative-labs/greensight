@@ -5,7 +5,7 @@
     <div *ngIf="availableBreakdownVariables !== undefined && availableBreakdownVariables.length > 0; then thenBlock else elseBlock"></div>
     <ng-template #thenBlock>
         <li *ngFor="let variable of availableBreakdownVariables">
-            <label class="list-label" title={{variable.description}}><input type="checkbox" (change)="handleCheck($event, variable)" [checked]="associatedBreakdownVariables.includes(variable)">{{variable.title}}</label>
+            <label data-testid="associate-var" class="list-label" title={{variable.description}}><input type="checkbox" (change)="handleCheck($event, variable)" [checked]="associatedBreakdownVariables.includes(variable)">{{variable.title}}</label>
         </li>
     </ng-template>
     <ng-template #elseBlock>

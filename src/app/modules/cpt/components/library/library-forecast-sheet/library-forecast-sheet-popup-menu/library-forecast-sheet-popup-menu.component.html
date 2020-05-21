@@ -1,5 +1,6 @@
 <ul>
     <li (click)="onOpenForecastSheet()">Open</li>
+    <li (click)="onCopyLink()">Copy Link</li>
     <hr>
     <div *appHasPermission="modifyPermissionsObj">
         <li (click)="onRenameForecastSheet()">Rename</li>
@@ -10,4 +11,4 @@
         <hr>
         <li (click)="onTrashForecastSheet()">Send to Trash</li>
     </div>
-</ul>      
+</ul>

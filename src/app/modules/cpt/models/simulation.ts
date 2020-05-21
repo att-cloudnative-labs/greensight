@@ -6,3 +6,6 @@ export interface Simulation {
     ref?: string;
     monteCarloIterations?: number;
 }
+export interface SimulationRunResult {
+    resultId: string;
+}

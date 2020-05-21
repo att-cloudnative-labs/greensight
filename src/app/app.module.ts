@@ -19,10 +19,14 @@ import { NgxsModule } from '@ngxs/store';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
 import { NgxsStoragePluginModule, StorageOption } from '@ngxs/storage-plugin';
+import { LoaderComponent } from '@login/components/loader/loader.component';
+import { LoaderService } from '@login/services/loader.service';
+import { NgxsRouterPluginModule } from '@ngxs/router-plugin';
 
 @NgModule({
     declarations: [
-        AppComponent
+        AppComponent,
+        LoaderComponent
     ],
     imports: [
         AngularSplitModule.forRoot(),
@@ -38,19 +42,25 @@ import { NgxsStoragePluginModule, StorageOption } from '@ngxs/storage-plugin';
         ReactiveFormsModule,
         OverlayModule,
         NgxsModule.forRoot([], { developmentMode: !env.production }),
+        NgxsRouterPluginModule.forRoot(),
         NgxsLoggerPluginModule.forRoot({ logger: console, collapsed: false }),
-        NgxsReduxDevtoolsPluginModule.forRoot({ disabled: env.production }),
         NgxsStoragePluginModule.forRoot({
             key: 'layout',
             storage: StorageOption.SessionStorage
         }),
+        NgxsReduxDevtoolsPluginModule.forRoot({ disabled: env.production }),
+
+    ],
+    exports: [
+        LoaderComponent
     ],
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GlobalErrorHandler,
             multi: true
-        }
+        },
+        LoaderService
     ],
     bootstrap: [AppComponent]
 })

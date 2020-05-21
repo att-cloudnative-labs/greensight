@@ -12,3 +12,8 @@ export class InvalidateEditorTabNames {
     static readonly type = '[Layout] InvalidateEditorTabNames';
     constructor() { }
 }
+
+export class OpenTabByNodeId {
+    static readonly type = '[Layout] Open Editor Tab By Node Id';
+    constructor(public readonly payload: { nodeId: string, releaseNr?: number }) { }
+}

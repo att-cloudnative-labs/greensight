@@ -5,7 +5,7 @@ import * as treeActions from '@app/modules/cpt/state/tree.actions';
 import { Modal } from 'ngx-modialog-7/plugins/bootstrap';
 import { AccessControlRowComponent } from './access-control-row/access-control-row.component';
 import { UserGroup } from '@app/modules/cpt/interfaces/user-group';
-import { User } from '@app/modules/login/interfaces/user';
+import { User } from '@cpt/interfaces/user';
 import { UsersState } from '@app/modules/cpt/state/users.state';
 import { Observable, combineLatest } from 'rxjs';
 import { Utils } from '@app/modules/cpt/lib/utils';

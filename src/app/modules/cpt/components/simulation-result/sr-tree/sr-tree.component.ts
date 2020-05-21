@@ -3,21 +3,24 @@ import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
 import { Store } from '@ngxs/store';
 import * as simulationResultActions from '@cpt/state/simulation-result-screen.actions';
 import { Observable } from 'rxjs';
-import { TableEntryProperties, SRSDatatableProperties } from '@cpt/models/srs-datatable-properties';
+import { SRSDatatableProperties } from '@cpt/models/srs-datatable-properties';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import { SRSState } from '@cpt/state/simulation-result-screen.state';
 import { map, filter } from 'rxjs/operators';
+import { SimulationResult } from '@cpt/capacity-planning-simulation-types/lib';
 
 
 
 
 interface FlatNode {
-    result: any;
+    result: SimulationNode;
     level: number;
     dataType: string;
     expandable: boolean;
     expanded: boolean;
     visible: boolean;
+    warning: boolean;
+    childWarning: boolean;
 }
 
 @Component({
@@ -26,10 +29,10 @@ interface FlatNode {
     styleUrls: ['./sr-tree.component.css']
 })
 export class SrTreeComponent implements OnChanges, OnDestroy, OnInit {
-    @Input() results: { [nodeInstanceId: string]: SimulationNode };
+    @Input() result: SimulationResult;
     @Input() selectedScenarioId;
     @Input() simResultId;
-    @Input() dataType: string = 'data';
+    @Input() dataType = 'data';
 
     isFocused = false;
     flatNodes: FlatNode[] = [];
@@ -57,8 +60,8 @@ export class SrTreeComponent implements OnChanges, OnDestroy, OnInit {
         );
         this.simulationResultProperties$.pipe(untilDestroyed(this)).subscribe(simulationResultProperties => {
             this.expansion = { ...simulationResultProperties.expansionStateVariables };
-            for (var i = this.flatNodes.length - 1; i >= 0; i--) {
-                let node = this.flatNodes[i];
+            for (let i = this.flatNodes.length - 1; i >= 0; i--) {
+                const node = this.flatNodes[i];
                 // root level is expanded by default.
                 // everything else is collapsed
                 let expandedStore = node.level === 0;
@@ -77,7 +80,7 @@ export class SrTreeComponent implements OnChanges, OnDestroy, OnInit {
 
 
     ngOnChanges() {
-        const resultArray: SimulationNode[] = Object.values(this.results);
+        const resultArray: SimulationNode[] = Object.values(this.result.nodes);
         for (let index = 0; index < resultArray.length; index++) {
             const scenarioIds = Object.keys(resultArray[index].aggregatedReport);
             const scenarioIdIndex = scenarioIds.findIndex(id => id === this.selectedScenarioId);
@@ -85,6 +88,8 @@ export class SrTreeComponent implements OnChanges, OnDestroy, OnInit {
                 this.nodesToRemove.push(resultArray[index]);
             }
         }
+
+
         this.nodesToRemove.forEach(node => {
             resultArray.splice(resultArray.findIndex(x => x === node), 1);
         });
@@ -94,9 +99,9 @@ export class SrTreeComponent implements OnChanges, OnDestroy, OnInit {
         this.smartNodeVisibilityFullUpdate();
     }
 
-    private flatten(nodes, current, level): FlatNode[] {
+    private flatten(nodes: SimulationNode[], current: SimulationNode, level: number): FlatNode[] {
         let out: FlatNode[] = [];
-        const updatedNodes = Object.values(nodes).filter((node: any) => this.flatNodes.indexOf(node) < 0);
+        const updatedNodes: SimulationNode[] = Object.values(nodes).filter((node: any) => this.flatNodes.indexOf(node) < 0);
         const children = updatedNodes.filter((x: any) => {
             return (
                 x.parentInstanceId === current.objectId
@@ -113,19 +118,24 @@ export class SrTreeComponent implements OnChanges, OnDestroy, OnInit {
             if (this.expansion[current.objectId] !== undefined) {
                 isExpanded = this.expansion[current.objectId];
             }
-            out.push({
+            const currentFlatNode: FlatNode = {
                 result: current,
                 level,
                 dataType: this.dataType,
                 expandable: !!children.length,
                 expanded: isExpanded,
-                visible: level < 2
+                visible: level < 2,
+                warning: current.warnings && current.warnings.length > 0,
+                childWarning: false
+            };
+            out.push(currentFlatNode);
+            children.forEach(child => {
+                const childFlatNodes = this.flatten(nodes, child, level + 1);
+                const warningNodes = childFlatNodes.filter(node => node.warning || node.childWarning);
+                currentFlatNode.childWarning = currentFlatNode.childWarning || warningNodes.length > 0;
+                out = out.concat(childFlatNodes);
             });
         }
-        children.forEach(child => {
-            out = out.concat(this.flatten(nodes, child, level + 1));
-        });
-
         return out;
     }
 
@@ -152,8 +162,7 @@ export class SrTreeComponent implements OnChanges, OnDestroy, OnInit {
     // go through all sr tree nodes and make sure they are visible
     // when their parent is expanded.
     smartNodeVisibilityFullUpdate() {
-        let parentIdx: number[] = [];
-        let lastNode: FlatNode;
+        const parentIdx: number[] = [];
         for (let i = 0; i < this.flatNodes.length; i++) {
             const node = this.flatNodes[i];
             parentIdx[node.level] = i;
@@ -215,12 +224,9 @@ export class SrTreeComponent implements OnChanges, OnDestroy, OnInit {
 
     hasResults(node: FlatNode): boolean {
         const aggregatedReportData = node.result.aggregatedReport[this.selectedScenarioId];
-        const aggregatedReportDataDataIndex = aggregatedReportData ? Object.keys(aggregatedReportData)[0] : null;
-        const dataContent = aggregatedReportData ? aggregatedReportData[aggregatedReportDataDataIndex][this.dataType] : null;
-        const sliceContent = aggregatedReportData ? aggregatedReportData[aggregatedReportDataDataIndex].AVG : null;
-        const hasSlice = sliceContent && node.result.type === 'SLICE';
-        const isBreakdown = sliceContent && node.result.type === 'BREAKDOWN';
-        return dataContent && JSON.stringify(dataContent) !== '{}' || hasSlice || isBreakdown;
+        const firstReportDate = aggregatedReportData ? Object.keys(aggregatedReportData)[0] : null;
+        const dataContent = aggregatedReportData && firstReportDate ? aggregatedReportData[firstReportDate][this.dataType] : null;
+        return dataContent && JSON.stringify(dataContent) !== '{}';
     }
 
     @HostListener('document:keydown', ['$event'])

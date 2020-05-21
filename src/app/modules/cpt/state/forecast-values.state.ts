@@ -2,7 +2,7 @@ import { State, Selector, StateContext, Store, Action } from '@ngxs/store';
 import { ForecastVariableDescriptor } from '@app/modules/cpt/interfaces/forecast-variable-descriptor';
 import { ForecastVariableUnit } from '../models/forecast-variable-unit';
 import { ForecastUnitService } from '../services/forecast-unit.service';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import * as forecastVariableActions from './forecast-values.actions';
 import * as fcActions from './forecast-sheet.action';
 import * as treeActions from './tree.actions';
@@ -40,7 +40,7 @@ export class ForecastValuesState {
         return this.forecastUnitService
             .getForecastVariableUnits()
             .pipe(
-                map((response: any) => {
+                tap((response: any) => {
                     patchState({
                         forecastUnits: response.data as ForecastVariableUnit[],
                     });

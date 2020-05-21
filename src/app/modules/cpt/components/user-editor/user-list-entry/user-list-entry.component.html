@@ -1,0 +1,16 @@
+<div class="viewModeBox" data-testid="edit user">
+    <i class="fa fa-user entryIcon"></i>
+    <p class="userName">{{user.username}}</p>
+    <div class="btn-group mr-4">
+        <button type="button" (click)="setRole('READ_ONLY')" class="btn btn-primary" [ngClass]="roleClass('READ_ONLY')" >Read-Only</button>
+        <button type="button" (click)="setRole('READ_AND_WRITE')" class="btn btn-primary" [ngClass]="roleClass('READ_AND_WRITE')" >Read-Write</button>
+        <button type="button" (click)="setRole('ADMIN')" class="btn btn-primary" [ngClass]="roleClass('ADMIN')" >Admin</button>
+    </div>
+    <i class="fa fa-pen entryIcon actionableIcon" title="Edit User Password {{user.username}}" (click)="toggleEditMode()"></i>
+    <i class="fa fa-trash entryIcon actionableIcon" title="Delete User {{user.username}}" (click)="deleteUser()"></i>
+</div>
+<div class="editModeBox" *ngIf="showEditMode" data-testid="edit password">
+   <p class="passwordLabel">Edit Password</p><input placeholder="new password" type="password" [(ngModel)]="pw1"> <input type="password" placeholder="repeat password" [(ngModel)]="pw2">
+   <button class="btn btn-primary fa fa-check" [disabled]="passwordInputInvalid" (click)="updatePassword()" title="Apply new password"></button> <button class="btn btn-danger fa fa-times" (click)="closeEditMode()" title="Cancel"></button>
+</div>
+

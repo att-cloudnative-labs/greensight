@@ -1,0 +1,9 @@
+<label>Variable Units</label>
+<div class="unitList" data-testid="delete unit">
+    <variable-unit-entry
+    *ngFor="let u of units$|async"
+    [unit]="u"
+    >
+    </variable-unit-entry>
+</div>
+<input data-testid="add unit" placeholder="Add New Unit"  [(ngModel)]="newUnitName" (keyup)="keyPressed($event)"><button data-testid="save unit" (click)="addUnit()" class="addUnitButton">Add</button>

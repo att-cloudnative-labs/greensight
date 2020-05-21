@@ -3,7 +3,8 @@ import { ForecastVariableUnit } from '../models/forecast-variable-unit';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Utils } from '@app/modules/cpt/lib/utils';
 import { Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
+import { ApiResult } from '@cpt/interfaces/api-result';
 
 @Injectable()
 export class ForecastUnitService {
@@ -13,8 +14,8 @@ export class ForecastUnitService {
 
     getForecastVariableUnits(): Observable<ForecastVariableUnit[]> {
         return this.http
-            .get<[]>(`${this.baseUrl}/`, this.httpOptions)
-            .pipe(catchError((error: any) => Observable.throw(error.json())));
+            .get<ApiResult<ForecastVariableUnit[]>>(`${this.baseUrl}/`, this.httpOptions)
+            .pipe(map(r => r.data));
     }
 
     get httpOptions() {

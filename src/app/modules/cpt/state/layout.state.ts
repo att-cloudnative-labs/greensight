@@ -1,5 +1,5 @@
 import { Store, Select, State, Action, StateContext, Selector } from '@ngxs/store';
-import { map } from 'rxjs/operators';
+import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
 import { TreeState } from '@app/modules/cpt/state/tree.state';
 import * as layoutActions from './layout.actions';
 import * as dockableStackActions from './dockable-stack.actions';
@@ -12,6 +12,12 @@ import * as graphEditorActions from './graph-editor.actions';
 import * as historyAction from '@app/modules/cpt/state/history.actions';
 import { ReleaseSelected } from '@cpt/state/release.actions';
 import { TreeNodeTrackingState } from '@cpt/state/tree-node-tracking.state';
+import { SettingsButtonClicked } from '@cpt/state/settings.actions';
+import * as userActions from '@cpt/state/users.actions';
+import { Navigate, RouterNavigation } from '@ngxs/router-plugin';
+import { GetTreeNode, ReloadSingleTreeNode } from './tree.actions';
+import { of } from 'rxjs';
+import { BasicTreeNodeInfo } from '@cpt/interfaces/tree-node';
 
 export class LayoutStateModel {
     public content: Split[];
@@ -46,6 +52,13 @@ export interface Stack {
 }
 
 export type SplitOrStack = Split | Stack;
+function isSplit(item: SplitOrStack): item is Split {
+    return item && item.kind === 'split';
+}
+function isStack(item: SplitOrStack): item is Stack {
+    return item && item.kind === 'stack';
+}
+
 
 export const EDITOR_STACK_ID = 'editor-stack';
 export const HISTORY_STACK_ID = 'history-stack';
@@ -130,27 +143,52 @@ export class LayoutState {
         return state.content;
     }
 
-    static findSplitById(content: SplitOrStack[], splitId: string): any {
+
+
+    static findItemById(content: SplitOrStack[], splitId: string): SplitOrStack {
         for (let i = 0; i < content.length; i++) {
             const item = content[i] as SplitOrStack;
             if (item.id === splitId) {
                 return item;
             } else if (item.kind === 'split') {
-                return LayoutState.findSplitById(item.content, splitId);
+                return LayoutState.findItemById(item.content, splitId);
             }
         }
     }
 
-    static openEditor(draft: LayoutStateModel, component: string, name: string, fullName: string, args?: any, panelId?: string) {
-        LayoutState.openTab(draft, EDITOR_STACK_ID, component, name, fullName, args, panelId);
+    static findSplitById(content: SplitOrStack[], splitId: string): Split {
+        const split = this.findItemById(content, splitId);
+        return isSplit(split) ? split : null;
     }
 
-    static openHistoryTab(draft: LayoutStateModel, component: string, name: string, fullName: string, args?: any, panelId?: string) {
-        LayoutState.openTab(draft, HISTORY_STACK_ID, component, name, fullName, args, panelId);
+    static findStackById(content: SplitOrStack[], stackId: string): Stack {
+        const stack = this.findItemById(content, stackId);
+        return isStack(stack) ? stack : null;
     }
 
-    static openTab(draft: LayoutStateModel, stackId: string, component: string, name: string, fullName: string, args?: any, panelId?: string) {
-        let id;
+    static adjustStackNames(stack: Stack) {
+        const arrayLength = stack.panels.length;
+        for (let i = 0; i < arrayLength; i++) {
+            stack.panels[i].useFullName = false;
+            for (let j = 0; j < arrayLength; j++) {
+                if (i !== j && stack.panels[i].name === stack.panels[j].name) {
+                    stack.panels[i].useFullName = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    openEditor(draft: LayoutStateModel, component: string, name: string, fullName: string, args?: any, panelId?: string) {
+        this.openTab(draft, EDITOR_STACK_ID, component, name, fullName, args, panelId);
+    }
+
+    openHistoryTab(draft: LayoutStateModel, component: string, name: string, fullName: string, args?: any, panelId?: string) {
+        this.openTab(draft, HISTORY_STACK_ID, component, name, fullName, args, panelId);
+    }
+
+    openTab(draft: LayoutStateModel, stackId: string, component: string, name: string, fullName: string, args?: any, panelId?: string) {
+        let id: string;
         if (panelId) {
             id = panelId;
         } else if (args) {
@@ -159,11 +197,15 @@ export class LayoutState {
         } else {
             id = `${component}`;
         }
-        const split = LayoutState.findSplitById(draft.content, stackId);
-        const existingPanel = split.panels.find(panel => panel.id === id);
+        const stack = LayoutState.findStackById(draft.content, stackId);
+        const existingPanel = stack.panels.find(panel => panel.id === id);
         if (existingPanel) {
-            split.selected = existingPanel.id;
-            existingPanel.args = args;
+            // guard changes to the args as every change to the draft
+            // will re-load the whole panel
+            if (existingPanel.args.releaseNr !== args.releaseNr) {
+                existingPanel.args = args;
+            }
+            this.setSelected(stack, id);
         } else {
             const panel = {
                 component,
@@ -174,25 +216,36 @@ export class LayoutState {
                 id,
                 args
             };
-            split.panels.push(panel);
-            const arrayLength = split.panels.length;
-            for (let i = 0; i < arrayLength; i++) {
-                split.panels[i].useFullName = false;
-                for (let j = 0; j < arrayLength; j++) {
-                    if (i !== j && split.panels[i].name === split.panels[j].name) {
-                        split.panels[i].useFullName = true;
-                        break;
-                    }
-                }
-            }
-            split.selected = panel.id;
+            stack.panels.push(panel);
+            this.setSelected(stack, panel.id);
+            LayoutState.adjustStackNames(stack);
         }
     }
 
-    static findEditorPanelByNodeId(draft: LayoutStateModel, nodeId: string) {
-        const content = draft.content;
-        const editorStack = content[0].content.find(x => x.id === 'editor-stack') as Stack;
-        return editorStack.panels.find(x => x.args.nodeId === nodeId);
+    private setSelected(stack: Stack, selectedId: string) {
+        if (!selectedId) {
+            if (stack.panels.length) {
+                stack.selected = stack.panels[stack.panels.length - 1].id;
+            } else {
+                stack.selected = null;
+            }
+        } else {
+            stack.selected = selectedId;
+        }
+        if (stack.id === EDITOR_STACK_ID) {
+            if (stack.selected) {
+                const panel = stack.panels.find(p => p.id === stack.selected);
+                if (panel && panel.args && panel.args.nodeId) {
+                    const releaseNrArgs = panel.args.releaseNr ? { 'releaseNr': panel.args.releaseNr } : {};
+                    this.store.dispatch(new Navigate([panel.args.nodeId], releaseNrArgs));
+                } else {
+                    this.store.dispatch(new Navigate(['/']));
+                }
+            } else {
+                this.store.dispatch(new Navigate(['/']));
+            }
+        }
+
     }
 
     @Action(treeActions.TrashedTreeNode)
@@ -204,46 +257,36 @@ export class LayoutState {
         { getState, setState }: StateContext<LayoutStateModel>,
         { trashNode }: libraryActions.GraphModelSendToTrashClicked) {
         const newState = produce(getState(), draft => {
-            const split = LayoutState.findSplitById(draft.content, 'editor-stack');
+            const stack = LayoutState.findStackById(draft.content, 'editor-stack');
             let wasSelected = null;
             switch (trashNode.type) {
                 case 'MODEL':
-                    wasSelected = split.selected === 'GraphModelEditorComponent:nodeId:' + trashNode.id;
-                    split.panels = split.panels.filter(panel => panel.id !== 'GraphModelEditorComponent:nodeId:' + trashNode.id);
+                    wasSelected = stack.selected === 'GraphModelEditorComponent:nodeId:' + trashNode.id;
+                    stack.panels = stack.panels.filter(panel => panel.id !== 'GraphModelEditorComponent:nodeId:' + trashNode.id);
                     break;
                 case 'FC_SHEET':
-                    wasSelected = split.selected === 'ForecastEditorComponent:nodeId:' + trashNode.id;
-                    split.panels = split.panels.filter(panel => panel.id !== 'ForecastEditorComponent:nodeId:' + trashNode.id);
+                    wasSelected = stack.selected === 'ForecastEditorComponent:nodeId:' + trashNode.id;
+                    stack.panels = stack.panels.filter(panel => panel.id !== 'ForecastEditorComponent:nodeId:' + trashNode.id);
                     break;
                 case 'SIMULATION':
-                    wasSelected = split.selected === 'SimulationEditorComponent:nodeId:' + trashNode.id;
-                    split.panels = split.panels.filter(panel => panel.id !== 'SimulationEditorComponent:nodeId:' + trashNode.id);
+                    wasSelected = stack.selected === 'SimulationEditorComponent:nodeId:' + trashNode.id;
+                    stack.panels = stack.panels.filter(panel => panel.id !== 'SimulationEditorComponent:nodeId:' + trashNode.id);
                     break;
 
                 case 'SIMULATIONRESULT':
-                    wasSelected = split.selected === 'SimulationResultComponent:nodeId:' + trashNode.id;
-                    split.panels = split.panels.filter(panel => panel.id !== 'SimulationResultComponent:nodeId:' + trashNode.id);
+                    wasSelected = stack.selected === 'SimulationResultComponent:nodeId:' + trashNode.id;
+                    stack.panels = stack.panels.filter(panel => panel.id !== 'SimulationResultComponent:nodeId:' + trashNode.id);
                     break;
             }
 
-            if (wasSelected && split.panels.length) {
-                split.selected = split.panels[split.panels.length - 1].id;
-            }
+            this.setSelected(stack, null);
 
-            const arrayLength = split.panels.length;
-            for (let i = 0; i < arrayLength; i++) {
-                split.panels[i].useFullName = false;
-                for (let j = 0; j < arrayLength; j++) {
-                    if (i !== j && split.panels[i].name === split.panels[j].name) {
-                        split.panels[i].useFullName = true;
-                        break;
-                    }
-                }
-            }
+            LayoutState.adjustStackNames(stack);
 
         });
         setState(newState);
     }
+
 
     @Action(layoutActions.SplitDragEnd)
     splitDragEnd(
@@ -260,55 +303,78 @@ export class LayoutState {
         setState(newState);
     }
 
+    openNodeEditorTab(ctx: StateContext<LayoutStateModel>, node: BasicTreeNodeInfo, releaseNr?: number) {
+        const fullName = this.store.selectSnapshot(TreeState.nodeFullPathById)(node.id);
+        const component = node.type === 'MODEL' ? 'GraphModelEditorComponent' :
+            node.type === 'SIMULATION' ? 'SimulationEditorComponent' :
+                node.type === 'SIMULATIONRESULT' ? 'SimulationResultComponent' :
+                    'ForecastEditorComponent';
+
+        const newState = produce(ctx.getState(), draft => {
+            this.openEditor(draft, component, node.name, fullName, { nodeId: node.id, releaseNr: releaseNr }, `${component}:nodeId:${node.id}`);
+        });
+        ctx.setState(newState);
+    }
+
+    @Action(layoutActions.OpenTabByNodeId)
+    openTabById(ctx: StateContext<LayoutStateModel>, { payload: { nodeId, releaseNr } }: layoutActions.OpenTabByNodeId) {
+        return this.store.dispatch(new ReloadSingleTreeNode(nodeId)).pipe(
+            tap(() => {
+                const node = this.store.selectSnapshot(TreeState.nodeById)(nodeId);
+
+                this.openNodeEditorTab(ctx, node, releaseNr);
+            }),
+            catchError(() => {
+                const newState = produce(ctx.getState(), draft => {
+                    const editorStack = LayoutState.findStackById(draft.content, EDITOR_STACK_ID);
+                    this.setSelected(editorStack, null);
+                });
+                ctx.setState(newState);
+                return of('');
+            })
+        );
+
+    }
 
     @Action(libraryActions.GraphModelDoubleClicked)
     @Action(librarySearchResultActions.GraphModelDoubleClicked)
-    openGraphEditorTab(
-        { getState, setState }: StateContext<LayoutStateModel>,
-        { treeNode }: libraryActions.GraphModelDoubleClicked) {
-        const newState = produce(getState(), draft => {
-            let fullName: string;
-            this.store.selectOnce(TreeState.nodeFullPathById).pipe(map(byId => byId(treeNode.id))).forEach(node => { fullName = node; });
-            LayoutState.openEditor(draft, 'GraphModelEditorComponent', treeNode.name, fullName, { nodeId: treeNode.id }, `GraphModelEditorComponent:nodeId:${treeNode.id}`);
-        });
-        setState(newState);
-    }
-
     @Action(libraryActions.ForecastSheetDoubleClicked)
     @Action(librarySearchResultActions.ForecastSheetDoubleClicked)
-    openForecastSheetEditorTab(
-        { getState, setState }: StateContext<LayoutStateModel>,
-        { treeNode }: libraryActions.ForecastSheetDoubleClicked) {
-        const newState = produce(getState(), draft => {
-            let fullName: string;
-            this.store.selectOnce(TreeState.nodeFullPathById).pipe(map(byId => byId(treeNode.id))).forEach(node => { fullName = node; });
-            LayoutState.openEditor(draft, 'ForecastEditorComponent', treeNode.name, fullName, { nodeId: treeNode.id });
-        });
-        setState(newState);
-    }
-
     @Action(libraryActions.SimulationDoubleClicked)
     @Action(librarySearchResultActions.SimulationDoubleClicked)
-    openSimulationEditorTab(
+    @Action(librarySearchResultActions.SimulationResultDoubleClicked)
+    @Action(libraryActions.SimulationResultDoubleClicked)
+    openEditorTab(
+        ctx: StateContext<LayoutStateModel>,
+        { treeNode }: libraryActions.GraphModelDoubleClicked) {
+        return this.openNodeEditorTab(ctx, treeNode);
+    }
+
+    @Action(SettingsButtonClicked)
+    openSettingsTab(
         { getState, setState }: StateContext<LayoutStateModel>,
-        { treeNode }: libraryActions.SimulationDoubleClicked) {
+        arg: SettingsButtonClicked) {
         const newState = produce(getState(), draft => {
-            let fullName: string;
-            this.store.selectOnce(TreeState.nodeFullPathById).pipe(map(byId => byId(treeNode.id))).forEach(node => { fullName = node; });
-            LayoutState.openEditor(draft, 'SimulationEditorComponent', treeNode.name, fullName, { nodeId: treeNode.id });
+            this.openEditor(draft, 'SettingsEditorComponent', 'Settings', 'Settings');
         });
         setState(newState);
     }
 
-    @Action(librarySearchResultActions.SimulationResultDoubleClicked)
-    @Action(libraryActions.SimulationResultDoubleClicked)
-    openSimulationResultTab(
+    @Action(userActions.UserEditorButtonClicked)
+    openUserEditorTab(
         { getState, setState }: StateContext<LayoutStateModel>,
-        { treeNode }: libraryActions.SimulationDoubleClicked) {
+        arg: userActions.UserEditorButtonClicked) {
         const newState = produce(getState(), draft => {
-            let fullName: string;
-            this.store.selectOnce(TreeState.nodeFullPathById).pipe(map(byId => byId(treeNode.id))).forEach(node => { fullName = node; });
-            LayoutState.openEditor(draft, 'SimulationResultComponent', treeNode.name, fullName, { nodeId: treeNode.id });
+            this.openEditor(draft, 'UserEditorComponent', 'Manage Users', 'Manage Users');
+        });
+        setState(newState);
+    }
+    @Action(userActions.UserGroupEditorButtonClicked)
+    openUserGroupEditorTab(
+        { getState, setState }: StateContext<LayoutStateModel>,
+        arg: userActions.UserGroupEditorButtonClicked) {
+        const newState = produce(getState(), draft => {
+            this.openEditor(draft, 'UserGroupEditorComponent', 'Manage User Groups', 'Manage User Groups');
         });
         setState(newState);
     }
@@ -322,7 +388,7 @@ export class LayoutState {
         const newState = produce(getState(), draft => {
             const name = `${payload.objectName}@${payload.version.versionId}`;
             const fullName = `${payload.objectName} Version: ${payload.version.versionId}`;
-            LayoutState.openHistoryTab(draft, component, name, fullName, payload, panelId);
+            this.openHistoryTab(draft, component, name, fullName, payload, panelId);
         });
         setState(newState);
     }
@@ -336,7 +402,7 @@ export class LayoutState {
         const newState = produce(getState(), draft => {
             const name = `${payload.objectName}@${payload.release.releaseNr}`;
             const fullName = `${payload.objectName} Release: ${payload.release.releaseNr}'`;
-            LayoutState.openHistoryTab(draft, component, name, fullName, payload, panelId);
+            this.openHistoryTab(draft, component, name, fullName, payload, panelId);
         });
         setState(newState);
     }
@@ -346,7 +412,7 @@ export class LayoutState {
     openTrash(
         { getState, setState }: StateContext<LayoutStateModel>) {
         const newState = produce(getState(), draft => {
-            LayoutState.openEditor(draft, 'TrashComponent', 'Trash', 'Trash');
+            this.openEditor(draft, 'TrashComponent', 'Trash', 'Trash');
         });
         setState(newState);
     }
@@ -356,8 +422,8 @@ export class LayoutState {
         { getState, setState }: StateContext<LayoutStateModel>,
         { payload }: dockableStackActions.TabClicked) {
         const newState = produce(getState(), draft => {
-            const split = LayoutState.findSplitById(draft.content, payload.stackId);
-            split.selected = payload.panelId;
+            const stack = LayoutState.findStackById(draft.content, payload.stackId);
+            this.setSelected(stack, payload.panelId);
         });
         setState(newState);
     }
@@ -367,22 +433,13 @@ export class LayoutState {
         { getState, setState }: StateContext<LayoutStateModel>,
         { payload }: dockableStackActions.TabCloseClicked) {
         const newState = produce(getState(), draft => {
-            const split = LayoutState.findSplitById(draft.content, payload.stackId);
-            const wasSelected = split.selected === payload.panelId;
-            split.panels = split.panels.filter(panel => panel.id !== payload.panelId);
-            if (wasSelected && split.panels.length) {
-                split.selected = split.panels[split.panels.length - 1].id;
+            const stack = LayoutState.findStackById(draft.content, payload.stackId);
+            const wasSelected = stack.selected === payload.panelId;
+            stack.panels = stack.panels.filter(panel => panel.id !== payload.panelId);
+            if (wasSelected) {
+                this.setSelected(stack, null);
             }
-            const arrayLength = split.panels.length;
-            for (let i = 0; i < arrayLength; i++) {
-                split.panels[i].useFullName = false;
-                for (let j = 0; j < arrayLength; j++) {
-                    if (i !== j && split.panels[i].name === split.panels[j].name) {
-                        split.panels[i].useFullName = true;
-                        break;
-                    }
-                }
-            }
+            LayoutState.adjustStackNames(stack);
         });
         setState(newState);
     }
@@ -392,14 +449,14 @@ export class LayoutState {
         { getState, setState }: StateContext<LayoutStateModel>) {
 
         const newState = produce(getState(), draft => {
-            const split = LayoutState.findSplitById(draft.content, EDITOR_STACK_ID);
-            const arrayLength = split.panels.length;
+            const stack = LayoutState.findStackById(draft.content, EDITOR_STACK_ID);
+            const arrayLength = stack.panels.length;
             for (let i = 0; i < arrayLength; i++) {
-                split.panels[i].useFullName = false;
-                this.store.selectOnce(TreeState.nodeFullPathById).pipe(map(byId => byId(split.panels[i].args.nodeId))).forEach(node => { split.panels[i].fullName = node; });
+                stack.panels[i].useFullName = false;
+                this.store.selectOnce(TreeState.nodeFullPathById).pipe(map(byId => byId(stack.panels[i].args.nodeId))).forEach(node => { stack.panels[i].fullName = node; });
                 for (let j = 0; j < arrayLength; j++) {
-                    if (i !== j && split.panels[i].name === split.panels[j].name) {
-                        split.panels[i].useFullName = true;
+                    if (i !== j && stack.panels[i].name === stack.panels[j].name) {
+                        stack.panels[i].useFullName = true;
                         break;
                     }
                 }
@@ -414,20 +471,21 @@ export class LayoutState {
         { payload }: layoutActions.EditorTabTitleChanged) {
 
         const newState = produce(getState(), draft => {
-            const split = LayoutState.findSplitById(draft.content, EDITOR_STACK_ID);
-            const arrayLength = split.panels.length;
+            const stack = LayoutState.findStackById(draft.content, EDITOR_STACK_ID);
+            const arrayLength = stack.panels.length;
             for (let i = 0; i < arrayLength; i++) {
-                split.panels[i].useFullName = false;
-                if (('args' in split.panels[i]) && ('nodeId' in split.panels[i].args)) {
-                    if (split.panels[i].args.nodeId === payload.nodeId) {
-                        split.panels[i].name = payload.newName;
-                        this.store.selectOnce(TreeState.nodeFullPathById).pipe(map(byId => byId(payload.nodeId))).forEach(node => { split.panels[i].fullName = node; });
+                stack.panels[i].useFullName = false;
+                if (('args' in stack.panels[i]) && ('nodeId' in stack.panels[i].args)) {
+                    if (stack.panels[i].args.nodeId === payload.nodeId) {
+                        stack.panels[i].name = payload.newName;
+                        this.store.selectOnce(TreeState.nodeFullPathById).pipe(map(byId => byId(payload.nodeId))).forEach(node => { stack.panels[i].fullName = node; });
                     }
+                    // FIXME: unify with adjustStackNames
                     for (let j = 0; j < arrayLength; j++) {
-                        if (('args' in split.panels[j]) && ('nodeId' in split.panels[j].args)) {
-                            const name: string = (split.panels[j].args.nodeId === payload.nodeId) ? payload.newName : split.panels[j].name;
-                            if (i !== j && split.panels[i].name === name) {
-                                split.panels[i].useFullName = true;
+                        if (('args' in stack.panels[j]) && ('nodeId' in stack.panels[j].args)) {
+                            const name: string = (stack.panels[j].args.nodeId === payload.nodeId) ? payload.newName : stack.panels[j].name;
+                            if (i !== j && stack.panels[i].name === name) {
+                                stack.panels[i].useFullName = true;
                                 break;
                             }
                         }
@@ -444,13 +502,14 @@ export class LayoutState {
         { payload: { nodeId, releaseNr } }: ReleaseSelected) {
 
         const newState = produce(getState(), draft => {
-            const split = LayoutState.findSplitById(draft.content, EDITOR_STACK_ID);
-            const arrayLength = split.panels.length;
+            const stack = LayoutState.findStackById(draft.content, EDITOR_STACK_ID);
+            const arrayLength = stack.panels.length;
             for (let i = 0; i < arrayLength; i++) {
-                split.panels[i].useFullName = false;
-                if (('args' in split.panels[i]) && ('nodeId' in split.panels[i].args)) {
-                    if (split.panels[i].args.nodeId === nodeId) {
-                        split.panels[i].args = { ...split.panels[i].args, releaseNr: releaseNr };
+                stack.panels[i].useFullName = false;
+                if (('args' in stack.panels[i]) && ('nodeId' in stack.panels[i].args)) {
+                    if (stack.panels[i].args.nodeId === nodeId) {
+                        stack.panels[i].args = { ...stack.panels[i].args, releaseNr: releaseNr };
+                        this.setSelected(stack, stack.panels[i].id);
                     }
 
                 }
@@ -469,7 +528,7 @@ export class LayoutState {
             // by fixing the panelId an already existing panel can be re-used
             // if we want to open a release in a new panel, the release info
             // will have to be added to the panelid
-            LayoutState.openEditor(draft, 'GraphModelEditorComponent', tni.name, fullName, { nodeId: graphModelId, releaseNr: releaseNr }, `GraphModelEditorComponent:nodeId:${graphModelId}`);
+            this.openEditor(draft, 'GraphModelEditorComponent', tni.name, fullName, { nodeId: graphModelId, releaseNr: releaseNr }, `GraphModelEditorComponent:nodeId:${graphModelId}`);
         });
         setState(newState);
     }

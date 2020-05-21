@@ -26,11 +26,13 @@ export interface ResultNodeDataSet {
 
 
 enum ChartType {
-    BREAKDOWN = 'BREAKDOWN',
+    PIE = 'PIE',
     HISTOGRAM = 'HISTOGRAM',
     LINE = 'LINE',
     VALUE = 'VALUE',
-    STACKED = 'STACKED'
+    STACKED = 'STACKED',
+    MULTIBAR = 'MULTIBAR',
+    MULTIBARVALUE = 'MULTIBARVALUE'
 }
 
 @Component({
@@ -45,6 +47,7 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
     errorWarningPes = [];
     title: string;
     chartType: ChartType;
+    selectedDate: string;
 
     allSelectedNodeIds: string[] = [];
     message: string;
@@ -58,7 +61,6 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
     mainSelection: SelectedRowProperties;
 
     selectedNodeDataSets: ResultNodeDataSet[] = [];
-    maindNodeDataSet: ResultNodeDataSet;
 
     constructor(private store: Store) { }
 
@@ -84,7 +86,7 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
                         }
                         const reportData: { [date: string]: SimulationNodeDataAggregate } = {};
                         const mainReportData: { [date: string]: Aggregate } = {};
-                        const availableAggregationMethods = this.availableAggregationMethods(node, selection.dataType as "data" | "response");
+                        const availableAggregationMethods = this.availableAggregationMethods(node, selection.dataType as 'data' | 'response');
                         let aggregationMethod = selection.aggregationMethod as AggregationMethods;
                         if (!availableAggregationMethods.includes(aggregationMethod) && availableAggregationMethods.length > 0) {
                             aggregationMethod = availableAggregationMethods[0]
@@ -185,7 +187,11 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
         } else {
             this.title = this.getChartTitle(this.selectedNodeId);
             if (this.selectedNode.type === 'BREAKDOWN') {
-                this.chartType = ChartType.STACKED;
+                if (rowSelections[0].dataType === 'response') {
+                    this.chartType = ChartType.MULTIBAR;
+                } else {
+                    this.chartType = ChartType.STACKED;
+                }
             } else {
                 this.chartType = ChartType.LINE;
             }
@@ -199,12 +205,17 @@ export class SrVisualizationComponent implements OnInit, OnDestroy, OnChanges {
     _getCellChartType(selectedCell: SelectedRowProperties) {
         this.title = this.getChartTitle(this.selectedNodeId);
         if (this.selectedNode.type === 'BREAKDOWN') {
-            this.chartType = ChartType.BREAKDOWN;
+            if (selectedCell.dataType === 'response') {
+                this.chartType = ChartType.MULTIBARVALUE;
+                this.selectedDate = selectedCell.month;
+            } else {
+                this.chartType = ChartType.PIE;
+            }
         } else if (this._isErrorWarningPe(this.selectedNode)) {
             this.chartType = ChartType.VALUE;
         } else {
             // other types are time series which will display a histogram if included in the report
-            const availableAggMethods = this.availableAggregationMethods(this.selectedNode, selectedCell.dataType as 'data' | 'response')
+            const availableAggMethods = this.availableAggregationMethods(this.selectedNode, selectedCell.dataType as 'data' | 'response');
             if (availableAggMethods.includes('HISTOGRAM')) {
                 this.chartType = ChartType.HISTOGRAM;
             } else {

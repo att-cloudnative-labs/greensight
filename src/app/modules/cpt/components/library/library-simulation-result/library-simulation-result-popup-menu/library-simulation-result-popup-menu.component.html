@@ -1,12 +1,10 @@
 <ul *appHasPermission="menuPermissionsObj">
     <li (click)="onOpenModel()">Open</li>
+    <li (click)="onCopyLink()">Copy Link</li>
     <hr>
     <li (click)="onRenameModel()">Rename</li>
-    <!-- <li (click)="onMoveModel()">Move</li> -->
-    <!-- <li (click)="onDuplicateModel()">Duplicate</li> -->
-    <!-- <li (click)="onCopyModel()">Copy</li> -->
     <div *appHasPermission="trashPermissionsObj">
         <hr>
         <li (click)="onTrashModel()">Send to Trash</li>
     </div>
-</ul>      
+</ul>

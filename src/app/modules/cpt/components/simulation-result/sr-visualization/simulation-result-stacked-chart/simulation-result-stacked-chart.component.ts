@@ -1,8 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartOption } from 'echarts';
-import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
 import { ResultNodeDataSet } from '@cpt/components/simulation-result/sr-visualization/sr-visualization.component';
-import { AspectNumberParam, AspectsAggregate } from '@cpt/capacity-planning-simulation-types/lib';
+import { NumberParam } from '@cpt/capacity-planning-simulation-types/lib';
 
 @Component({
     selector: 'app-srs-viz-stacked-chart',
@@ -11,8 +10,9 @@ import { AspectNumberParam, AspectsAggregate } from '@cpt/capacity-planning-simu
 })
 export class SimulationResultStackedChartComponent implements OnChanges {
     @Input() isDisplayedRelativeValues;
-    formatWithUnitPipe;
     @Input() dataSet: ResultNodeDataSet;
+    @Input() multiBar = false;
+    @Input() date: string;
     chartOption: EChartOption;
 
     constructor() { }
@@ -25,10 +25,10 @@ export class SimulationResultStackedChartComponent implements OnChanges {
         const subVarBreakdownsPercentage = {};
         const unit = '';
         const breakdownName = this.dataSet.title;
-        const chartKeys = Object.keys(this.dataSet.mainData);
+        const chartKeys = this.date ? [this.date] : Object.keys(this.dataSet.mainData);
 
-        for (const date in this.dataSet.mainData) {
-            const aggregate = this.dataSet.mainData[date] as AspectNumberParam;
+        for (const date of chartKeys) {
+            const aggregate = this.dataSet.mainData[date] as NumberParam;
             const aspect = aggregate.aspects.find(a => a.name === this.dataSet.title);
             const slices = aspect.slices;
             const slicesSum = aggregate.value;
@@ -56,7 +56,7 @@ export class SimulationResultStackedChartComponent implements OnChanges {
                 chartSeries.push({
                     name: subVarTitle,
                     type: 'bar',
-                    stack: 'stack',
+                    stack: this.multiBar ? '' : 'stack',
                     label: {
                         title: subVarTitle,
                         normal: {
@@ -79,7 +79,7 @@ export class SimulationResultStackedChartComponent implements OnChanges {
                 chartSeries.push({
                     name: subVarTitle,
                     type: 'bar',
-                    stack: 'stack',
+                    stack: this.multiBar ? '' : 'stack',
                     label: {
                         title: subVarTitle,
                         normal: {

@@ -1,15 +1,15 @@
 import { Component, Input, OnInit, OnDestroy, HostBinding, ElementRef } from '@angular/core';
 import { Store, Actions, ofActionSuccessful, Select } from '@ngxs/store';
 import { TreeState } from '@cpt/state/tree.state';
-import { TreeNode } from '@cpt/interfaces/tree-node';
 import { Observable, combineLatest } from 'rxjs';
 import { map, filter, take } from 'rxjs/operators';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import * as simulationResultActions from '@cpt/state/simulation-result-screen.actions';
 import * as treeActions from '@cpt/state/tree.actions';
 import { SRSState } from '@cpt/state/simulation-result-screen.state';
-import { TableEntryProperties, SRSDatatableProperties } from '@cpt/models/srs-datatable-properties';
-import { AggregationMethods, SimulationNode } from '@cpt/capacity-planning-simulation-types/lib';
+import { TableEntryProperties } from '@cpt/models/srs-datatable-properties';
+import { ApplicationState } from '@cpt/state/application.state';
+import { SimulationRuntimeMessage } from '@cpt/capacity-planning-simulation-types/lib';
 
 
 
@@ -32,6 +32,8 @@ export class SimulationResultComponent implements OnInit, OnDestroy {
     selectedScenarioId: string;
     initialReload = true;
     isVisible = true;
+    warnings: SimulationRuntimeMessage[] = [];
+    errorDetails: SimulationRuntimeMessage;
 
     tableEntryProperties: TableEntryProperties[] = [];
 
@@ -44,56 +46,58 @@ export class SimulationResultComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
 
-        this.store.dispatch(new treeActions.LoadSimulationResultContent({ id: this.nodeId }));
+        this.store.select(ApplicationState).pipe(untilDestroyed(this), filter(as => as.ready), take(1)).subscribe(as => {
+            this.store.dispatch(new treeActions.LoadSimulationResultContent({ id: this.nodeId }));
 
-        this.treeHasLoaded$.subscribe(treeHasLoaded => this.treeIsLoading = !treeHasLoaded);
-        const simulationResultProperties$ = this.store.select(SRSState.resultById).pipe(
-            map(byId => byId(this.nodeId)),
-            untilDestroyed(this)
-        );
-        // get the selected simulation
-        const simulationResult$ = this.store.select(TreeState.nodeOfId).pipe(
-            map(byId => byId(this.nodeId)),
-            untilDestroyed(this),
-            filter(result => !!result),
-            filter(node => !this.simulationResult || !this.simulationResult.content || this.simulationResult.version !== node.version)
-        );
-        combineLatest(simulationResultProperties$, simulationResult$).subscribe(([simulationResultProperties, simulationResult]) => {
-            if (simulationResult.content === null && !this.simulationResult) {
-                this.simulationResult = JSON.parse(JSON.stringify(simulationResult));
-                // this.store.dispatch(new treeActions.LoadSimulationResultContent(this.simulationResult));
-            } else if (simulationResult.content !== null) {
-                if (this.initialReload && (simulationResult.content.state === 'RUNNING' || simulationResult.content.state === 'QUEUED')) {
-                    this.initialReload = false;
-                    // this.store.dispatch(new treeActions.LoadSimulationResultContent({ id: this.nodeId }));
-                } else {
-                    let scenarioUpdated = false;
-                    if (simulationResultProperties && simulationResultProperties.selectedScenario) {
-                        if (this.selectedScenarioId !== simulationResultProperties.selectedScenario) {
-                            this.selectedScenarioId = simulationResultProperties.selectedScenario;
-                            scenarioUpdated = true;
+            this.treeHasLoaded$.subscribe(treeHasLoaded => this.treeIsLoading = !treeHasLoaded);
+            const simulationResultProperties$ = this.store.select(SRSState.resultById).pipe(
+                map(byId => byId(this.nodeId)),
+                untilDestroyed(this)
+            );
+            // get the selected simulation
+            const simulationResult$ = this.store.select(TreeState.nodeOfId).pipe(
+                map(byId => byId(this.nodeId)),
+                untilDestroyed(this),
+                filter(result => !!result),
+                filter(node => !this.simulationResult || !this.simulationResult.content || this.simulationResult.version !== node.version)
+            );
+            combineLatest(simulationResultProperties$, simulationResult$).subscribe(([simulationResultProperties, simulationResult]) => {
+                if (simulationResult.content === null && !this.simulationResult) {
+                    this.simulationResult = JSON.parse(JSON.stringify(simulationResult));
+                    // this.store.dispatch(new treeActions.LoadSimulationResultContent(this.simulationResult));
+                } else if (simulationResult.content !== null) {
+                    if (this.initialReload && (simulationResult.content.state === 'RUNNING' || simulationResult.content.state === 'QUEUED')) {
+                        this.initialReload = false;
+                        // this.store.dispatch(new treeActions.LoadSimulationResultContent({ id: this.nodeId }));
+                    } else {
+                        let scenarioUpdated = false;
+                        if (simulationResultProperties && simulationResultProperties.selectedScenario) {
+                            if (this.selectedScenarioId !== simulationResultProperties.selectedScenario) {
+                                this.selectedScenarioId = simulationResultProperties.selectedScenario;
+                                scenarioUpdated = true;
+                            }
+                            this.tableEntryProperties = simulationResultProperties.tableEntries;
                         }
-                        this.tableEntryProperties = simulationResultProperties.tableEntries;
-                    }
-                    if (!this.simulationResult || !this.simulationResult.content || this.simulationResult.version !== simulationResult.version || scenarioUpdated) {
-                        this.scenarios = [];
-                        // FIXME: quick workaround for dealing with not extensible error
-                        this.simulationResult = JSON.parse(JSON.stringify(simulationResult));
-                        Object.values(this.simulationResult.content.scenarios).forEach(scenario => {
-                            this.scenarios.push(scenario);
-                        });
+                        if (!this.simulationResult || !this.simulationResult.content || this.simulationResult.version !== simulationResult.version || scenarioUpdated) {
+                            this.scenarios = [];
+                            // FIXME: quick workaround for dealing with not extensible error
+                            this.simulationResult = JSON.parse(JSON.stringify(simulationResult));
+                            Object.values(this.simulationResult.content.scenarios).forEach(scenario => {
+                                this.scenarios.push(scenario);
+                            });
+                            this.warnings = this.simulationResult.content.warnings || [];
+                            this.errorDetails = this.simulationResult.content.errorDetails;
 
-
-                        if (this.scenarios.length > 0) {
-                            this.selectedScenarioId = this.selectedScenarioId ? this.selectedScenarioId : this.scenarios[0].scenarioId;
-                            this.aggregatedReportIndex = this.selectedScenarioId ? this.scenarios.findIndex(x => x.scenarioId === this.selectedScenarioId) :
-                                this.scenarios.findIndex(x => x.scenarioId === this.scenarios[0].scenarioId);
+                            if (this.scenarios.length > 0) {
+                                this.selectedScenarioId = this.selectedScenarioId ? this.selectedScenarioId : this.scenarios[0].scenarioId;
+                                this.aggregatedReportIndex = this.selectedScenarioId ? this.scenarios.findIndex(x => x.scenarioId === this.selectedScenarioId) :
+                                    this.scenarios.findIndex(x => x.scenarioId === this.scenarios[0].scenarioId);
+                            }
                         }
-                    }
 
+                    }
                 }
-            }
-
+            });
         });
     }
 
@@ -115,18 +119,10 @@ export class SimulationResultComponent implements OnInit, OnDestroy {
         return aggregatedReportData ? aggregatedReportData[aggregatedReportDataIndex][dataType] : null;
     }
 
-    private availableAggregationMethods(node: SimulationNode, dataType: 'data' | 'response'): AggregationMethods[] {
-        const aggregatedReport = node ? node.aggregatedReport[this.selectedScenarioId] : null;
-        const firstMonthReport = aggregatedReport ? aggregatedReport[Object.keys(aggregatedReport)[0]] : null;
-        const firstMonthContent = firstMonthReport ? firstMonthReport[dataType] : null;
-        return Object.keys(firstMonthContent) as AggregationMethods[];
-    }
-
-
     onChangeScenario(event) {
         this.selectedScenarioId = this.scenarios.find(x => x.scenarioId === event.target.value).scenarioId;
 
-        let updatedAggregationMethods: {
+        const updatedAggregationMethods: {
             [simulationResultNodeId: string]: string
         } = {};
 

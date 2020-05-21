@@ -1,8 +1,8 @@
-import { User } from '../../login/interfaces/user';
+import { User } from './user';
 
 export interface UserGroup {
-    id: String;
-    userGroupName: String;
+    id: string;
+    userGroupName: string;
     usersWithAccess: Array<User>;
-    roleId: String;
+    roleId: string;
 }

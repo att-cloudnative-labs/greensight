@@ -1,0 +1,22 @@
+:host {
+    flex: 1;
+    display: flex;
+    position: relative;
+    padding: 0;
+    background: #404040;
+    overflow-y: auto;
+}
+
+.settings-panel {
+    margin:10px;
+    width: 100%;
+}
+.settings-group {
+    padding: 16px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius:4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}

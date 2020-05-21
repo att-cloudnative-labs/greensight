@@ -12,7 +12,8 @@
             <p>Please reload the model to continue making edits.</p>
         </div>
     </div>
-    <app-graph-control-bar [graphModel]="graphModel" [releaseNr]="releaseNr"></app-graph-control-bar>
+    <app-graph-control-bar [graphModel]="graphModel" [releaseNr]="releaseNr" [visible]="visibleGraph$" (onCaptureImage)="captureGraphImage()"></app-graph-control-bar>
+    <div [ngClass]="isExporting ? 'load' : ''" #gmContent id="gmContent">
     <svg
         class="edges"
         width="100%"
@@ -34,7 +35,7 @@
         >
         </svg:g>
     </svg>
-    <div
+    <div #contentSize
         class="processes"
         [ngStyle]="transformStyle()"
     >
@@ -95,7 +96,7 @@
             >
             </app-gm-named-variable>
         </ng-container>
-    </div>
+    </div></div>
 
     <div class="hud">
         Zoom: {{layoutEngineService.scale  | percent}}

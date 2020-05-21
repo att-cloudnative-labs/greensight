@@ -8,21 +8,21 @@
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "es2015",
+    "target": "es5",
     "newLine": "LF",
     "typeRoots": [
       "node_modules/@types"
     ],
     "lib": [
-      "es2017",
+      "es2018",
       "dom"
     ],
-    "module": "es2015",
     "baseUrl": "./src",
     "paths": {
       "@app/*": ["./app/*"],
       "@environments/*": ["./environments/*"],
-      "@system-models/*": ["./app/modules/system-models/*"]
+      "@cpt/*": ["./app/modules/cpt/*"],
+      "@login/*": ["./app/modules/login/*"]
     }
   },
   "include": [

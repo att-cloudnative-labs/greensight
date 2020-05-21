@@ -18,13 +18,20 @@
             <div>
                 <span class="fa fa-exclamation-triangle fa-3x"></span>
                 <p>Error: Could not get results. Simulation failed.</p>
-                <p><span>"</span>{{simulationResult.error}}<span>"</span></p>
+                <p><span>"</span>{{simulationResult.content.error}}<span>"</span></p>
+                <div class="error-details-container">
+                    <div class="error-details-spacer"></div>
+                    <app-sr-runtime-message  data-testid="sim-runtime-msg" *ngIf="errorDetails" [message]="errorDetails" [isError]="true"></app-sr-runtime-message>
+                    <div class="error-details-spacer"></div>
+                </div>
             </div>
         </div>
         <ng-template #simResults>
-            <div class="result-screen" *ngIf="isVisible">
-            <app-sr-variable-picker [simResult]="simulationResult.content.nodes" [selectedScenarioId]="selectedScenarioId" [simResultId]="nodeId" ></app-sr-variable-picker>
-                <div  class="result-data">
+            <app-sr-runtime-message *ngFor="let w of warnings" [message]="w"></app-sr-runtime-message>
+
+            <div class="result-screen">
+            <app-sr-variable-picker [simResult]="simulationResult.content" [selectedScenarioId]="selectedScenarioId" [simResultId]="nodeId" [visible]="isVisible"></app-sr-variable-picker>
+                <div  class="result-data" *ngIf="isVisible">
                     <div class="bar">
                         <div style="flex-grow: 1; width: 33%; overflow: hidden;">
                             <label class="scenario">Scenario:

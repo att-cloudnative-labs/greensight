@@ -1,20 +1,15 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { LoginComponent } from './modules/login/components/login/login.component';
-import { UserService } from './modules/login/services/user.service';
+import { AuthService } from '@login/services/auth.service';
 
 const routes: Routes = [
-    {
-        path: '',
-        redirectTo: 'login',
-        pathMatch: 'full'
-    },
     { path: 'login', component: LoginComponent },
-    { path: 'capacity-planning', canActivate: [UserService], loadChildren: './modules/cpt/cpt.module#CptModule' }
+    { path: '', canActivate: [AuthService], loadChildren: './modules/cpt/cpt.module#CptModule' }
 ];
 
 @NgModule({
-    imports: [RouterModule.forRoot(routes, { onSameUrlNavigation: 'reload' })],
+    imports: [RouterModule.forRoot(routes, { onSameUrlNavigation: 'ignore', enableTracing: false })],
     exports: [RouterModule]
 })
 export class AppRoutingModule {

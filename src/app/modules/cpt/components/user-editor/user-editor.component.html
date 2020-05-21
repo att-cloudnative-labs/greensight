@@ -1,0 +1,13 @@
+<div class="editor-panel" data-testid="editor">
+<div class="addUserBlock">
+    <div class="addUserTitleLine" (click)="toggleAddUserVisible()" data-testid="add user"><i class="fa fa-user-plus addUserIcon"></i> Add New User</div>
+    <div *ngIf="showAddUser" data-testid="username"><input placeholder="User Name" [(ngModel)]="newUserName"></div>
+    <div *ngIf="showAddUser" data-testid="password"><input placeholder="Password" type="password" [(ngModel)]="pw1"> <input type="password" placeholder="Repeat password" [(ngModel)]="pw2">
+        <button class="btn btn-primary fa fa-check" [disabled]="passwordInputInvalid" (click)="addUser()" title="Create User"></button> <button class="btn btn-danger fa fa-times" (click)="closeAddUser()" title="Cancel"></button></div>
+</div>
+    <user-list-entry
+    *ngFor="let u of users$ | async"
+    [user]="u"
+></user-list-entry>
+
+</div>

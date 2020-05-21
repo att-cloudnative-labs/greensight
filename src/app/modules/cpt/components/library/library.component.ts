@@ -11,6 +11,8 @@ import { Utils } from '@app/modules/cpt/lib/utils';
 import { v4 as uuid } from 'uuid';
 import { TrashedNodeRowClicked } from '../../state/trash.actions';
 import { untilDestroyed } from 'ngx-take-until-destroy';
+import { LoaderService } from '@app/modules/login/services/loader.service';
+
 
 @Component({
     selector: 'app-library',
@@ -23,10 +25,9 @@ export class LibraryComponent implements OnInit, OnDestroy {
     topLevelNodes$: Observable<TreeNode[]>;
     @HostBinding('class.isLoading') treeIsLoading = false;
 
-    constructor(private store: Store, private actions$: Actions) { }
+    constructor(private store: Store, private actions$: Actions, private loader: LoaderService) { }
 
     ngOnInit() {
-        this.store.dispatch(new treeActions.LoadTree());
         this.actions$.pipe(ofActionSuccessful(TrashedNodeRowClicked),
             untilDestroyed(this)).subscribe(() => {
                 this.store.dispatch(new libraryActions.TrashRowClicked());

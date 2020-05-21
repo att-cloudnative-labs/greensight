@@ -1,0 +1,50 @@
+:host{
+    display: flex;
+    flex-direction: column;
+}
+
+.viewModeBox {
+    display: flex;
+    align-items: baseline;
+    margin: 10px;
+}
+
+.editModeBox{
+    display: flex;;
+    align-items: baseline;
+    justify-content: flex-end;
+    margin: 10px;
+
+}
+
+:host:hover {
+    background: #383838;
+}
+
+.entryIcon {
+    margin-right: 10px;
+}
+
+.userName{
+    flex-grow: 1;
+}
+
+.actionableIcon {
+    cursor: pointer;
+}
+
+.passwordLabel {
+    margin-right: 5px;
+}
+
+input {
+    background-color: #272727;
+    padding: 5px 9px;
+    font-size: 14px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 4px;
+    color: white;
+    margin-right: 5px;
+}

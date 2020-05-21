@@ -88,7 +88,7 @@ export function updateSimulationGraphModel(simulation: TreeNode, graphPid: Proce
     }
     simulation.content.modelVersion = graphPid.versionId;
     simulation.content.modelName = graphPid.name;
-    if (graphPid.pathName) simulation.content.modelFullName = graphPid.pathName + "/" + graphPid.name;
+    if (graphPid.pathName) simulation.content.modelFullName = graphPid.pathName + '/' + graphPid.name;
     simulation.content.inports = inportInfo;
 }
 
@@ -114,7 +114,7 @@ export function getScenarioInitialInportValue(inport): GraphParam {
             case 'BOOLEAN':
                 return { type: 'BOOLEAN', value: false };
             case 'BREAKDOWN':
-                return { type: 'ASPECT', value: { type: 'BREAKDOWN', name: '', slices: {} } };
+                return { type: 'ASPECT', value: { name: '', slices: {} } };
             case 'DATE': {
                 return { type: 'DATE', value: new Date().toString() };
             }

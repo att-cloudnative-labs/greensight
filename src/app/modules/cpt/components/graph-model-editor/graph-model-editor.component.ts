@@ -46,7 +46,8 @@ import { LoadGraphModelDependencies } from '@cpt/state/processing-element.action
 import { ApplicationState } from '@cpt/state/application.state';
 import { GraphModelInterfaceState, GraphModelInterfaceStateModel } from '@cpt/state/graph-model-interface.state';
 import { ReleaseState } from '@cpt/state/release.state';
-import { ReleaseFetch } from '@cpt/state/release.actions';
+import { ReleaseFetchGraphModel } from '@cpt/state/release.actions';
+import domtoimage from 'dom-to-image';
 
 
 class StateHistory {
@@ -111,6 +112,7 @@ class StateHistory {
     get hasFuture(): boolean {
         return !!this.future.length;
     }
+
 }
 
 @Component({
@@ -138,6 +140,9 @@ export class GraphModelEditorComponent implements OnInit, OnDestroy, OnChanges {
     @Select(TreeState.nodesOfType('MODEL')) graphModelNodes$: Observable<TreeNode[]>;
     @Select(ClipboardState.clipboardData) clipboard$: Observable<ClipboardStateModel>;
     @Select(SelectionState) selection$: Observable<Selection[]>;
+    @ViewChild('gmContent', { static: false }) gmContent: ElementRef;
+    @ViewChild('contentSize', { static: false }) contentSize: ElementRef;
+
     isFocused = false;
     stateHistory: StateHistory;
     clipboardHasData: boolean;
@@ -145,6 +150,7 @@ export class GraphModelEditorComponent implements OnInit, OnDestroy, OnChanges {
     visibleGraph = true;
     editingEnabled = true;
     visibleGraph$ = new BehaviorSubject<boolean>(false);
+    isExporting = false;
 
     // TODO: Right now we are counting on PanService to be instantiated so we need to include it in the constructor
     //          even though we don't use it. I think there may be a better way to organize these aspects of the editor.
@@ -168,12 +174,9 @@ export class GraphModelEditorComponent implements OnInit, OnDestroy, OnChanges {
 
     ngOnInit() {
 
-
         this.cablePullService.pullComplete.pipe(untilDestroyed(this)).subscribe(this.handleCablePullComplete.bind(this));
         this.cablePullService.pullDrop.pipe(untilDestroyed(this)).subscribe(this.handleCablePullDrop.bind(this));
         this.dragManagerService.stopDragging.pipe(untilDestroyed(this)).subscribe(this.handleDragComplete.bind(this));
-
-
 
         this.store.select(ApplicationState).pipe(untilDestroyed(this), filter(as => as.ready), take(1)).subscribe(as => {
             // FIXME: we should limit this to only trigger if the actual data updates.
@@ -228,7 +231,7 @@ export class GraphModelEditorComponent implements OnInit, OnDestroy, OnChanges {
                 }
             });
 
-            const loadAction = this.releaseNr ? new ReleaseFetch({ nodeId: this.nodeId, releaseNr: this.releaseNr }) : new treeActions.LoadGraphModelContent({ id: this.nodeId });
+            const loadAction = this.releaseNr ? new ReleaseFetchGraphModel({ nodeId: this.nodeId, releaseNr: this.releaseNr }) : new treeActions.LoadGraphModelContent({ id: this.nodeId });
             this.store.dispatch(loadAction).subscribe(() => {
                 combineLatest([this.selection$, this.clipboard$])
                     .pipe(
@@ -256,6 +259,27 @@ export class GraphModelEditorComponent implements OnInit, OnDestroy, OnChanges {
 
     }
     ngOnChanges(): void {
+    }
+
+    public captureGraphImage() {
+
+        this.isExporting = true;
+        const imgHeight = this.contentSize.nativeElement.scrollHeight;
+        const imgWidth = this.contentSize.nativeElement.scrollWidth;
+        const dwldLink = document.createElement('a');
+        domtoimage.toPng(this.gmContent.nativeElement, { height: imgHeight, width: imgWidth, bgcolor: '#383836' })
+            .then(data => {
+                this.isExporting = false;
+                dwldLink.setAttribute('href', data);
+                dwldLink.setAttribute('download', this.graphModel.name + '.png');
+                dwldLink.style.visibility = 'hidden';
+                document.body.appendChild(dwldLink);
+                dwldLink.click();
+                document.body.removeChild(dwldLink);
+            })
+            .catch(error => {
+                console.error('Image Capture failed! ', error);
+            });
     }
 
     private nodesAndPEsToDescriptions(allGraphModelNodes, processingElements): ProcessInterfaceDescription[] {

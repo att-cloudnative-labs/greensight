@@ -36,6 +36,18 @@
     background-color: transparent;
     color: white;
 }
+.error-details-container{
+    display: flex;
+}
+.error-details-spacer{
+    flex-grow: 1;
+}
+
+.warnings {
+    display: flex;
+    margin: 5px;
+
+}
 
 .fa-exclamation-triangle {
     display: block;

@@ -1,6 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Select, Store, Actions, ofActionSuccessful, ofActionDispatched, ofActionCompleted } from '@ngxs/store';
+import {
+    Select,
+    Store,
+    Actions,
+    ofActionSuccessful,
+    ofActionDispatched,
+    ofActionCompleted,
+    ofActionErrored
+} from '@ngxs/store';
 import { LayoutState, LayoutStateModel } from '@cpt/state/layout.state';
 import * as forecastVariableActions from '@cpt/state/forecast-values.actions';
 import * as libraryActions from '@cpt/state/library.actions';
@@ -17,6 +25,15 @@ import * as usersActions from '@cpt/state/users.actions';
 import * as processingElements from '@cpt/state/processing-element.actions';
 import { LoadTrackingInfo } from '@cpt/state/tree-node-tracking.actions';
 import { ApplicationReady } from '@cpt/state/application.actions';
+import {
+    SettingsFetch,
+} from '@cpt/state/settings.actions';
+import { UnitFetchAll } from '@cpt/state/variable-unit.actions';
+import { LoadTree } from '@cpt/state/tree.actions';
+import { SimulationResultCreationFailed } from '@cpt/state/simulation.actions';
+import { ActivatedRoute } from '@angular/router';
+import { OpenTabByNodeId } from '@cpt/state/layout.actions';
+import { ReleaseFetch, ReleaseFetchGraphModel, ReleaseSelected } from '@cpt/state/release.actions';
 
 
 @Component({
@@ -27,7 +44,8 @@ import { ApplicationReady } from '@cpt/state/application.actions';
 export class SystemModelsPageComponent implements OnInit, OnDestroy {
     @Select(LayoutState) layout$: Observable<LayoutStateModel>;
 
-    constructor(private store: Store, private actions$: Actions, private modal: Modal, private loader: LoaderService) {
+    constructor(private store: Store, private actions$: Actions, private modal: Modal, private loader: LoaderService, private route: ActivatedRoute) {
+
         this.actions$.pipe(ofActionSuccessful(
             libraryActions.RenameGraphModelCommitted,
             libraryActions.RenameSimulationCommitted,
@@ -59,6 +77,14 @@ export class SystemModelsPageComponent implements OnInit, OnDestroy {
                 this.loader.hide();
             });
 
+        this.actions$.pipe(ofActionErrored(usersActions.UserDelete), untilDestroyed(this)).subscribe(action => {
+            this.modal
+                .alert()
+                .title('Error')
+                .body('Failed to Delete the User.')
+                .okBtn('OK').okBtnClass('btn btn-primary')
+                .open();
+        });
 
         this.actions$.pipe(ofActionDispatched(treeActions.TreeNodeConflicted),
             untilDestroyed(this)).subscribe(({ payload: { conflictedNode, orgNode } }: treeActions.TreeNodeConflicted) => {
@@ -96,6 +122,16 @@ export class SystemModelsPageComponent implements OnInit, OnDestroy {
                 });
             });
 
+        this.actions$.pipe(ofActionDispatched(SimulationResultCreationFailed),
+            untilDestroyed(this)).subscribe(({ payload: { simulationId, error } }: SimulationResultCreationFailed) => {
+                const message = error.status === 429 ? 'Simulation Service is busy. Retry later.' : 'Please make sure the Simulation Service is available.'
+                this.modal.alert()
+                    .title('Failed to create simulation.')
+                    .body(message)
+                    .okBtn('OK').okBtnClass('btn btn-primary')
+                    .open();
+            });
+
         this.actions$.pipe(ofActionDispatched(treeActions.TreeNodeTrashed),
             untilDestroyed(this)).subscribe(({ payload: { id } }: treeActions.TreeNodeTrashed) => {
                 const dialog =
@@ -106,6 +142,33 @@ export class SystemModelsPageComponent implements OnInit, OnDestroy {
                         .open();
                 // FIXME: handle this
             });
+
+        this.actions$.pipe(ofActionErrored(treeActions.ReloadSingleTreeNode),
+            untilDestroyed(this)).subscribe(({ payload }: treeActions.ReloadSingleTreeNode) => {
+                const dialog =
+                    this.modal.alert()
+                        .title('Node could not be loaded.')
+                        .body(`The item you tried to load has been trashed or is not available.`)
+                        .okBtn('OK').okBtnClass('btn btn-primary')
+                        .open();
+                // FIXME: handle this
+            });
+
+        this.actions$.pipe(ofActionErrored(releaseActions.ReleaseFetchGraphModel),
+            untilDestroyed(this)).subscribe(({ payload }: releaseActions.ReleaseFetchGraphModel) => {
+                const dialog =
+                    this.modal.alert()
+                        .title('Release of Node could not be loaded.')
+                        .body(`The release you tried to load is not available.`)
+                        .okBtn('OK').okBtnClass('btn btn-primary')
+                        .open();
+                dialog.result.then(() => {
+                    this.store.dispatch(new releaseActions.ReleaseSelected({ nodeId: payload.nodeId, releaseNr: undefined }));
+                });
+                // FIXME: handle this
+            });
+
+
 
         this.actions$.pipe(ofActionDispatched(treeActions.TreeNodeFailedDependency),
             untilDestroyed(this)).subscribe(() => {
@@ -189,18 +252,38 @@ export class SystemModelsPageComponent implements OnInit, OnDestroy {
             });
     }
 
+    async syncRouteWithLayout() {
+        const u = this.route.snapshot.url;
+        if (u.length) {
+            const nodeId = u[0].path;
+            const releaseNr = this.route.snapshot.queryParams['releaseNr'];
+            if (nodeId && nodeId.trim().length > 0) {
+                await this.store.dispatch(new OpenTabByNodeId({ nodeId: nodeId, releaseNr: releaseNr }));
+            }
+        }
+    }
+
+    async initApplication() {
+        await this.store.dispatch(new SettingsFetch()).toPromise();
+        await this.store.dispatch(new processingElements.LoadProcessingElements()).toPromise();
+        await this.store.dispatch(new usersActions.GetCurrentUser()).toPromise();
+        await this.syncRouteWithLayout();
+        await this.store.dispatch(new processingElements.LoadGraphModels()).toPromise();
+        await this.store.dispatch(new LoadTree()).toPromise();
+        await this.store.dispatch(new forecastVariableActions.LoadForecastUnits()).toPromise();
+        await this.store.dispatch(new usersActions.GetUsers()).toPromise();
+        await this.store.dispatch(new usersActions.GetUsergroups()).toPromise();
+        await this.store.dispatch(new UnitFetchAll()).toPromise();
+        await this.store.dispatch(new LoadTrackingInfo()).toPromise();
+    }
+
     ngOnInit() {
-        this.store.dispatch([
-            new processingElements.LoadProcessingElements(),
-            new processingElements.LoadGraphModels(),
-            new LoadTrackingInfo,
-            new forecastVariableActions.LoadForecastUnits(),
-            new usersActions.GetUsers(),
-            new usersActions.GetUsergroups(),
-        ]
-        ).subscribe(() => {
-            this.store.dispatch(new ApplicationReady());
+
+
+        this.initApplication().then(() => {
+            this.store.dispatch(new ApplicationReady);
         });
+
     }
 
     ngOnDestroy() { }

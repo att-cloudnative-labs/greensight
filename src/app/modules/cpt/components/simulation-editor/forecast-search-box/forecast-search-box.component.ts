@@ -3,20 +3,18 @@ import {
     Input,
     Output,
     EventEmitter,
-    OnChanges,
     ViewChildren,
     QueryList,
-    AfterViewInit,
-    ViewChild, ElementRef, OnInit
+    ViewChild, ElementRef, OnInit, OnDestroy
 } from '@angular/core';
 import { DOWN_ARROW, ENTER, UP_ARROW } from '@angular/cdk/keycodes';
 import { ActiveDescendantKeyManager } from '@angular/cdk/a11y';
 import { ForecastSearchListEntryComponent } from '@cpt/components/simulation-editor/forecast-search-box/entry/forecast-search-list-entry.component';
 import { TreeService } from '@cpt/services/tree.service';
-import { TreeNodeType } from '@cpt/interfaces/tree-node';
 import { TreeNodeInfo } from '@cpt/interfaces/tree-node-tracking';
 import Timer = NodeJS.Timer;
-import { processOptionFromTreeNodeInfo } from '@cpt/interfaces/process-option';
+import { Observable } from 'rxjs';
+import { untilDestroyed } from 'ngx-take-until-destroy';
 
 
 @Component({
@@ -24,15 +22,17 @@ import { processOptionFromTreeNodeInfo } from '@cpt/interfaces/process-option';
     templateUrl: './forecast-search-box.component.html',
     styleUrls: ['./forecast-search-box.component.css']
 })
-export class ForecastSearchBoxComponent implements OnInit {
+export class ForecastSearchBoxComponent implements OnInit, OnDestroy {
     @Input() siblingReference: string;
     @Input() dropList: string[];
     @Input() placeholder = 'select an item';
+    @Input('visible') visible$: Observable<boolean>;
     @Output() itemSelected = new EventEmitter();
     @ViewChildren(ForecastSearchListEntryComponent) resultComponents: QueryList<ForecastSearchListEntryComponent>;
     @ViewChild('liveSearchField', { static: false }) searchField: ElementRef;
+    @ViewChild('liveSearchResultField', { static: false }) resultField: ElementRef;
+
     showSearch = false;
-    selectedIndex = 0;
     searchString = '';
     searchResults = [];
     siblingsAll: TreeNodeInfo[] = [];
@@ -71,6 +71,18 @@ export class ForecastSearchBoxComponent implements OnInit {
         this.treeService.search({ siblingReference: this.siblingReference, nodeTypes: ['FC_SHEET'] }).subscribe(results => {
             this.siblingsAll = results;
         });
+
+        this.visible$.pipe(untilDestroyed(this)).subscribe((visible) => {
+            if (!visible) {
+                this.closeSearchDisplay();
+            }
+        });
+    }
+
+    ngOnDestroy(): void {
+        if (this.resultField && this.resultField.nativeElement) {
+            this.resultField.nativeElement.remove();
+        }
     }
 
     openSearchDisplay() {
@@ -82,13 +94,7 @@ export class ForecastSearchBoxComponent implements OnInit {
             this.hasMorePages = true;
             // sets up keyboard navigation for result list
             this.keyManager = new ActiveDescendantKeyManager(this.resultComponents).withWrap();
-            // sets selected item as highlighted using its index, otherwise it highlights the first item
-            setTimeout(() => {
-                this.keyManager.setActiveItem(this.selectedIndex);
-                if (this.keyManager.activeItem) {
-                    this.keyManager.activeItem.resultElement.nativeElement.scrollIntoView({ block: 'nearest' });
-                }
-            }, 0);
+
         }
     }
 
@@ -154,7 +160,7 @@ export class ForecastSearchBoxComponent implements OnInit {
     }
 
     searchBlurred() {
-        this.pendingSearchClose = setTimeout(() => { this.closeSearchDisplay() }, 100);
+        this.pendingSearchClose = setTimeout(() => { this.closeSearchDisplay(); }, 100);
     }
     searchList(event) {
         if (event instanceof KeyboardEvent && event.keyCode !== ENTER && event.keyCode !== DOWN_ARROW && event.keyCode !== UP_ARROW) {

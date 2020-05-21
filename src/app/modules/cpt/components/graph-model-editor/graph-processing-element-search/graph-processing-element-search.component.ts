@@ -11,14 +11,10 @@ import {
 } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 import { ProcessingElementState } from '@cpt/state/processing-element.state';
-import { TreeState } from '@cpt/state/tree.state';
-import { TreeNode } from '@cpt/interfaces/tree-node';
 import { Observable, combineLatest } from 'rxjs';
-import * as Sifter from 'sifter';
 import { GraphSearchResultComponent } from './graph-search-result/graph-search-result.component';
 import { ActiveDescendantKeyManager } from '@angular/cdk/a11y';
 import { ENTER, UP_ARROW, DOWN_ARROW } from '@angular/cdk/keycodes';
-import { map, take, tap } from 'rxjs/operators';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import { ProcessInterfaceDescription } from '@cpt/capacity-planning-simulation-types/lib';
 import { TreeNodeTrackingState } from '@cpt/state/tree-node-tracking.state';
@@ -38,10 +34,13 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
     @Select(ProcessingElementState.processingElements) pes$: Observable<ProcessInterfaceDescription[]>;
     @ViewChildren(GraphSearchResultComponent) items: QueryList<GraphSearchResultComponent>;
     @ViewChild('graphSearch', { static: true }) searchField: ElementRef;
+    @ViewChild('graphSearchResults', { static: false }) resultField: ElementRef;
 
     @Input() placeholder = 'Add...';
     @Input() graphModelId: string;
     @Input() parentNodeId: string;
+    @Input('visible') visible$: Observable<boolean>;
+
 
 
     @Output() resultSelected = new EventEmitter();
@@ -90,6 +89,10 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
         return this.searchString.trim().length === 0 && this.showOnlyImportantPEs;
     }
 
+    get displayShowImportantPEs(): boolean {
+        return this.searchString.trim().length === 0 && !this.showOnlyImportantPEs;
+    }
+
     get combinedResultCount(): number {
         return this.peSearchResults.length + this.siblingSearchResults.length + this.searchResults.length;
     }
@@ -106,9 +109,20 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
             this.peAll = pes.map(pe => ({ name: pe.name, processingElement: pe, implementation: 'PROCESSING_ELEMENT' } as ProcessOption));
             this.peImportant = this.peAll.filter(pe => Utils.importantProcessingElementIds.find(peid => peid === pe.processingElement.objectId));
         });
+
+        this.visible$.pipe(untilDestroyed(this)).subscribe(visible => {
+            if (!visible) {
+                this._closeSearch();
+            }
+        });
     }
 
-    ngOnDestroy() { }
+    ngOnDestroy() {
+        this._closeSearch();
+        if (this.resultField && this.resultField.nativeElement) {
+            this.resultField.nativeElement.remove();
+        }
+    }
 
     navigateList(event) {
         if (event.keyCode === ENTER) {
@@ -128,7 +142,9 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
      * Clears the search results and hides the search result list dropdown
      */
     closeSearch() {
-        this.closeTimeout = setTimeout(() => this._closeSearch(), 100);
+        this.closeTimeout = setTimeout(() => {
+            this._closeSearch();
+        }, 250);
     }
     _closeSearch() {
         this.showSearchResults = false;
@@ -172,7 +188,7 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
         this.showOnlyImportantPEs = false;
         this.cancelClose();
     }
-    
+
     showImportantPEs() {
         this.showOnlyImportantPEs = true;
         this.cancelClose();
@@ -192,12 +208,14 @@ export class GraphProcessingElementSearchComponent implements OnInit, AfterViewI
             // run the sibling query only once every time the search is initiated
             this.treeService.search({ siblingReference: this.graphModelId, nodeTypes: ['MODEL'] }).subscribe(siblings => {
                 this.siblingsAll = siblings.map(tni => processOptionFromTreeNodeInfo(tni, this.graphModelId));
-                // give search list element time to appear before setting the first item active
-                setTimeout(() => {
-                    this.keyManager.setFirstItemActive();
-                }, 0);
-
             });
+        }
+    }
+
+    searchListFocus($event) {
+        if (this.closeTimeout) {
+            clearTimeout(this.closeTimeout);
+            this.closeTimeout = null;
         }
     }
 

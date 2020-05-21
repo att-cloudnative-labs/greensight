@@ -5,6 +5,7 @@
             <li (click)="onNewSimulation()">New Simulation</li>
         </div>
     </div>
+    <li (click)="onCopyLink()">Copy Link</li>
     <hr>
     <div *appHasPermission="modifyPermissionsObj">
         <li (click)="onRenameModel()">Rename</li>
@@ -15,4 +16,4 @@
         <hr>
         <li (click)="onTrashModel()">Send to Trash</li>
     </div>
-</ul>      
+</ul>

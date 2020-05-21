@@ -1,0 +1,53 @@
+:host{
+    display: flex;
+    flex-direction: column;
+}
+
+.viewModeBox {
+    display: flex;
+    align-items: baseline;
+    margin: 10px;
+}
+
+.editModeBox{
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    justify-content: flex-end;
+    margin: 10px;
+}
+
+:host:hover {
+    background: #383838;
+}
+
+.entryIcon {
+    margin-right: 10px;
+}
+
+.addMemberBox {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+}
+.userName{
+    flex-grow: 1;
+    margin-left: 5px;
+}
+
+.filler {
+    flex-grow: 1;
+}
+
+
+.actionableIcon {
+    cursor: pointer;
+}
+
+select {
+    list-style-type: none;
+    margin: 0;
+    background-color: lightgrey;
+    color: black;
+    padding: 8px;
+}

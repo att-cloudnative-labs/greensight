@@ -43,11 +43,13 @@ public class LogRequestFilter extends OncePerRequestFilter implements Ordered {
     filterChain.doFilter(wrappedRequest, response);
     status = response.getStatus();
 
-    // only log request if there was an error
     Map<String, Object> trace = getTrace(wrappedRequest, status);
 
     // body can only be read after the actual request handling was done!
-    getBody(wrappedRequest, trace);
+    // only log body if there was an error
+    if (status >= 400) {
+      getBody(wrappedRequest, trace);
+    }
     logTrace(wrappedRequest, trace);
   }
 

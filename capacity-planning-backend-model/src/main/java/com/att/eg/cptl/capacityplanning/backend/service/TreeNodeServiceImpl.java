@@ -262,6 +262,8 @@ public class TreeNodeServiceImpl extends TreeNodeBaseService implements TreeNode
       @Nullable List<NodeType> nodeTypes) {
     List<TreeNodeTrackingInfo> nodesFound = new ArrayList<>();
 
+    Collection<TreeNode> accessibleFolders;
+
     // fake a root node so we don't have to query it
     TreeNode fakeRoot = TreeOps.getFakeRoot();
 
@@ -274,7 +276,7 @@ public class TreeNodeServiceImpl extends TreeNodeBaseService implements TreeNode
         usersGroups == null
             ? Collections.emptyList()
             : usersGroups.stream().map(UserGroup::getId).collect(Collectors.toList());
-    List<TreeNode> accessibleFolders =
+    accessibleFolders =
         folders
             .stream()
             .filter(
@@ -282,6 +284,7 @@ public class TreeNodeServiceImpl extends TreeNodeBaseService implements TreeNode
                     accessControlUtil.doesUserHaveReadPermission(
                         user, f, Collections.singletonList(fakeRoot), usersGroupIds))
             .collect(Collectors.toList());
+
     List<String> accessibleFolderIds =
         accessibleFolders.stream().map(TreeNode::getId).collect(Collectors.toList());
     Map<String, String> folderNames =

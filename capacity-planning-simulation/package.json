@@ -8,8 +8,7 @@
     "build": "tsc"
   },
   "repository": {
-    "type": "git",
-    "url": "ssh://git@egbitbucket.dtvops.net:7999/cptl/capacity-planning-simulation.git"
+    "type": "git"
   },
   "author": "",
   "license": "ISC",

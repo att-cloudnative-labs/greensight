@@ -1,10 +1,17 @@
-import { State, Action, StateContext, Selector, Store } from '@ngxs/store';
+import { State, Action, StateContext, Selector, Store, createSelector } from '@ngxs/store';
 import * as libraryActions from './library.actions';
 import * as librarySearchResultActions from './library-search-result.actions';
+import * as treeActions from './tree.actions';
+
 import { TreeNodeProperties } from './library.actions';
 import { TreeState } from './tree.state';
 
 import produce from 'immer';
+import { TreeNodeInfo } from '@cpt/interfaces/tree-node-tracking';
+import { TreeService } from '@cpt/services/tree.service';
+import { tap } from 'rxjs/operators';
+import * as Sifter from 'sifter';
+
 
 export class LibraryStateModel {
     public searchString: string;
@@ -12,6 +19,7 @@ export class LibraryStateModel {
     public treeNodePropertiesMap: {
         [id: string]: TreeNodeProperties
     };
+    public searchResults: { [searchTerm: string]: TreeNodeInfo[] };
 }
 
 @State<LibraryStateModel>({
@@ -19,11 +27,14 @@ export class LibraryStateModel {
     defaults: {
         searchString: '',
         renameId: null,
-        treeNodePropertiesMap: {}
+        treeNodePropertiesMap: {},
+        searchResults: {}
     }
 })
 export class LibraryState {
-    constructor(private store: Store) { }
+    static readonly QUERY_PAGE_SIZE = 50;
+
+    constructor(private store: Store, private treeService: TreeService) { }
 
     @Selector()
     static treeNodePropertiesMap(state: LibraryStateModel) {
@@ -35,6 +46,29 @@ export class LibraryState {
     @Selector()
     static searchString(state: LibraryStateModel) {
         return state.searchString;
+    }
+
+    static searchResults(term: string) {
+        return createSelector([LibraryState], (state: LibraryStateModel) => {
+            const trimmedTerm = term.trim();
+            if (trimmedTerm.length > 0) {
+                for (let i = trimmedTerm.length; i >= 0; i--) {
+                    const cacheLookUp = trimmedTerm.toLowerCase().substr(0, i);
+                    if (state.searchResults[cacheLookUp]) {
+                        const cachedResults = state.searchResults[cacheLookUp];
+                        const sifter = new Sifter(cachedResults);
+                        const sifterResults = sifter.search(term, {
+                            fields: ['name'],
+                            sort: [{ field: 'name', direction: 'asc' }],
+                        });
+                        return sifterResults.items.map(item => {
+                            return cachedResults[item.id];
+                        });
+                    }
+                }
+            }
+            return [];
+        });
     }
 
     @Selector()
@@ -52,14 +86,46 @@ export class LibraryState {
         setState(newState);
     }
 
+    private isCached(st: string, state: LibraryStateModel): boolean {
+        const curSearchResults = state.searchResults;
+        // if the exact term is in the cache return results
+        if (curSearchResults[st]) {
+            return true;
+        }
+        // otherwise check if some non query page size sub strings are cached
+        for (let i = 1; i < st.length; i++) {
+            const cacheCheckTerm = st.toLowerCase().substr(0, i);
+            if (curSearchResults[cacheCheckTerm] && curSearchResults[cacheCheckTerm].length < LibraryState.QUERY_PAGE_SIZE) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
     @Action(libraryActions.UpdateSearchString)
     updateSearchString(
-        { patchState }: StateContext<LibraryStateModel>,
+        { patchState, getState, setState }: StateContext<LibraryStateModel>,
         { payload }: libraryActions.UpdateSearchString
     ) {
-        patchState({
-            searchString: payload
-        });
+        const trimmedTerm = payload.trim();
+        if (trimmedTerm.length && !this.isCached(trimmedTerm, getState())) {
+            return this.treeService.search({ searchTerm: trimmedTerm, nodeTypes: ['FC_SHEET', 'FOLDER', 'SIMULATION', 'MODEL'], page: 0, size: LibraryState.QUERY_PAGE_SIZE }).pipe(
+                tap(searchResults => {
+                    const updatedSearchResults = produce(getState().searchResults, (draft) => {
+                        draft[trimmedTerm.toLowerCase()] = searchResults;
+                    });
+                    patchState({
+                        searchResults: updatedSearchResults,
+                        searchString: payload
+                    });
+                })
+            );
+        } else {
+            return patchState({
+                searchString: payload
+            });
+        }
     }
 
     @Action(libraryActions.FolderClicked)
@@ -137,4 +203,14 @@ export class LibraryState {
         });
         setState(newState);
     }
+
+    @Action(treeActions.CreatedTreeNode)
+    @Action(libraryActions.RenameFolderCommitted)
+    @Action(libraryActions.RenameForecastSheetCommitted)
+    @Action(libraryActions.RenameGraphModelCommitted)
+    @Action(libraryActions.RenameSimulationCommitted)
+    cleanCache({ patchState }: StateContext<LibraryStateModel>) {
+        return patchState({ searchResults: {} });
+    }
+
 }

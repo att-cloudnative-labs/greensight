@@ -1,28 +1,39 @@
 import { Injectable } from '@angular/core';
 import { Utils } from '@app/modules/cpt/lib/utils';
-import { UserService } from '../../login/services/user.service';
-import { HttpClient } from "@angular/common/http";
-import { ApiResult } from "@app/modules/cpt/interfaces/api-result";
+import { UserService } from '@cpt/services/user.service';
+import { HttpClient } from '@angular/common/http';
+import { ApiResult } from '@app/modules/cpt/interfaces/api-result';
 import { map } from 'rxjs/operators';
+import { UserSettings } from '@cpt/interfaces/user-settings';
+import { Observable } from 'rxjs';
+import { User } from '@cpt/interfaces/user';
 
 @Injectable()
 export class SettingsService {
 
-    constructor(
-        private http: HttpClient,
-        private userService: UserService) { }
+    get settingsUrl() {
+        return Utils.createUrl(Utils.routeUser) + '/' + sessionStorage['user_id'] + '/settings';
+    }
 
-    getSettings() {
-        const url = Utils.createUrl(Utils.routeUser) + '/' + sessionStorage['user_id'] + '/settings';
+    constructor(
+        private http: HttpClient, private userService: UserService) { }
+
+    getSettings(): Observable<UserSettings> {
         return this.http
-            .get<ApiResult<any>>(url, Utils.httpOptions).pipe(
+            .get<ApiResult<UserSettings>>(this.settingsUrl, Utils.httpOptions).pipe(
                 map(result => {
                     sessionStorage['current_user_settings'] = JSON.stringify(result.data);
-                    return result;
+                    return result.data;
                 }));
     }
 
-    updateSettings(settings) {
+    setUserSetting(field: string, val: any): Observable<any> {
+        return this.http.post(this.settingsUrl, { key: field, value: val }, Utils.httpOptions);
+    }
+
+    updateSettings(settings: UserSettings): Observable<void> {
+
+        // FIXME: this whole sessionstorage thing should not be used for settings
         let newSettings = null;
 
         if (sessionStorage['current_user_settings'] == null) {
@@ -40,7 +51,11 @@ export class SettingsService {
         sessionStorage['current_user_settings'] = this._mapOrObjectToString(newSettings);
 
         return this.userService.updateUser(Utils.getUserId(), Utils.getUserName(),
-            Utils.getUserRoleId(), newSettings);
+            Utils.getUserRoleId(), newSettings).pipe(map(r => null));
+    }
+
+    updateSessionStorage(settings: UserSettings) {
+        sessionStorage['current_user_settings'] = this._mapOrObjectToString(settings);
     }
 
     _mapOrObjectToString(map): string {

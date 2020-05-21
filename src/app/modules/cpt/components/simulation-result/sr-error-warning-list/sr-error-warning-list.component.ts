@@ -1,5 +1,5 @@
-import { OnInit, Component, Input, HostListener, ElementRef, OnChanges } from '@angular/core';
-import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
+import { Component, Input, HostListener, ElementRef, OnChanges } from '@angular/core';
+import { SimulationResult } from '@cpt/capacity-planning-simulation-types';
 
 @Component({
     selector: 'app-sr-error-warning-list',
@@ -7,7 +7,7 @@ import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
     styleUrls: ['./sr-error-warning-list.component.css']
 })
 export class SrErrorWarningListComponent implements OnChanges {
-    @Input() results;
+    @Input() result: SimulationResult;
     isFocused: boolean;
     errorWarningNodes = [];
     selection = [];
@@ -15,13 +15,11 @@ export class SrErrorWarningListComponent implements OnChanges {
     constructor(private host: ElementRef) { }
 
     ngOnChanges() {
-        const resultArray: SimulationNode[] = Object.values(this.results);
-        const root = resultArray.find(node => node.processNodeId === 'root');
         this.errorWarningNodes = this.getErrorWarnings();
     }
 
     getErrorWarnings() {
-        const errorWarningNodes = Object.values(this.results).filter((x: any) => {
+        const errorWarningNodes = Object.values(this.result.nodes).filter((x) => {
             return (
                 x.type === 'PROCESSING_ELEMENT'
                 && (x.ref === '41c22bcb-f966-406a-8814-a7b8e187b508' || x.ref === 'e3cc50a9-795c-4a47-8643-6d0aee39b49c')

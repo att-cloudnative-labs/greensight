@@ -8,7 +8,7 @@ public interface UserGroupService {
 
   List<UserGroupDto> getAllUserGroups();
 
-  void addUserGroup(UserGroupDto userGroupDto);
+  UserGroupDto addUserGroup(UserGroupDto userGroupDto);
 
   UserGroupDto updateUserGroup(UserGroupDto userGroup);
 

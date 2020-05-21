@@ -1,0 +1,36 @@
+:host{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100%;
+
+}
+
+.viewModeBox {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 10px;
+}
+
+.editModeBox{
+    display: flex;;
+    align-items: baseline;
+    justify-content: flex-end;
+}
+
+:host:hover {
+    background: #383838;
+}
+
+.entryIcon {
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+
+.actionableIcon {
+    cursor: pointer;
+}
+.filler{
+    flex-grow: 1;
+}

@@ -1,0 +1,19 @@
+:host {
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    padding: 10px;
+    margin: 5px;
+    display: flex;
+}
+
+:host:hover {
+    background: #4C4C4C;
+}
+
+.unitDeleteButton {
+    margin-left: 5px;
+}
+.unitDeleteButton:hover {
+    cursor: pointer;
+}

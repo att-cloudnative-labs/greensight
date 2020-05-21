@@ -4,14 +4,12 @@ import static com.att.eg.cptl.capacityplanning.backend.util.IncomingRequestUtils
 
 import com.att.eg.cptl.capacityplanning.backend.controller.history.NodeHistoryFilterType;
 import com.att.eg.cptl.capacityplanning.backend.controller.util.RestResponseUtil;
-import com.att.eg.cptl.capacityplanning.backend.dao.UserMongoRepository;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.treenode.TreeNodeVersionDto;
 import com.att.eg.cptl.capacityplanning.backend.exception.InvalidFilterTypeException;
 import com.att.eg.cptl.capacityplanning.backend.exception.NotFoundException;
 import com.att.eg.cptl.capacityplanning.backend.model.AppUser;
 import com.att.eg.cptl.capacityplanning.backend.model.TreeNodeContentPatch;
-import com.att.eg.cptl.capacityplanning.backend.model.converter.ModelToDtoConverter;
 import com.att.eg.cptl.capacityplanning.backend.model.treenode.NodeType;
 import com.att.eg.cptl.capacityplanning.backend.rest.RestResponse;
 import com.att.eg.cptl.capacityplanning.backend.service.TreeNodeService;
@@ -48,10 +46,6 @@ public class TreeNodeController {
   @Resource private TreeNodeService treeNodeService;
 
   @Autowired private UserAuthenticationService userAuthenticationService;
-
-  @Resource private ModelToDtoConverter modelToDtoConverter;
-
-  @Resource private UserMongoRepository userRepository;
 
   @GetMapping("/tree/{nodeId}")
   @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_READ_ONLY','ROLE_READ_AND_WRITE')")

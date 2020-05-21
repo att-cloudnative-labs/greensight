@@ -1,4 +1,4 @@
-import { User } from '../../login/interfaces/user';
+import { User } from './user';
 import { TimeSegment } from '@cpt/capacity-planning-projection/lib';
 import { Actual, Breakdown } from '@cpt/capacity-planning-projection/lib/variable';
 import { TimesegmentModel } from './timesegment';

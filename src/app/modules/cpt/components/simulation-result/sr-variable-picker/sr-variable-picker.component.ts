@@ -9,6 +9,7 @@ export class SrVariablePickerComponent implements OnInit {
     @Input() simResult;
     @Input() selectedScenarioId;
     @Input() simResultId;
+    @Input() visible = true;
     selectedTab;
 
     ngOnInit() {

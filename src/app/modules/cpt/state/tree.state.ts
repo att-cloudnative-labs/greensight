@@ -623,13 +623,14 @@ export class TreeState {
         return this.treeService
             .getSingleTreeNode(payload)
             .pipe(
-                map((treeNode: TreeNode) => {
-                    ctx.setState(patch<TreeStateModel>({ nodes: updateItem<TreeNode>(tn => tn.id === payload, treeNode) }));
-
-                }),
-                catchError(error =>
-                    of('failed to reload treenode')
-                )
+                tap((treeNode: TreeNode) => {
+                    const curNode = ctx.getState().nodes.find(n => n.id === treeNode.id);
+                    if (curNode) {
+                        ctx.setState(patch<TreeStateModel>({ nodes: updateItem<TreeNode>(tn => tn.id === payload, treeNode) }));
+                    } else {
+                        ctx.setState(patch<TreeStateModel>({ nodes: append<TreeNode>([treeNode]) }));
+                    }
+                })
             );
     }
 
@@ -1171,8 +1172,7 @@ export class TreeState {
                     };
                     break;
                 default:
-                    // Calling `delete processInport.param` does not produce expected UI results.
-                    processInport.param = undefined;
+                    processInport.param = null;
             }
         });
     }
@@ -1405,7 +1405,7 @@ export class TreeState {
     @Action(simulationActions.AddedForecastSheetClicked)
     simulationAddForecastSheetClicked(
         ctx: StateContext<TreeStateModel>,
-        { payload: { simulationId, forecastSheetId, releaseNr } }: simulationActions.AddedForecastSheetClicked
+        { payload: { simulationId, forecastSheetId, releaseNr, label } }: simulationActions.AddedForecastSheetClicked
     ) {
         return this.updateTreeNodeContent(ctx, simulationId, draftNode => {
             const simConf: SimulationConfiguration = draftNode.content;
@@ -1415,7 +1415,8 @@ export class TreeState {
                 objectType: 'FC_SHEET_REF',
                 ref: forecastSheetId,
                 tracking: 'LATEST_RELEASE',
-                releaseNr: releaseNr
+                releaseNr: releaseNr,
+                label: label
             };
             if (!simConf.forecasts) {
                 simConf.forecasts = {};

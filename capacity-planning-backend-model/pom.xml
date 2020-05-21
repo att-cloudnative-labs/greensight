@@ -5,7 +5,7 @@
 
   <groupId>cptl.capacityplanning</groupId>
   <artifactId>modelbackend</artifactId>
-  <version>1.0.47-SNAPSHOT</version>
+  <version>1.0.57-SNAPSHOT</version>
   <name>modelbackend</name>
 
 
@@ -23,10 +23,17 @@
   </developers>
 
   <scm>
-    <connection>scm:git:ssh://git@egbitbucket.dtvops.net:7999/cptl/capacity-planning-backend-model.git</connection>
-    <developerConnection>scm:git:ssh://git@egbitbucket.dtvops.net:7999/cptl/capacity-planning-backend-model.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
+  <distributionManagement>
+    <repository>
+      <id>releases</id>
+    </repository>
+    <snapshotRepository>
+      <id>snapshots</id>
+    </snapshotRepository>
+  </distributionManagement>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <backend.common.version>1.0.54-SNAPSHOT</backend.common.version>
@@ -159,7 +166,24 @@
       <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter</artifactId>
+            <exclusions>
+              <exclusion>
+                <groupId>org.springframework.boot</groupId>
+                  <artifactId>spring-boot-starter-logging</artifactId>
+              </exclusion>
+           </exclusions>
+    </dependency>
+  <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-log4j2</artifactId>
+  </dependency>
   </dependencies>
 
   <build>

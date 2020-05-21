@@ -36,7 +36,7 @@ public class UserGroupServiceImpl implements UserGroupService {
   }
 
   @Override
-  public void addUserGroup(UserGroupDto userGroupDto) {
+  public UserGroupDto addUserGroup(UserGroupDto userGroupDto) {
     if (StringUtils.isBlank(userGroupDto.getUserGroupName())) {
       throw new BadRequestException("User group name must not be left blank.");
     }
@@ -48,7 +48,9 @@ public class UserGroupServiceImpl implements UserGroupService {
     }
     UserGroup userGroup = dtoToModelConverter.convertDtoToUserGroup(userGroupDto);
     if (userGroupDto.getId() == null || !repository.existsById(userGroupDto.getId())) {
-      repository.save(userGroup);
+      UserGroup newGroup = repository.save(userGroup);
+      List<AppUser> usersInGroup = userRepository.findByIdIn(newGroup.getUsers());
+      return modelToDtoConverter.createUserGroupDto(newGroup, usersInGroup);
     } else {
       throw new DocumentExistsException("UserGroup with this ID already exists.");
     }

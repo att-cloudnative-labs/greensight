@@ -38,7 +38,7 @@ public class VariableUnitController {
 
   @GetMapping(value = "/variableUnit/{variableUnitId}", produces = MediaType.APPLICATION_JSON_VALUE)
   @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_READ_ONLY','ROLE_READ_AND_WRITE')")
-  public RestResponse getVatiableUnitById(@PathVariable("variableUnitId") String id) {
+  public RestResponse getVariableUnitById(@PathVariable("variableUnitId") String id) {
     VariableUnit unit = variableUnitService.getVariableUnitById(id);
     return new RestResponse(HttpStatus.OK, unit);
   }
@@ -57,8 +57,8 @@ public class VariableUnitController {
       result.setStatus(HttpStatus.BAD_REQUEST);
       return result;
     }
-    variableUnitService.addVariableUnit(unit);
-    return new RestResponse(HttpStatus.CREATED);
+    VariableUnit newUnit = variableUnitService.addVariableUnit(unit);
+    return new RestResponse(HttpStatus.CREATED, newUnit);
   }
 
   @DeleteMapping(

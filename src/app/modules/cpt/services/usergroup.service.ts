@@ -1,8 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Utils } from '@app/modules/cpt/lib/utils';
-import { User } from '../../login/interfaces/user';
+import { User } from '../interfaces/user';
 import { HttpClient } from '@angular/common/http';
 import { ApiResult } from '@app/modules/cpt/interfaces/api-result';
+import { UserRole } from '@cpt/interfaces/role';
+import { UserGroup } from '@cpt/interfaces/user-group';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 
 
@@ -19,19 +23,19 @@ export class UserGroupService {
 
     }
 
-    createUsergroup(userGroupName: String, usersWithAccess: Array<User>, roleId: String) {
+    createUsergroup(userGroupName: String, usersWithAccess: Array<User>, roleId: UserRole): Observable<UserGroup> {
         const url = Utils.createUrl(Utils.routeUserGroup);
         const body = { userGroupName: userGroupName, usersWithAccess: usersWithAccess, roleId: roleId };
 
         return this.http
-            .post<ApiResult<any>>(url, body, Utils.httpOptions);
+            .post<ApiResult<UserGroup>>(url, body, Utils.httpOptions).pipe(map(ugResult => ugResult.data));
     }
 
     updateUsergroup(id: String, userGroupName: String, usersWithAccess: Array<User>, roleId: String) {
         const url = Utils.createUrl(Utils.routeUserGroup) + '/' + id;
-        const body = { id: id, userGroupName: userGroupName, usersWithAccess: usersWithAccess, roleId: roleId };
+        const body = { id: id, userGroupName: userGroupName, usersWithAccess: usersWithAccess ? usersWithAccess : [], roleId: roleId };
         return this.http
-            .put<ApiResult<any>>(url, body, Utils.httpOptions)
+            .put<ApiResult<any>>(url, body, Utils.httpOptions);
     }
     getDetails(id: String) {
         const url = Utils.createUrl(Utils.routeUserGroup) + '/' + id;

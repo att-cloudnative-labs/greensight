@@ -9,6 +9,7 @@ import { PermissionsObject } from '@app/modules/cpt/interfaces/permissions';
 import { TreeState } from '@app/modules/cpt/state/tree.state';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { Utils } from '@cpt/lib/utils';
 
 
 @Component({
@@ -59,7 +60,9 @@ export class LibraryForecastSheetPopupMenuComponent implements OnInit, OnDestroy
         this.closePopup.emit();
     }
 
-    onDuplicateForecastSheet() {
+    onCopyLink() {
+        Utils.copyNodeUrlToClipboard(this.sheet.id);
+        this.closePopup.emit();
     }
 
     onMoveForecastSheet() {

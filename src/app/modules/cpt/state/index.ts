@@ -13,6 +13,8 @@ import { ReleaseState } from './release.state';
 import { TreeNodeTrackingState } from '@cpt/state/tree-node-tracking.state';
 import { ApplicationState } from '@cpt/state/application.state';
 import { GraphModelInterfaceState } from '@cpt/state/graph-model-interface.state';
+import { SettingsState } from '@cpt/state/settings.state';
+import { VariableUnitState } from '@cpt/state/variable-unit.state';
 
 export const states = [
     ForecastValuesState,
@@ -29,5 +31,7 @@ export const states = [
     ReleaseState,
     TreeNodeTrackingState,
     ApplicationState,
-    GraphModelInterfaceState
+    GraphModelInterfaceState,
+    SettingsState,
+    VariableUnitState
 ];

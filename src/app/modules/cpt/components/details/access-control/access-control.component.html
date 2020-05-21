@@ -9,7 +9,7 @@
         <label data-testid="acl-advanced" for=advanced> Advanced</label>
     </div>
     <div *ngIf="this.accessType === 'ADVANCED'" class="advanced-acl">
-        <table>
+        <table data-testid="acl-table">
             <th>User or Group</th>
             <th>Access</th>
             <th class="close-button-column"></th>
@@ -44,7 +44,7 @@
                 <td class="close-button-column"><span (click)="removeAccessRow(accessControl)"><i class="fas fa-trash-alt close-button"></i></span></td>
             </tr>
             <tr>
-                <td class="add-acl-entry" (click)="addAccessControlRow()">
+                <td data-testid="add access" class="add-acl-entry" (click)="addAccessControlRow()">
                     Click to add
                 </td>
                 <td>

@@ -1,9 +1,14 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Utils } from '@cpt/lib/utils';
 import { getMonths } from '@cpt/capacity-planning-projection/lib/date';
 import { DistributionType } from '@cpt/capacity-planning-projection/lib/distribution';
 import { PercentileResult } from '@app/modules/cpt/interfaces/PercentileResult';
 import { EChartOption } from 'echarts';
+import { Select, Store } from '@ngxs/store';
+import { SettingsState } from '@cpt/state/settings.state';
+import { untilDestroyed } from 'ngx-take-until-destroy';
+import { UserSettings } from '@cpt/interfaces/user-settings';
+import { ForecastVariableProjection } from '@cpt/interfaces/forecastVariableProjections';
 
 
 @Component({
@@ -11,8 +16,8 @@ import { EChartOption } from 'echarts';
     templateUrl: './forecast.graph.component.html',
     styleUrls: ['./forecast.graph.component.css']
 })
-export class ForecastGraphComponent implements OnInit {
-    @Input('uiProjections') uiProjections;
+export class ForecastGraphComponent implements OnInit, OnDestroy {
+    @Input('uiProjections') uiProjections: ForecastVariableProjection[];
     @Input('startDate') startDate: string;
     @Input('endDate') endDate: string;
 
@@ -22,22 +27,27 @@ export class ForecastGraphComponent implements OnInit {
     chartSeries: EChartOption.SeriesLine[] = [];
     // Hide the graph while the sidebar is being expanded/collapsed
     hide = false;
-    settings;
-    comma;
+    settings: UserSettings;
     chartOptions: EChartOption;
     echartsInstance;
 
 
-    constructor() { }
+    constructor(private store: Store) { }
 
 
     ngOnInit() {
-        this.settings = Utils.getCurrentUserSettings();
-        this.comma = this.settings.COMMA_CHECK === 'true' ? ',' : '';
+        this.settings = this.store.selectSnapshot(SettingsState.userSettings);
+
+        this.store.select(SettingsState.userSettings).pipe(untilDestroyed(this)).subscribe(s => {
+            this.settings = s;
+        });
         if (this.uiProjections.length !== 0) {
             console.log('Generating graph');
             this.updateChartData();
         }
+    }
+
+    ngOnDestroy(): void {
     }
 
     updateProjections(uiProjections, startDate, endDate) {
@@ -84,6 +94,16 @@ export class ForecastGraphComponent implements OnInit {
 
         for (let index = 0; index < this.uiProjections.length; index++) {
             const projection = this.uiProjections[index];
+            const format = (n: number) => {
+                let decimals = 0;
+                const variableType = projection.variable.variableType;
+                if (variableType === 'BREAKDOWN') {
+                    decimals = this.settings.BREAKDOWN_DECIMAL;
+                } else if (variableType === 'REAL') {
+                    decimals = this.settings.VARIABLE_DECIMAL;
+                }
+                return parseFloat((n.toFixed(decimals)));
+            };
             if (projection.display) {
                 const dataValues = [];
                 let x_Index = 0;
@@ -96,12 +116,12 @@ export class ForecastGraphComponent implements OnInit {
 
 
                     if (frame.actualValue !== undefined) {
-                        dataValues.push({ x: x_Index, y: frame.actualValue });
+                        dataValues.push({ x: x_Index, y: format(frame.actualValue) });
                         x_Index = x_Index + 1;
                         continue;
                     }
                     if (frame.projectedValue !== undefined) {
-                        dataValues.push({ x: x_Index, y: frame.projectedValue });
+                        dataValues.push({ x: x_Index, y: format(frame.projectedValue) });
                         x_Index = x_Index + 1;
 
                     }
@@ -177,7 +197,7 @@ export class ForecastGraphComponent implements OnInit {
     }
 
     plotDistributionLines(projection) {
-        const percentiles = (this.settings.SIGMA || '99,97,95').split(',');
+        const percentiles = this.settings.SIGMA;
 
         for (const percentile of percentiles) {
             const upperValues = [];
@@ -188,7 +208,7 @@ export class ForecastGraphComponent implements OnInit {
                 if (typeof frame.distribution !== 'undefined' && frame.distribution.distributionType === DistributionType.Gaussian) {
                     const mean = frame.projectedValue;
                     const stdValue = frame.distribution.stdDev;
-                    const values = Utils.getPercentiles(mean, stdValue, (parseFloat(percentile) / 100)) as PercentileResult;
+                    const values = Utils.getPercentiles(mean, stdValue, (percentile / 100)) as PercentileResult;
 
                     upperValues.push({ x: x_Index, y: values.upper });
                     lowerValues.push({ x: x_Index, y: values.lower });

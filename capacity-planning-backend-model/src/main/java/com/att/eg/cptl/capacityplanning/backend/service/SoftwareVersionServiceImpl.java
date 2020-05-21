@@ -38,7 +38,6 @@ public class SoftwareVersionServiceImpl implements SoftwareVersionService {
     if (in != null) {
       Model model = reader.read(in);
 
-      versionInfo.setSoftwareVersion(model.getId());
       versionInfo.setGroupId(model.getGroupId());
       versionInfo.setArtifactId(model.getArtifactId());
       versionInfo.setVersion(model.getVersion());

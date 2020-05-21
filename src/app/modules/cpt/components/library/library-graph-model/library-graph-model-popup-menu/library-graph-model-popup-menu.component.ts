@@ -61,7 +61,9 @@ export class LibraryGraphModelPopupMenuComponent implements OnInit, OnDestroy {
         this.closePopup.emit();
     }
 
-    onDuplicateModel() {
+    onCopyLink() {
+        Utils.copyNodeUrlToClipboard(this.graphModel.id);
+        this.closePopup.emit();
     }
 
     onMoveModel() {

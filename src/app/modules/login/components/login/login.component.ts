@@ -1,8 +1,10 @@
 import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
-import { UserService } from '../../services/user.service';
+import { UserService } from '@cpt/services/user.service';
 import { Modal } from 'ngx-modialog-7/plugins/bootstrap';
-import { Utils } from '../../../cpt/lib/utils';
+import { LoaderService } from '../../services/loader.service';
+import { AuthService } from '@login/services/auth.service';
+import { log } from 'util';
 
 @Component({
     selector: 'login',
@@ -16,8 +18,9 @@ export class LoginComponent implements OnInit {
 
     constructor(
         private modal: Modal,
-        private userService: UserService,
-        private router: Router) { }
+        private authService: AuthService,
+        private router: Router,
+        private loader: LoaderService) { }
 
     ngOnInit() { }
 
@@ -33,22 +36,13 @@ export class LoginComponent implements OnInit {
                 .body('Please enter password')
                 .open();
         } else {
-            this.userService
+            // the loader will be hidden on error or when the application loaded
+            this.loader.show();
+            this.authService
                 .authenticateUser(this.userName, this.password)
-                .subscribe(result => {
-                    this.userService
-                        .getUserByName(this.userName)
-                        .subscribe(result => {
-                            sessionStorage['user_id'] = result.data.id;
-                            sessionStorage['user_name'] = result.data.username;
-                            sessionStorage['role_id'] = result.data.role;
-                            sessionStorage['user_auth_status'] = '1';
-                            sessionStorage['current_user_settings'] = JSON.stringify(result.data.settings);
-
-                            this.router.navigate(['capacity-planning']);
-                        });
-                },
+                .subscribe(loginSuccessful => { },
                     error => {
+                        this.loader.hide();
                         this.modal.alert()
                             .title('Login Failed')
                             .body(error.error.errorMessage)

@@ -1,5 +1,6 @@
 <ul *appHasPermission="readPermissionsObj">
     <li (click)="onOpenModel()">Open</li>
+    <li (click)="onCopyLink()">Copy Link</li>
     <hr>
     <li *appHasPermission="modifyPermissionsObj" (click)="onRenameModel()">Rename</li>
      <li (click)="onCopySimConfig()">Copy</li>

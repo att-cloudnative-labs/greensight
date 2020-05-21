@@ -12,9 +12,17 @@ import * as libraryActions from '@app/modules/cpt/state/library.actions';
 export class SearchFilterComponent implements OnInit {
     @Select(LibraryState.searchString) searchString$: Observable<string>;
 
+    searchTerm = '';
     constructor(private store: Store) { }
 
     ngOnInit() {
+        // this resets the search input field when the search string
+        // in the library states gets reset by a third party
+        this.searchString$.subscribe(librarSearchString => {
+            if (librarSearchString.trim().length < 1) {
+                this.searchTerm = '';
+            }
+        });
 
     }
 

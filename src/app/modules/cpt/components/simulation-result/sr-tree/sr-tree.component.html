@@ -4,10 +4,12 @@
     appDragItem
     (appDragStarted)="handleDragStarted(node)"
     [appDragItemData]="selection"
-    [result]="node.result"
+    [simulationNode]="node.result"
     [expandable]="node.expandable"
     [expanded]="node.expanded"
     [level]="node.level"
+    [warning]="node.warning"
+    [childWarning]="node.childWarning"
     [style.display]="shouldRender(node) ? 'flex' : 'none'"
     (expanderClick)="handleExpanderClick($event, node)"
     (click)="handleNodeClick($event, node)"

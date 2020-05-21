@@ -14,6 +14,9 @@ import { SimulationResultComponent } from '@cpt/components/simulation-result/sim
 import { ForecastEditorComponent } from '@cpt/components/forecast-sheet-editor/forecast.editor.component';
 import { VersionEditorComponent } from '@cpt/components/history/version-editor/version.editor.component';
 import { ReleaseEditorComponent } from '@cpt/components/history/release-editor/release.editor.component';
+import { SettingsEditorComponent } from '@cpt/components/settings/settings-editor-component';
+import { UserEditorComponent } from '@cpt/components/user-editor/user-editor.component';
+import { UserGroupEditorComponent } from '@cpt/components/user-group-editor/user-group-editor.component';
 
 
 /*
@@ -30,5 +33,8 @@ export const dockableComponentsMap = {
     'TrashComponent': TrashComponent,
     'ForecastEditorComponent': ForecastEditorComponent,
     'VersionEditorComponent': VersionEditorComponent,
-    'ReleaseEditorComponent': ReleaseEditorComponent
+    'ReleaseEditorComponent': ReleaseEditorComponent,
+    'SettingsEditorComponent': SettingsEditorComponent,
+    'UserEditorComponent': UserEditorComponent,
+    'UserGroupEditorComponent': UserGroupEditorComponent
 };

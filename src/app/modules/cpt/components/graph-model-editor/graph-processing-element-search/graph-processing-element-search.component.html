@@ -5,12 +5,13 @@
         (focusout)="closeSearch()"
         (keydown)="navigateList($event)"
         (keyup)="searchList($event)">
-    <div class="result-list" *ngIf="showSearchResults"
+    <div #graphSearchResults class="result-list" *ngIf="showSearchResults"
         appTether
         [appTetherTarget]="graphSearch"
         [appTetherTargetAttachment]="'bottom left'"
         [appTetherAttachment]="'top left'"
-        [appTetherOffset]="'0px 0px'">
+        [appTetherOffset]="'0px 0px'"
+    >
 
         <div *ngIf="!combinedResultCount" class="no-results">
             No results
@@ -26,8 +27,8 @@
                 [disabled]="false"
                 (resultSelected)="onSelectResult($event)">
             </li>
-            <li *ngIf="displayShowAllPEs" class="inline-header inline-button" (click)="showAllPEs()">Show All PEs</li>
-            <li *ngIf="!displayShowAllPEs" class="inline-header inline-button" (click)="showImportantPEs()">Show Important PEs</li>
+            <li *ngIf="displayShowAllPEs"><button class="btn inline-header inline-button" (click)="showAllPEs()" (focusin)="searchListFocus($event)">Show All PEs</button></li>
+            <li *ngIf="displayShowImportantPEs"><button class="btn inline-header inline-button" (click)="showImportantPEs()" (focusin)="searchListFocus($event)">Only show Important PEs</button></li>
 
             <li *ngIf="siblingSearchResults.length" class="inline-header">This Folder's Models</li>
             <li *ngFor="let result of siblingSearchResults"
@@ -47,7 +48,8 @@
                 [disabled]="result.disabled"
                 (resultSelected)="onSelectResult($event)">
             </li>
+
             <li *ngIf="searchResults.length === 0 && hasMorePages" class="inline-header">...</li>
-            <li *ngIf="hasMorePages" (click)="addPage()" class="inline-header inline-button">Show More</li>
+            <li *ngIf="hasMorePages"><button class="btn inline-header inline-button" (click)="addPage()" (focusin)="searchListFocus($event)">Show More</button></li>
         </ul>
     </div>

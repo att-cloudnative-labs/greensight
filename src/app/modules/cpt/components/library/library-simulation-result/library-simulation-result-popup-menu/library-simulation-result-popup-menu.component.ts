@@ -5,6 +5,7 @@ import * as treeActions from '@app/modules/cpt/state/tree.actions';
 import { Store, Actions, ofActionSuccessful } from '@ngxs/store';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import { PermissionsObject } from '@app/modules/cpt/interfaces/permissions';
+import { Utils } from '@cpt/lib/utils';
 
 
 @Component({
@@ -52,14 +53,11 @@ export class LibrarySimulationResultPopupMenuComponent implements OnInit, OnDest
         this.closePopup.emit();
     }
 
-    onDuplicateModel() {
+    onCopyLink() {
+        Utils.copyNodeUrlToClipboard(this.simulationResult.id);
+        this.closePopup.emit();
     }
 
-    onMoveModel() {
-    }
-
-    onCopyModel() {
-    }
 
     onTrashModel() {
         this.store.dispatch(new libraryActions.SimulationResultSendToTrashClicked(this.simulationResult));

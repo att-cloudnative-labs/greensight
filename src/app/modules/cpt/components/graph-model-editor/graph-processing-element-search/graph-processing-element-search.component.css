@@ -38,7 +38,13 @@ li {
     cursor: default;
 }
 
+.inline-button{
+    border-radius: 0;
+    width: 100%;
+}
+
 .inline-button:hover {
-    background-color:lightgray;
     cursor: pointer;
+    background-color:lightgray;
+
 }

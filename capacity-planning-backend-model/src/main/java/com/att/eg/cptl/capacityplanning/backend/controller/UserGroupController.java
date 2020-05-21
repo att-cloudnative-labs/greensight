@@ -26,8 +26,8 @@ public class UserGroupController {
   @PostMapping("/userGroup")
   @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
   public RestResponse addUserGroup(@RequestBody UserGroupDto userGroupDto) {
-    userGroupService.addUserGroup(userGroupDto);
-    return new RestResponse(HttpStatus.CREATED);
+    UserGroupDto newUserGroup = userGroupService.addUserGroup(userGroupDto);
+    return new RestResponse(HttpStatus.CREATED, newUserGroup);
   }
 
   @PutMapping("/userGroup/{userGroupId}")

@@ -1,5 +1,7 @@
 package com.att.eg.cptl.capacityplanning.backend.controller;
 
+import static com.att.eg.cptl.capacityplanning.backend.util.IncomingRequestUtils.getTokenFromRequest;
+
 import com.att.eg.cptl.capacityplanning.backend.controller.util.RestResponseUtil;
 import com.att.eg.cptl.capacityplanning.backend.dto.AppUserDto;
 import com.att.eg.cptl.capacityplanning.backend.dto.AppUserInputDto;
@@ -9,10 +11,12 @@ import com.att.eg.cptl.capacityplanning.backend.exception.UnauthorizedException;
 import com.att.eg.cptl.capacityplanning.backend.model.AppUser;
 import com.att.eg.cptl.capacityplanning.backend.model.converter.ModelToDtoConverter;
 import com.att.eg.cptl.capacityplanning.backend.rest.RestResponse;
+import com.att.eg.cptl.capacityplanning.backend.service.UserAuthenticationService;
 import com.att.eg.cptl.capacityplanning.backend.service.UserService;
 import com.att.eg.cptl.capacityplanning.backend.util.AuthorizationUtil;
 import com.att.eg.cptl.capacityplanning.backend.util.MiscUtil;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +35,8 @@ public class UserController {
   @Resource private AuthorizationUtil authorizationUtil;
 
   @Resource private ModelToDtoConverter modelToDtoConverter;
+
+  @Autowired private UserAuthenticationService userAuthenticationService;
 
   @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_READ_ONLY','ROLE_READ_AND_WRITE')")
   @GetMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -64,8 +70,10 @@ public class UserController {
   @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
   @PostMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
   public RestResponse addUser(@RequestBody AppUserInputDto appUserInputDto) {
-    userService.addUser(appUserInputDto);
-    return new RestResponse(HttpStatus.CREATED);
+    AppUser newUser = userService.addUser(appUserInputDto);
+    AppUserDto newUserDto = modelToDtoConverter.convertAppUserToOutputDto(newUser);
+
+    return new RestResponse(HttpStatus.CREATED, newUserDto);
   }
 
   @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_READ_AND_WRITE','ROLE_READ_ONLY')")
@@ -87,9 +95,16 @@ public class UserController {
 
   @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
   @DeleteMapping(value = "/user/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public RestResponse deleteUser(@PathVariable("userId") String userId) {
-    userService.deleteUser(userId);
-    return new RestResponse(HttpStatus.OK);
+  public ResponseEntity<RestResponse> deleteUser(
+      HttpServletRequest request, @PathVariable("userId") String userId) {
+    String token = getTokenFromRequest(request);
+    Optional<AppUser> optionalUser = userAuthenticationService.findUserByToken(token);
+    if (!optionalUser.isPresent()) {
+      return RestResponseUtil.createResponse(HttpStatus.UNAUTHORIZED);
+    }
+    AppUser user = optionalUser.get();
+    userService.deleteUser(userId, user);
+    return RestResponseUtil.createResponse(HttpStatus.OK);
   }
 
   @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_READ_ONLY','ROLE_READ_AND_WRITE')")
@@ -101,7 +116,7 @@ public class UserController {
   }
 
   @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_READ_ONLY','ROLE_READ_AND_WRITE')")
-  @PostMapping(value = "/user/{userId}/setting", produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/user/{userId}/settings", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<RestResponse> addSetting(
       HttpServletRequest request, @PathVariable String userId, @RequestBody SettingDto setting) {
     final String token = MiscUtil.getTokenFromRequest(request);

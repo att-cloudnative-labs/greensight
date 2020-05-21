@@ -5,7 +5,7 @@
            (blur)="searchBlurred()"
            [placeholder]="placeholder"
     />
-<div *ngIf="showSearch" class="search-display"
+<div #liveSearchResultField *ngIf="showSearch" class="search-display"
     appTether
     [appTetherTarget]="liveSearchField"
     [appTetherTargetAttachment]="'bottom left'"
@@ -31,7 +31,8 @@
                 (resultSelected)="onSelectResult($event)">
             </li>
             <li *ngIf="searchResults.length === 0 && hasMorePages" class="inline-header">...</li>
-            <li *ngIf="hasMorePages" (click)="addPage()" class="inline-header inline-button">Show More</li>
+            <li data-testid="show-more" *ngIf="hasMorePages"><button class="btn inline-header inline-button" (click)="addPage()" (focusin)="cancelClose()">Show More</button></li>
+
         </ul>
 
     </div>

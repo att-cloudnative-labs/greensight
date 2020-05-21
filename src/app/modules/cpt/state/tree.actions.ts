@@ -30,7 +30,6 @@ export class ReloadSingleTreeNode {
     constructor(public readonly payload: string) { }
 }
 
-
 export class GetTreeNode {
     static readonly type = '[Tree] Get Tree Node';
     constructor(public readonly payload: string) { }

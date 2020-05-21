@@ -5,15 +5,19 @@
 </ng-container>
 
 <div class="level">
-    <i class="icon fa {{ICONS[result.type]}}"></i>
+    <i class="icon fa {{ICONS[simulationNode.type]}}"></i>
 </div>
 
-<div class="name" [title]="result.name">
-    {{result.name}}
+
+<div class="name" [title]="simulationNode.name">
+    {{simulationNode.name}}
+</div>
+<div *ngIf="warning || childWarning">
+    <i class="fa fa-exclamation-triangle" [title]="warningDesc" [ngClass]="{'child-warning': !warning && childWarning }" ></i>
 </div>
 
 <ng-template #expander>
-    <button class="expander-button" (click)="handleExpanderClick($event)">
+    <button data-testid="expand-treenode" class="expander-button" (click)="handleExpanderClick($event)">
         <i class="fa fa-angle-down" *ngIf="expanded"></i>
         <i class="fa fa-angle-right" *ngIf="!expanded"></i>
     </button>

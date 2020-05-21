@@ -1,8 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartOption } from 'echarts';
-import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
 import { ResultNodeDataSet } from '@cpt/components/simulation-result/sr-visualization/sr-visualization.component';
-import { AspectNumberParam } from '@cpt/capacity-planning-simulation-types/lib';
+import { NumberParam } from '@cpt/capacity-planning-simulation-types/lib';
 
 @Component({
     selector: 'app-srs-viz-breakdown-chart',
@@ -17,7 +16,7 @@ export class SimulationResultBreakdownChartComponent implements OnChanges {
     constructor() { }
 
     ngOnChanges() {
-        const monthData = this.dataSet.mainData[this.dataSet.date] as AspectNumberParam;
+        const monthData = this.dataSet.mainData[this.dataSet.date] as NumberParam;
         const aspect = monthData.aspects.find(aspect => aspect.name === this.dataSet.title);
         const slices = aspect.slices;
         const chartLegend = [];

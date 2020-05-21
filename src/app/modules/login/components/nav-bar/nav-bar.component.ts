@@ -1,27 +1,45 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Utils } from '@app/modules/cpt/lib/utils';
-import { Router } from '@angular/router';
 import { Modal } from 'ngx-modialog-7/plugins/bootstrap';
-import { environment } from '@environments/environment';
+import { Select, Store } from '@ngxs/store';
+import { SettingsButtonClicked } from '@cpt/state/settings.actions';
+import { UsersState } from '@cpt/state/users.state';
+import { combineLatest, Observable, Subject } from 'rxjs';
+import { UserEditorButtonClicked, UserGroupEditorButtonClicked } from '@cpt/state/users.actions';
+import { SettingsState } from '@cpt/state/settings.state';
+import { untilDestroyed } from 'ngx-take-until-destroy';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'app-nav-bar',
     templateUrl: './nav-bar.component.html',
     styleUrls: ['./nav-bar.component.css']
 })
-export class NavBarComponent implements OnInit {
+export class NavBarComponent implements OnInit, OnDestroy {
     userName = Utils.getUserName();
 
+    @Select(UsersState.currentUserIsAdmin) currentUserIsAdmin$: Observable<boolean>;
+    @Select(SettingsState.authMode) authMode$: Observable<'LOCAL' | 'LDAP'>;
+
+    showUserEditorPanels$: Observable<boolean>;
+
     constructor(
-        private modal: Modal,
-        private router: Router
+        private modal: Modal, private store: Store
     ) { }
 
     @Input('hideNavLinks') hideNavIcons: Boolean = false;
     @Input('isLoginPage') isLoginPage: Boolean = false;
 
-    showSystemModel: Boolean = environment.showSystemModel;
     ngOnInit() {
+        this.showUserEditorPanels$ = combineLatest([this.currentUserIsAdmin$, this.authMode$]).pipe(
+            untilDestroyed(this),
+            map(
+                c => c[0] && c[1] === 'LOCAL'
+            ));
+
+    }
+
+    ngOnDestroy(): void {
     }
 
     logout(event) {
@@ -40,7 +58,15 @@ export class NavBarComponent implements OnInit {
         });
     }
 
-    navigate(destination) {
-        this.router.navigate([destination]);
+    openSettings() {
+        this.store.dispatch(new SettingsButtonClicked());
+    }
+
+    openUserEditor() {
+        this.store.dispatch(new UserEditorButtonClicked());
+    }
+
+    openUserGroupEditor() {
+        this.store.dispatch(new UserGroupEditorButtonClicked());
     }
 }

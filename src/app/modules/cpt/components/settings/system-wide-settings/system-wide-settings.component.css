@@ -1,0 +1,14 @@
+.unitList {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.addUnitButton {
+    border-width: 0;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius:4px;
+    color: white;
+    background: #418bca;
+    margin-left: 10px;
+}

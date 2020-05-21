@@ -1,0 +1,40 @@
+:host {
+    flex: 1;
+    display: flex;
+    position: relative;
+    padding: 0;
+    background: #404040;
+    overflow-y: auto;
+}
+
+.editor-panel {
+    width: 100%;
+}
+.addGroupIcon {
+    margin: 10px;
+}
+.addGroupPanel {
+    display: flex;
+    align-items: flex-start;
+}
+
+.addGroupPanel:hover {
+    background: #383838;
+}
+
+.addGroupEntry {
+    margin: 10px;
+}
+
+input {
+    background-color: #272727;
+    padding: 5px 9px;
+    font-size: 14px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 4px;
+    color: white;
+    margin-right: 5px;
+}
+

@@ -1,0 +1,13 @@
+<div class="editor-panel" data-testid="editor">
+    <div class="addGroupPanel">
+        <i class="fa fa-user-plus addGroupIcon"></i>
+        <div class="addGroupEntry">
+            <p>Add New User Group</p>
+            <div data-testid="usergroupname"><input [(ngModel)]="newGroupName" placeholder="Group Name" > <button class="btn btn-primary" (click)="createGroup()" [disabled]="isIllegalGroupName">Create</button></div>
+        </div>
+    </div>
+    <user-group-list-entry
+        *ngFor="let u of usergroups$ | async"
+        [userGroup]="u"
+    ></user-group-list-entry>
+</div>

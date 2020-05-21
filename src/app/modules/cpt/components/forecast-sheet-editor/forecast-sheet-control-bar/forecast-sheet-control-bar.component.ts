@@ -24,8 +24,11 @@ export class ForecastSheetControlBarComponent implements OnInit {
     @ViewChild('endDateFc', { static: false }) endDatePickerDirective: DatePickerDirective;
     @ViewChild('startDateFc', { static: false }) startDatePickerDirective: DatePickerDirective;
 
-
-    datePickerConfig = { format: Utils.getDateFormat() };
+    datePickerConfig = {
+        format: Utils.getDateFormat(),
+        max: unix(new Date().getTime() / 1000).add(10, 'years'),
+        min: unix(new Date().getTime() / 1000).add(-3, 'years')
+    };
 
     startDate: Moment;
     endDate: Moment;

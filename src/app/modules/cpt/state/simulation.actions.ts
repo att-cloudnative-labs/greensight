@@ -1,5 +1,6 @@
 import { ProcessInterfaceDescription } from '@cpt/capacity-planning-simulation-types/lib';
 import { TreeNodeReferenceTracking } from '@cpt/interfaces/tree-node-tracking';
+import { HttpErrorResponse } from '@angular/common/http';
 
 export class MonteCarloUpdated {
     static readonly type = '[Simulation] Monte Carlo Updated';
@@ -68,6 +69,11 @@ export class SimulationResultCreated {
     constructor(public readonly payload: any) { }
 }
 
+export class SimulationResultCreationFailed {
+    static readonly type = '[Simulation] Simulation Result Creation Failed';
+    constructor(public readonly payload: { simulationId: string, error: HttpErrorResponse }) { }
+}
+
 export class AddScenarioButtonClicked {
     static readonly type = '[Simulation] Add Simulation Scenario Button clicked';
     constructor(public readonly payload: {
@@ -98,7 +104,8 @@ export class AddedForecastSheetClicked {
     constructor(public readonly payload: {
         simulationId: string,
         forecastSheetId: string,
-        releaseNr: number
+        releaseNr: number,
+        label: string
     }) { }
 }
 

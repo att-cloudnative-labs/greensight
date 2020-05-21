@@ -3,6 +3,7 @@ package com.att.eg.cptl.capacityplanning.backend.controller;
 import com.att.eg.cptl.capacityplanning.backend.model.SoftwareVersionInfo;
 import com.att.eg.cptl.capacityplanning.backend.rest.RestResponse;
 import com.att.eg.cptl.capacityplanning.backend.service.SoftwareVersionService;
+import com.att.eg.cptl.capacityplanning.backend.service.UserService;
 import java.io.IOException;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class SoftwareVersionController {
 
   @Autowired private SoftwareVersionService softwareVersionService;
+  @Autowired private UserService userService;
 
   @GetMapping(value = "/version", produces = MediaType.APPLICATION_JSON_VALUE)
   public RestResponse getModelVersion() throws IOException, XmlPullParserException {
 
     SoftwareVersionInfo versionInfo = softwareVersionService.getModelVersionInfo();
+    String authMode = userService.usesLdap() ? "LDAP" : "LOCAL";
+    versionInfo.setAuthMode(authMode);
     return new RestResponse(HttpStatus.OK, versionInfo);
   }
 }

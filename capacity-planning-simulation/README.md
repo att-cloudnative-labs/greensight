@@ -38,19 +38,19 @@ run the service locally:
 	* cd capacity-planning-projection
 		** npm i
 		** tsc
-	* cd ../types
+	* cd ../capacity-planning-simulation-types
 		** npm i
 		** tsc
-	* cd ../pe-repository
+	* cd ../capacity-planning-simulation-pe-repository
 		** npm i
 		** tsc
-	* cd ../
+	* cd ../capacity-planning-simulation
 		** npm i
 		** tsc
-	* cd ./node-service
+	* cd ../capacity-planning-simulation-service
 		** npm i
 		** npm run-script build
-		** npm start
+		** node --experimental-worker www.js
 
 
 

@@ -1,5 +1,5 @@
 <input
     placeholder="Search"
-    [value]="searchString$ | async"
+    [(ngModel)]="searchTerm"
     (keyup)="onSearchChange($event)"
 >

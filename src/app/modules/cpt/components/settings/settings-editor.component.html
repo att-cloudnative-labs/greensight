@@ -1,0 +1,17 @@
+<div class="settings-panel">
+
+    <div class="settings-group">
+        <h4>User Settings</h4>
+        <per-user-settings></per-user-settings>
+    </div>
+    <div class="settings-group" *ngIf="currentUserIsAdmin$|async" data-testid="system settings">
+        <h4>System Settings</h4>
+        <system-wide-settings></system-wide-settings>
+    </div>
+    <div class="settings-group">
+        <h4>Software Versions</h4>
+        <version-info></version-info>
+    </div>
+
+</div>
+

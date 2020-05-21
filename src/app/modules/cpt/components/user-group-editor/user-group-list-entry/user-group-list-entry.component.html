@@ -1,0 +1,23 @@
+<div class="viewModeBox">
+    <i class="fa fa-users entryIcon"></i>
+    <p>({{members.length}})</p>
+    <p class="userName">{{userGroup.userGroupName}}</p>
+    <div class="btn-group mr-4">
+        <button type="button" (click)="setRole('READ_ONLY')" class="btn btn-primary" [ngClass]="roleClass('READ_ONLY')" >Read-Only</button>
+        <button type="button" (click)="setRole('READ_AND_WRITE')" class="btn btn-primary" [ngClass]="roleClass('READ_AND_WRITE')" >Read-Write</button>
+        <button type="button" (click)="setRole('ADMIN')" class="btn btn-primary" [ngClass]="roleClass('ADMIN')" >Admin</button>
+    </div>
+    <i class="fa fa-pen entryIcon actionableIcon" title="Edit Group {{userGroup.userGroupName}}" (click)="toggleEditMode()"></i>
+    <i class="fa fa-trash entryIcon actionableIcon" title="Delete Group {{userGroup.userGroupName}}" (click)="deleteGroup()"></i>
+</div>
+<div class="editModeBox" *ngIf="showEditMode">
+    <user-group-member-entry *ngFor="let u of members" [user]="u" [groupId]="userGroup.id"></user-group-member-entry>
+    <div class="addMemberBox" data-testid="add member">
+
+        <select [(ngModel)]="newMemberId" >
+            <option *ngFor="let u of possibleNewMembers" [value]="u.id">{{u.username}}</option>
+        </select>
+        <button class="btn btn-primary" [disabled]="!newMemberId" (click)="addNewMember()">Add Group Member</button>
+    </div>
+</div>
+

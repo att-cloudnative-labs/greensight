@@ -68,6 +68,11 @@ export class ReleaseFetch {
     constructor(public readonly payload: { nodeId: string, releaseNr: number }) { }
 }
 
+export class ReleaseFetchGraphModel {
+    static readonly type = '[Release] Fetch GM';
+    constructor(public readonly payload: { nodeId: string, releaseNr: number }) { }
+}
+
 export class ReleaseSelected {
     static readonly type = '[Release] Selected';
     constructor(public readonly payload: { nodeId: string, releaseNr: number }) { }

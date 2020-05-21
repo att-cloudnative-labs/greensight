@@ -22,7 +22,7 @@ import {
 import { ForecastFrame } from '@app/modules/cpt/interfaces/forecast-frame';
 import { ForecastVariableProjection } from '@app/modules/cpt/interfaces/forecastVariableProjections';
 import { ForecastVariable, ForecastVariableModel } from '@app/modules/cpt/interfaces/forecast-variable';
-import { UserService } from '@app/modules/login/services/user.service';
+import { UserService } from '@cpt/services/user.service';
 import { Modal } from 'ngx-modialog-7/plugins/bootstrap';
 import { ForecastGraphComponent } from './forecast-graph/forecast.graph.component';
 import { ForecastVariableTreeNode } from '@app/modules/cpt/interfaces/forecast-variable';
@@ -309,7 +309,7 @@ export class ForecastEditorComponent implements OnInit, OnDestroy, AfterViewInit
     getUnits() {
         this.variableUnitService.getVariableUnits()
             .subscribe(result => {
-                this.units = result.data as Unit[];
+                this.units = result;
             });
     }
 

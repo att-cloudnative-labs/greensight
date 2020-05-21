@@ -17,7 +17,7 @@ admin_user_document = {
     "_class" : "com.att.eg.cptl.capacityplanning.backendcommon.commonmodel.model.AppUser",
     "isLdapUser" : "false",
     "username" : "admin",
-    "password" : "$2a$10$U1A9RmhDRWKjFIrRjXS5Pu7MG9cuYOjMgfZJde1kF4rKgVn6at/Ti",
+    "password" : "$2a$10$YzQ8Csg.hNHbv2nqNk0N5OJYOc8t7iCP1u2oszLjJZXS8o.w.p1q.",
     "role" : "ADMIN",
     "settings" : {
         "BREAKDOWN_DECIMAL" : "1",

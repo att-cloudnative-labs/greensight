@@ -2,7 +2,7 @@
 
 <td class="inport-type">
     <ng-container *ngIf="newInport.type">
-        <select [(ngModel)]="newInport.type" (change)=typeChanged()>
+        <select data-testid="sim-input-type" [(ngModel)]="newInport.type" (change)=typeChanged()>
             <option *ngFor="let type of inportTypes">{{type}}</option>
         </select>
     </ng-container>

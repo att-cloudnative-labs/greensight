@@ -13,6 +13,9 @@ label {
     margin-bottom: 10px;
     width: 100%;
 }
+input {
+    color: white;
+}
 
 select, input[type="text"], input[type="month"] {
     display: block;

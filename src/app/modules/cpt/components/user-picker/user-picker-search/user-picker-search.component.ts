@@ -3,7 +3,7 @@ import { Highlightable } from '@angular/cdk/a11y';
 import { Observable, combineLatest } from 'rxjs';
 import { Select } from '@ngxs/store';
 import { UserGroup } from '@app/modules/cpt/interfaces/user-group';
-import { User } from '@app/modules/login/interfaces/user';
+import { User } from '@cpt/interfaces/user';
 import { UsersState } from '@app/modules/cpt/state/users.state';
 
 @Component({

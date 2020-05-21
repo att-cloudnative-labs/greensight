@@ -134,7 +134,6 @@ import { MatTooltipModule } from '@angular/material';
 import { ForecastSheetControlBarComponent } from './components/forecast-sheet-editor/forecast-sheet-control-bar/forecast-sheet-control-bar.component';
 import { VersionEditorComponent } from '@app/modules/cpt/components/history/version-editor/version.editor.component';
 import { ReleaseEditorComponent } from '@app/modules/cpt/components/history/release-editor/release.editor.component';
-import { SettingsComponent } from '@app/modules/cpt/components/settings/settings.component';
 import { NavBarComponent } from '@app/modules/login/components/nav-bar/nav-bar.component';
 import { LoginModule } from '@app/modules/login/login.module';
 import { BootstrapModalModule } from 'ngx-modialog-7/plugins/bootstrap';
@@ -152,11 +151,9 @@ import { FormatValuePipe } from '@app/modules/cpt/pipes/formatValuePipe';
 import { FormatValueWithUnitPipe } from '@app/modules/cpt/pipes/formatValueWithUnitPipe';
 import { AutocompleteInputComponent } from '@app/modules/cpt/components/auto-complete-input/autocomplete.input.component';
 import { CompletedWordComponent } from '@app/modules/cpt/components/auto-complete-input/completedword.component';
-import { UsergroupsComponent } from '@app/modules/cpt/components/usergroups/usergroups.component';
-import { UsersComponent } from '@app/modules/cpt/components/users/users.component';
 import { ChangeDetectionService } from '@app/modules/cpt/services/change.detection.service';
 import { ReleaseService } from '@app/modules/cpt/services/release.service';
-import { VersionService } from '@app/modules/cpt/services/micro-service-versions.service';
+import { VersionService } from '@cpt/services/software-versions.service';
 import { ExpressionCreatorService } from '@app/modules/cpt/services/expression-creator.service';
 import { TreeService } from '@app/modules/cpt/services/tree.service';
 import { UserGroupService } from '@app/modules/cpt/services/usergroup.service';
@@ -173,6 +170,18 @@ import { SimulationForecastSheetEntryComponent } from '@cpt/components/simulatio
 import { NodeReleaseSelectorComponent } from '@cpt/components/node-release-selector/node-release-selector.component';
 import { ForecastSearchBoxComponent } from '@cpt/components/simulation-editor/forecast-search-box/forecast-search-box.component';
 import { ForecastSearchListEntryComponent } from '@cpt/components/simulation-editor/forecast-search-box/entry/forecast-search-list-entry.component';
+import { SettingsEditorComponent } from '@cpt/components/settings/settings-editor-component';
+import { PerUserSettingsComponent } from '@cpt/components/settings/per-user-settings/per-user-settings.component';
+import { VersionInfoComponent } from '@cpt/components/settings/version-info/version-info.component';
+import { SystemWideSettingsComponent } from '@cpt/components/settings/system-wide-settings/system-wide-settings.component';
+import { VariableUnitEntryComponent } from '@cpt/components/settings/system-wide-settings/variable-unit-entry/variable-unit-entry.component';
+import { UserEditorComponent } from '@cpt/components/user-editor/user-editor.component';
+import { UserGroupEditorComponent } from '@cpt/components/user-group-editor/user-group-editor.component';
+import { UserListEntryComponent } from '@cpt/components/user-editor/user-list-entry/user-list-entry.component';
+import { UserGroupListEntryComponent } from '@cpt/components/user-group-editor/user-group-list-entry/user-group-list-entry.component';
+import { UserGroupMemberEntryComponent } from '@cpt/components/user-group-editor/user-group-member-entry/user-group-member-entry.component';
+import { UserService } from '@cpt/services/user.service';
+import { SrRuntimeMessageComponent } from '@cpt/components/simulation-result/sr-runtime-message/sr-runtime-message.component';
 
 @NgModule({
     imports: [
@@ -309,7 +318,6 @@ import { ForecastSearchListEntryComponent } from '@cpt/components/simulation-edi
         ForecastSheetControlBarComponent,
         VersionEditorComponent,
         ReleaseEditorComponent,
-        SettingsComponent,
         TetherDirective,
         DraggableDirective,
         HasPermissionDirective,
@@ -324,9 +332,6 @@ import { ForecastSearchListEntryComponent } from '@cpt/components/simulation-edi
         FormatValueWithUnitPipe,
         AutocompleteInputComponent,
         CompletedWordComponent,
-        SettingsComponent,
-        UsergroupsComponent,
-        UsersComponent,
         DrawingToolsHeaderComponent,
         DrawingToolsSidebarComponent,
         TooltipsComponent,
@@ -336,7 +341,18 @@ import { ForecastSearchListEntryComponent } from '@cpt/components/simulation-edi
         SimulationForecastSheetEntryComponent,
         NodeReleaseSelectorComponent,
         ForecastSearchBoxComponent,
-        ForecastSearchListEntryComponent
+        ForecastSearchListEntryComponent,
+        SettingsEditorComponent,
+        PerUserSettingsComponent,
+        VersionInfoComponent,
+        SystemWideSettingsComponent,
+        VariableUnitEntryComponent,
+        UserEditorComponent,
+        UserGroupEditorComponent,
+        UserListEntryComponent,
+        UserGroupListEntryComponent,
+        UserGroupMemberEntryComponent,
+        SrRuntimeMessageComponent
     ],
     providers: [
         ForecastUnitService,
@@ -350,7 +366,8 @@ import { ForecastSearchListEntryComponent } from '@cpt/components/simulation-edi
         UserGroupService,
         VariableUnitService,
         ModalDialogService,
-        SettingsService
+        SettingsService,
+        UserService
     ],
     entryComponents: [
         LibraryComponent,
@@ -399,8 +416,10 @@ import { ForecastSearchListEntryComponent } from '@cpt/components/simulation-edi
         SubframeEditorComponent,
         VersionEditorComponent,
         ReleaseEditorComponent,
-        SettingsComponent,
-        NavBarComponent
+        NavBarComponent,
+        SettingsEditorComponent,
+        UserEditorComponent,
+        UserGroupEditorComponent
     ]
 })
 export class CptModule { }

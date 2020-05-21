@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import { Actions, ofActionDispatched, Store } from '@ngxs/store';
 import * as graphControlBarActions from '@app/modules/cpt/state/graph-control-bar.actions';
 import * as releaseActions from '@cpt/state/release.actions';
@@ -7,6 +7,7 @@ import { LayoutEngineService } from '../services/layout-engine.service';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import { ProcessOption } from '@cpt/interfaces/process-option';
 import { AugmentNewProcessWithPid } from '@cpt/state/graph-model-interface.actions';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'app-graph-control-bar',
@@ -16,6 +17,9 @@ import { AugmentNewProcessWithPid } from '@cpt/state/graph-model-interface.actio
 export class GraphControlBarComponent implements OnInit, OnDestroy {
     @Input() graphModel;
     @Input('releaseNr') releaseNr: number;
+    @Input('visible') visible$: Observable<boolean>;
+    @Output() onCaptureImage = new EventEmitter();
+
     showHelpBox: boolean;
     disableHelpBox: boolean;
 
@@ -37,6 +41,10 @@ export class GraphControlBarComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+    }
+
+    captureImage() {
+        this.onCaptureImage.emit();
     }
 
     onGraphProcessingElementSearchResultSelected(selectedItem: ProcessOption) {

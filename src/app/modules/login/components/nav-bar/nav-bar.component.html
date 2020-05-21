@@ -13,9 +13,13 @@
 
         <ul class="nav navbar-nav ml-auto">
           <li class="nav-item">
-              <form class="form-inline float-left">
-                  <button *ngIf=!isLoginPage class="btn btn-primary" type="button"  [routerLink]="['/capacity-planning/settings']">Settings</button>
-                  <button *ngIf=!isLoginPage href="#" class="logout-button btn btn-info" (click)="logout($event)">Logout {{userName}}</button>
+              <form class="form-inline float-left" data-testid="navBar">
+                  <button *ngIf=!isLoginPage class="btn btn-primary fa fa-cog" type="button"  (click)="openSettings()" title="Open Settings"></button>
+                  <button *ngIf="showUserEditorPanels$ | async" class="btn btn-primary fa fa-user" type="button"  (click)="openUserEditor()" title="Open User Editor"></button>
+                  <button *ngIf="currentUserIsAdmin$ | async" class="btn btn-primary fa fa-users" type="button"  (click)="openUserGroupEditor()"title="Open User Group Editor"></button>
+                  <button *ngIf=!isLoginPage class="logout-button btn btn-info fa fa-sign-out-alt" (click)="logout($event)" title="Logout {{userName}}"></button>
+
+
               </form>
           </li>
         </ul>

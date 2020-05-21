@@ -27,7 +27,7 @@ interface SelectionWObject extends Selection {
 })
 
 export class HistoryComponent implements OnInit, OnDestroy {
-    @Select(HistoryState.nodes) historyNodes$: Observable<TreeNodeVersion[]>;
+    @Select(HistoryState.nodes) historyNodes$: Observable<HistoryItem[]>;
     @Select(HistoryState.combined) history$: Observable<{ v: TreeNodeVersion[], r: TreeNodeRelease[] }>;
     @Select(SelectionState) selection$: Observable<Selection[]>;
     @Select(HistoryState.hasLoaded) historyHasLoaded$: Observable<boolean>;

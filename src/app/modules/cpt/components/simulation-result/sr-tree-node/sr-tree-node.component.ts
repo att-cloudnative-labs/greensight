@@ -1,4 +1,5 @@
 import { Component, OnInit, Input, ViewChild, TemplateRef, Output, EventEmitter } from '@angular/core';
+import { SimulationNode } from '@cpt/capacity-planning-simulation-types';
 
 type Level = 'expander' | 'line' | 'dot';
 
@@ -8,10 +9,12 @@ type Level = 'expander' | 'line' | 'dot';
     styleUrls: ['./sr-tree-node.component.css']
 })
 export class SrTreeNodeComponent implements OnInit {
-    @Input() result: any;
+    @Input() simulationNode: SimulationNode;
     @Input() expanded = false;
     @Input() expandable = false;
     @Input() level = 0;
+    @Input() warning = false;
+    @Input() childWarning = false;
     @Output() expanderClick: EventEmitter<any> = new EventEmitter();
 
     @ViewChild('expander', { static: true }) expander: TemplateRef<any>;
@@ -30,6 +33,14 @@ export class SrTreeNodeComponent implements OnInit {
         'BROADCAST_VARIABLE': 'fa-wifi',
         'NAMED_VARIABLE': 'fa-angle-double-right'
     };
+
+    get warningDesc() {
+        if (this.warning) {
+            const firstWarning = this.simulationNode.warnings[0];
+            return firstWarning.desc || firstWarning.code.toString();
+        }
+        return 'please inspect child nodes';
+    }
 
     constructor() { }
 
