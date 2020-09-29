@@ -74,6 +74,29 @@
                     </td>
                 </tr>
             </ng-container>
+            <ng-container *ngIf="projection.isExpanded && projection.display && projection.subframeNames.length == 0">
+                <tr [class]="'subframe index-'+i" *ngFor="let subframeName of stdDev; let i=index;">
+                    <td class="subframe-row_label-cell" [style.background-color]="projection.color">
+                        <subframe-label-cell
+                                [class]="'subframe index-'+i"
+                                [ngClass]="{'last': i == projection.variable.timeSegments.length -1}"
+                                [label]=" projection.variable.title + ' ' + subframeName"></subframe-label-cell>
+                                <cell-resize-handler [resizeId]="'resize-' + projection.variable.id + 'subframe-'+i" (onColumnResize)="handleColumnResize($event)"></cell-resize-handler>
+                    </td>
+                    <td class="subframe-cell" *ngFor="let frame of projection.frames; let colIndex=index" [ngClass]="{'is-past': frame.isPast}">
+                        <subframe-cell
+                                [ngClass]="{'last': i == projection.variable.timeSegments.length -1}"
+                                [class]="'subframe index-'+i"
+                                [subframe]="getSubFrame(frame, subframeName)"
+                                [subframeName]="subframeName"
+                                [variable]="projection.variable"
+                                [hasTimesegment]="frame.timeSegment && frame.timeSegment.date === frame.date"
+                                [frame]="frame"
+                                [isFrameEditorOpen]="showEdit"
+                        ></subframe-cell>
+                    </td>
+                </tr>
+            </ng-container>
         </ng-container>
 
         <tr class="empty">
@@ -85,52 +108,20 @@
                     ></variable-creator>
                 <cell-resize-handler [resizeId]= "'resize-create-td'" (onColumnResize)="handleColumnResize($event)"></cell-resize-handler>
             </td>
-
             <td *ngFor="let date of projectionKeys">
                 <blank-cell
                         [isPast]="date.isPast"></blank-cell>
             </td>
-
-
         </tr>
-
         <tr *ngFor="let blankLine of blankLineCountTimes; let i =index" class="empty">
             <td>
                 <cell-resize-handler [resizeId]= "'resize-blank-td-'+i" (onColumnResize)="handleColumnResize($event)"></cell-resize-handler>
             </td>
-
             <td *ngFor="let date of projectionKeys">
                 <blank-cell
                     [isPast]="date.isPast"></blank-cell>
             </td>
-
         </tr>
-
         </tbody>
     </table>
-    <a class="btnDeleteConfirmation btn btn-primary hidden" data-toggle="modal" data-target="#delete-warning-modal"></a>
-    <div class="modal-container">
-        <div class="modal" id="delete-warning-modal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button class="header-button btn pull-right" data-dismiss="modal">x</button>
-                        <h3 class="modal-title">Confirmation</h3>
-                    </div>
-
-                    <div class="modal-body">
-                        <h5 class="modal-title">The start of this deletion has already past. Do you want to delete actual value or projected value or both?</h5>
-                    </div>
-                    <br>
-                    <div class="modal-footer">
-                        <div class="pull-right">
-                            <button type="button" class="btn btn-default" data-dismiss="modal" (click)="deleteValue('projected')">Projected</button>
-                            <button type="button" class="btn btn-default" data-dismiss="modal" (click)="deleteValue('actual')">Actual</button>
-                            <button type="button" class="btn btn-danger" data-dismiss="modal" (click)="deleteValue()">Both</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>

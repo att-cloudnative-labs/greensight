@@ -182,6 +182,7 @@ import { UserGroupListEntryComponent } from '@cpt/components/user-group-editor/u
 import { UserGroupMemberEntryComponent } from '@cpt/components/user-group-editor/user-group-member-entry/user-group-member-entry.component';
 import { UserService } from '@cpt/services/user.service';
 import { SrRuntimeMessageComponent } from '@cpt/components/simulation-result/sr-runtime-message/sr-runtime-message.component';
+import { LayoutService } from '@app/modules/cpt/services/layout.service';
 
 @NgModule({
     imports: [
@@ -367,7 +368,8 @@ import { SrRuntimeMessageComponent } from '@cpt/components/simulation-result/sr-
         VariableUnitService,
         ModalDialogService,
         SettingsService,
-        UserService
+        UserService,
+        LayoutService
     ],
     entryComponents: [
         LibraryComponent,

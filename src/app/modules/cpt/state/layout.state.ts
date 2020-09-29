@@ -1,5 +1,5 @@
-import { Store, Select, State, Action, StateContext, Selector } from '@ngxs/store';
-import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
+import { Store, State, Action, StateContext, Selector } from '@ngxs/store';
+import { catchError, map, tap } from 'rxjs/operators';
 import { TreeState } from '@app/modules/cpt/state/tree.state';
 import * as layoutActions from './layout.actions';
 import * as dockableStackActions from './dockable-stack.actions';
@@ -14,10 +14,12 @@ import { ReleaseSelected } from '@cpt/state/release.actions';
 import { TreeNodeTrackingState } from '@cpt/state/tree-node-tracking.state';
 import { SettingsButtonClicked } from '@cpt/state/settings.actions';
 import * as userActions from '@cpt/state/users.actions';
-import { Navigate, RouterNavigation } from '@ngxs/router-plugin';
-import { GetTreeNode, ReloadSingleTreeNode } from './tree.actions';
+import { Navigate } from '@ngxs/router-plugin';
+import { ReloadSingleTreeNode } from './tree.actions';
 import { of } from 'rxjs';
 import { BasicTreeNodeInfo } from '@cpt/interfaces/tree-node';
+import { Utils } from '../lib/utils';
+import { LayoutService } from '@cpt/services/layout.service';
 
 export class LayoutStateModel {
     public content: Split[];
@@ -136,15 +138,18 @@ const defaultLayout = {
     defaults: defaultLayout
 })
 export class LayoutState {
-    constructor(private store: Store) { }
+    constructor(private store: Store, private layoutService: LayoutService ) { }
+    static simResultOpen = false;
 
     @Selector()
     static getContent(state: LayoutStateModel) {
         return state.content;
     }
 
-
-
+    @Selector()
+    static defaultLayout() {
+        return defaultLayout;
+    }
     static findItemById(content: SplitOrStack[], splitId: string): SplitOrStack {
         for (let i = 0; i < content.length; i++) {
             const item = content[i] as SplitOrStack;
@@ -276,6 +281,7 @@ export class LayoutState {
                 case 'SIMULATIONRESULT':
                     wasSelected = stack.selected === 'SimulationResultComponent:nodeId:' + trashNode.id;
                     stack.panels = stack.panels.filter(panel => panel.id !== 'SimulationResultComponent:nodeId:' + trashNode.id);
+                    LayoutState.simResultOpen = false;
                     break;
             }
 
@@ -300,7 +306,37 @@ export class LayoutState {
                 sizes.forEach((size, i) => split.content[i].size = size);
             }
         });
+        this.store.dispatch(new layoutActions.SaveLayout({ ownerId: Utils.getUserName(), content: newState }));
         setState(newState);
+    }
+
+    @Action(layoutActions.SaveLayout)
+    saveLayout(ctx: StateContext<LayoutStateModel>, { payload: { ownerId, content } }: layoutActions.SaveLayout) {
+        // check user's layout
+        this.layoutService.getLayout(sessionStorage['user_name']).subscribe(result => {
+            if (result !== null) {
+                return this.layoutService.updateLayout(
+                    Utils.getUserName(),
+                    content
+                ).subscribe(success => { },
+                    error => {
+                        console.log('Failed to get user layout', error);
+                    });
+            } else {
+                return this.layoutService.createLayout(
+                    Utils.getUserName(),
+                    content
+                ).subscribe(success => { },
+                    error => {
+                        console.log('Failed to create user layout ', error);
+                    }
+                );
+            }
+        },
+            error => {
+                console.log('Failed to get user layout ', error);
+            });
+
     }
 
     openNodeEditorTab(ctx: StateContext<LayoutStateModel>, node: BasicTreeNodeInfo, releaseNr?: number) {
@@ -309,7 +345,7 @@ export class LayoutState {
             node.type === 'SIMULATION' ? 'SimulationEditorComponent' :
                 node.type === 'SIMULATIONRESULT' ? 'SimulationResultComponent' :
                     'ForecastEditorComponent';
-
+        LayoutState.simResultOpen = node.type === 'SIMULATIONRESULT' ? true : false;
         const newState = produce(ctx.getState(), draft => {
             this.openEditor(draft, component, node.name, fullName, { nodeId: node.id, releaseNr: releaseNr }, `${component}:nodeId:${node.id}`);
         });
@@ -358,6 +394,7 @@ export class LayoutState {
             this.openEditor(draft, 'SettingsEditorComponent', 'Settings', 'Settings');
         });
         setState(newState);
+        LayoutState.simResultOpen = false;
     }
 
     @Action(userActions.UserEditorButtonClicked)
@@ -368,7 +405,9 @@ export class LayoutState {
             this.openEditor(draft, 'UserEditorComponent', 'Manage Users', 'Manage Users');
         });
         setState(newState);
+        LayoutState.simResultOpen = false;
     }
+
     @Action(userActions.UserGroupEditorButtonClicked)
     openUserGroupEditorTab(
         { getState, setState }: StateContext<LayoutStateModel>,
@@ -377,6 +416,7 @@ export class LayoutState {
             this.openEditor(draft, 'UserGroupEditorComponent', 'Manage User Groups', 'Manage User Groups');
         });
         setState(newState);
+        LayoutState.simResultOpen = false;
     }
 
     @Action(historyAction.EditVersionClicked)
@@ -415,12 +455,15 @@ export class LayoutState {
             this.openEditor(draft, 'TrashComponent', 'Trash', 'Trash');
         });
         setState(newState);
+        LayoutState.simResultOpen = false;
     }
 
     @Action(dockableStackActions.TabClicked)
     tabClicked(
         { getState, setState }: StateContext<LayoutStateModel>,
         { payload }: dockableStackActions.TabClicked) {
+        const nodeType = payload.panelId.split(':')[0];
+        LayoutState.simResultOpen = nodeType === 'SimulationResultComponent' ? true : false;
         const newState = produce(getState(), draft => {
             const stack = LayoutState.findStackById(draft.content, payload.stackId);
             this.setSelected(stack, payload.panelId);
@@ -436,6 +479,8 @@ export class LayoutState {
             const stack = LayoutState.findStackById(draft.content, payload.stackId);
             const wasSelected = stack.selected === payload.panelId;
             stack.panels = stack.panels.filter(panel => panel.id !== payload.panelId);
+            const nodeType = payload.panelId.split(':')[0];
+            LayoutState.simResultOpen = !(nodeType === 'SimulationResultComponent');
             if (wasSelected) {
                 this.setSelected(stack, null);
             }

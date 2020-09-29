@@ -213,8 +213,11 @@ export class SimulationEditorComponent implements OnInit, OnDestroy {
                                     const trackingInfo = inputSheetTracking.find(is => is.id === sheet.id);
 
                                     if (sheet && sheet.content && sheet.content.variables) {
+                                        const startDate = sheet.content.startTime;
+                                        const endDate = sheet.content.endTime;
                                         const sheetRef = alreadySelectedForecastSheets.find(sr => sr.ref === sheet.id);
                                         const variableModelList: ForecastVariableModel[] = Object.values(sheet.content.variables);
+
                                         for (const variable of variableModelList) {
                                             variableDescriptors.push({
                                                 folderId: trackingInfo.parentId,
@@ -226,12 +229,16 @@ export class SimulationEditorComponent implements OnInit, OnDestroy {
                                                 variableId: variable.objectId,
                                                 variableName: variable.title,
                                                 variableType: variable.variableType,
-                                                variableUnit: variable.unit
+                                                variableUnit: variable.unit,
+                                                startDate: startDate,
+                                                endDate: endDate
+
                                             });
                                         }
                                     }
                                 }
                                 this.variableDescriptors$.next(variableDescriptors);
+
                             });
                         } else {
                             this.variableDescriptors$.next([]);

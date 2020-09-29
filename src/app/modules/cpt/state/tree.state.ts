@@ -19,12 +19,12 @@ import * as gmVariablePickerActions from './gm-variable-picker.actions';
 import * as gmVariableReferenceDetailsActions from '@cpt/state/gm-variable-reference-details.actions';
 import { TreeService } from '@cpt/services/tree.service';
 import { buildPatch, TreeNode, TreeNodeType } from '@cpt/interfaces/tree-node';
-import { asapScheduler, combineLatest, Observable, of, throwError, forkJoin } from 'rxjs';
-import { catchError, map, mergeMap, switchMap, tap } from 'rxjs/operators';
+import { asapScheduler, Observable, of, throwError } from 'rxjs';
+import { catchError, map, mergeMap, tap } from 'rxjs/operators';
 import { Utils } from '@cpt/lib/utils';
 import produce from 'immer';
 import { v4 as uuid } from 'uuid';
-import { GraphModel, Inport, Outport, ParamType, SimulationConfiguration, ProcessInterfaceDescription, SimulationResult } from '@cpt/capacity-planning-simulation-types';
+import { GraphModel, Inport, Outport, ParamType, SimulationConfiguration, SimulationResult } from '@cpt/capacity-planning-simulation-types';
 import * as moment from 'moment';
 import { unix } from 'moment';
 import * as gmOps from '@cpt/lib/graph-model-ops';
@@ -35,7 +35,6 @@ import { detailedDiff } from 'deep-object-diff';
 import {
     pidFromGraphModelNode
 } from '@cpt/models/graph-model.model';
-import { ProcessingElementState } from '@cpt/state/processing-element.state';
 import { UpdatedGraphModel, UpdatedGraphModelName } from '@cpt/state/processing-element.actions';
 import { SRSDatatableProperties } from '@cpt/models/srs-datatable-properties';
 
@@ -53,7 +52,7 @@ import { extractDependencies } from '@cpt/lib/graph-model-ops';
 import { ForecastSheetReference } from '@cpt/capacity-planning-simulation-types/lib';
 import { GraphModelInterfaceState } from '@cpt/state/graph-model-interface.state';
 import { AddCurrentPid } from '@cpt/state/graph-model-interface.actions';
-import { CreatedTreeNode, CreateTreeNode, DuplicateFolder } from './tree.actions';
+import { CreatedTreeNode, DuplicateFolder } from './tree.actions';
 import { TreeNodeTrackingState } from '@cpt/state/tree-node-tracking.state';
 import {
     RenameFolderClicked, RenameForecastSheetClicked,
@@ -195,9 +194,12 @@ export class TreeState {
             ));
     }
 
+
     @Action(treeActions.LoadForecastSheetContent)
     loadForecastSheetNodeContent(ctx: StateContext<TreeStateModel>,
         { payload }: treeActions.LoadForecastSheetContent) {
+            this.loadNodeContent(ctx, 'FC_SHEET', payload).subscribe(n => {
+            });
         return this.loadNodeContent(ctx, 'FC_SHEET', payload);
     }
 
@@ -311,17 +313,18 @@ export class TreeState {
 
     @Action(treeActions.FCSheetEndDateChanged)
     updateFCSheetEndDate(ctx: StateContext<TreeStateModel>, { payload: { nodeId, endDate } }: treeActions.FCSheetEndDateChanged) {
-        return this.updateTreeNodeSparse(ctx, nodeId, draftNode => {
-            draftNode.content.endTime = endDate;
+        return this.updateTreeNodeContent(ctx, nodeId, draftNode => {
+            draftNode.content.endTime = moment(endDate).format('YYYY-MM');
         }, true);
     }
 
     @Action(treeActions.FCSheetStartDateChanged)
     updateFCSheetStartDate(ctx: StateContext<TreeStateModel>, { payload: { nodeId, startDate } }: treeActions.FCSheetStartDateChanged) {
-        return this.updateTreeNodeSparse(ctx, nodeId, draftNode => {
-            draftNode.content.startTime = startDate;
+        return this.updateTreeNodeContent(ctx, nodeId, draftNode => {
+            draftNode.content.startTime =  moment(startDate).format('YYYY-MM');
         }, true);
     }
+
 
     @Action(treeActions.CreateTreeNode)
     createTreeNode(
@@ -563,8 +566,7 @@ export class TreeState {
                 map(response => {
                     if (response.data) {
                         patchState({ nodes: [...state.nodes, { ...trashNode, name: response.data.name, version: response.data.version, currentUserAccessPermissions: response.data.currentUserAccessPermissions }], loading: false, loaded: true });
-                    }
-                    else {
+                    } else {
                         patchState({ nodes: [...state.nodes, { ...trashNode, version: trashNode.version + 1 }], loading: false, loaded: true });
                     }
                     dispatch(new treeActions.GetTreeNode(trashNode.id));
@@ -685,7 +687,7 @@ export class TreeState {
                 ctx.setState(patch({ nodes: updateItem<TreeNode>(tn => tn.id === nodeId, oldNode) }));
             });
             if (e.status === 409) {
-                if (e.error.errorMessage.includes("Please choose a different name")) {
+                if (e.error.errorMessage.includes('Please choose a different name')) {
                     this.store.dispatch(new treeActions.TreeNodeNameConflicted({
                         orgNode: oldNode,
                         conflictedNode: updatedNode
@@ -811,13 +813,13 @@ export class TreeState {
             }
         });
 
-
         // check if we can do a patch update
         if (oldNode.content && updatedNode.content && !forceFullUpdate) {
             const nodeDiff = detailedDiff(oldNode.content, updatedNode.content) as { added: any, updated: any, deleted: any };
             const patchSet = buildPatch(nodeDiff);
             return this.treeService.patchTreeNode(nodeId, patchSet, String(oldNode.version)).pipe(rollbackAndThrow);
         } else {
+
             // fallback to oldskool full node update
             const version = ignoreVersionConflict ? undefined : String(oldNode.version);
             return this.treeService.updateTreeNode2(updatedNode, version).pipe(updateToReturnedVersion, rollbackAndThrow);
@@ -1352,6 +1354,7 @@ export class TreeState {
         { payload: { simulationId, stepStart } }: simulationActions.StartDateUpdated
     ) {
         const nodeId = simulationId;
+
         return this.updateTreeNodeContent(ctx, nodeId, draftNode => {
             draftNode.content.stepStart = stepStart;
         });

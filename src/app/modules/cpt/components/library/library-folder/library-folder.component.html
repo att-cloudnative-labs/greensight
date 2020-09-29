@@ -46,9 +46,31 @@
         <i>{{loadingOrEmpty | async }}</i>
     </li>
     <li *ngFor="let node of (childNodes$ | async)" [ngSwitch]="node.type">
-        <app-library-graph-model *ngSwitchCase="'MODEL'" [graphModel]="node" [libChildrenNodes]="(childNodes$ | async)"></app-library-graph-model>
-        <app-library-simulation *ngSwitchCase="'SIMULATION'" [simulation]="node" [libChildrenNodes]="(childNodes$ | async)"></app-library-simulation>
-        <app-library-forecast-sheet *ngSwitchCase="'FC_SHEET'" [sheet]="node" [libChildrenNodes]="(childNodes$ | async)"></app-library-forecast-sheet>
+        <app-library-graph-model *ngSwitchCase="'MODEL'" [graphModel]="node" [libChildrenNodes]="(childNodes$ | async)"
+        appDragItem
+        (appDragStarted)="handleDragStarted(node)"
+        [appDragItemData]="selection"> 
+        <div *ngIf="selection != []">  
+         <div style="background:  rgb(136, 134, 134); border-radius: 15px; padding: 0.25em 0.5em 0.25em; color: white; font-weight: normal; line-height: 1;" *appDragPreview>
+            {{ selection.length > 0 && !srEnabled ? 'drop to open': 'drop disabled' }}
+        </div></div>
+    </app-library-graph-model>
+        <app-library-simulation *ngSwitchCase="'SIMULATION'" [simulation]="node" [libChildrenNodes]="(childNodes$ | async)"
+        appDragItem
+        (appDragStarted)="handleDragStarted(node)"
+        [appDragItemData]="selection">   
+         <div style="background: rgb(136, 134, 134); border-radius: 15px; padding: 0.25em 0.5em 0.25em; color: white; font-weight: normal; line-height: 1;" *appDragPreview>
+            {{ selection.length > 0 && !srEnabled ? 'drop to open': 'drop disabled' }}
+        </div>
+    </app-library-simulation>
+        <app-library-forecast-sheet *ngSwitchCase="'FC_SHEET'" [sheet]="node" [libChildrenNodes]="(childNodes$ | async)"
+        appDragItem
+        (appDragStarted)="handleDragStarted(node)"
+        [appDragItemData]="selection">   
+         <div style="background: rgb(136, 134, 134); border-radius: 15px; padding: 0.25em 0.5em 0.25em; color: white; font-weight: normal; line-height: 1;" *appDragPreview>
+            {{ selection.length > 0 && !srEnabled ? 'drop to open': 'drop disabled' }}
+        </div>
+    </app-library-forecast-sheet>
     </li>
 </ul>
 

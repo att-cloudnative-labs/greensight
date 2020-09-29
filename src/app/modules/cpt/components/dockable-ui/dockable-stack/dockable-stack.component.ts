@@ -1,8 +1,8 @@
 import { Component, OnInit, Input, SimpleChanges, OnChanges } from '@angular/core';
-import { Stack, Panel } from '@app/modules/cpt/state/layout.state';
+import { Stack, Panel, LayoutState } from '@app/modules/cpt/state/layout.state';
 import { Store } from '@ngxs/store';
 import * as dockableStackActions from '@app/modules/cpt/state/dockable-stack.actions';
-
+import * as libraryActions from '@app/modules/cpt/state/library.actions';
 
 @Component({
     selector: 'app-dockable-stack',
@@ -23,6 +23,17 @@ export class DockableStackComponent implements OnInit, OnChanges {
     }
 
     constructor(private store: Store) { }
+
+    handleDropNode(dragItem) {
+        if (dragItem.data[0].type !== undefined) {
+        const selection = dragItem.data;
+        this.store.dispatch(new libraryActions.GraphModelDoubleClicked(selection[0]));
+        }
+
+    }
+    get srEnabled() {
+        return LayoutState.simResultOpen;
+    }
 
     ngOnInit() {
     }

@@ -3,6 +3,7 @@ import { VariableType } from '@cpt/capacity-planning-projection/lib';
 import { ForecastFrame } from '@app/modules/cpt/interfaces/forecast-frame';
 import { ForecastSubFrame } from '@app/modules/cpt/interfaces/forecast-sub-frame';
 import { ForecastVariable } from '@app/modules/cpt/interfaces/forecast-variable';
+import { Utils } from '@app/modules/cpt/lib/utils';
 
 /**
 * Displays formatted subframe value
@@ -35,6 +36,7 @@ export class SubframeCellComponent {
     @Input('variable') variable: ForecastVariable;
     @Input('hasTimesegment') hasTimesegment;
     @Input('selected') selected;
+    @Input('subframeName') subframeName: String;
 
     showEdit = false;
     fwdKeyEvent = undefined;
@@ -49,7 +51,22 @@ export class SubframeCellComponent {
     }
 
     get value() {
-        return this.subframe.value;
+
+        if (this.subframe) {
+            return this.subframe.value;
+        } else if (this.frame.distribution.stdDev) {
+            const mean = this.frame.projectedValue;
+            const stdValue = this.frame.distribution.stdDev;
+            if (this.subframeName === 'P99 - Upper') {
+                return Utils.getPercentiles(mean, stdValue, (99 / 100)).upper;
+            } else if (this.subframeName === 'P99 - Lower') {
+                return Utils.getPercentiles(mean, stdValue, (99 / 100)).lower;
+            } else if (this.subframeName === 'P95 - Upper') {
+                return Utils.getPercentiles(mean, stdValue, (95 / 100)).upper;
+            } else if (this.subframeName === 'P95 - Lower') {
+                return Utils.getPercentiles(mean, stdValue, (95 / 100)).lower;
+            }
+        }
     }
 
     get variableType(): string {

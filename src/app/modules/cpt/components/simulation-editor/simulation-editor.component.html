@@ -37,7 +37,7 @@
                 [scenarioId]="scenarioId"
                 [deleteDisabled]="scenarioId == scenarioIds[0]"
                 [reloadOnChange]="reloadScenariosOnChange"
-                                           [variableDescriptors]="variableDescriptors$"
+                [variableDescriptors]="variableDescriptors$"
                 (onDeleteScenario)="removeScenario(scenarioId)"
                 (renameScenario)="renameScenario(scenarioId, $event)"></app-simulation-scenario-table>
         <button class="add-scenario" (click)="addScenario()" [ngClass]="modelNotFound ? 'disable' : ''" [disabled]="modelNotFound" data-testid="add-scenario" title="Add scenario">Add Scenario</button>

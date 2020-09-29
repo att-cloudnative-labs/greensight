@@ -1,3 +1,5 @@
+import { Moment } from 'moment';
+
 export interface ForecastVariableDescriptor {
     variableName: string;
     variableId: string;
@@ -9,4 +11,6 @@ export interface ForecastVariableDescriptor {
     folderId: string;
     searchKey: string;
     variableType: string;
+    startDate: Moment;
+    endDate: Moment;
 }

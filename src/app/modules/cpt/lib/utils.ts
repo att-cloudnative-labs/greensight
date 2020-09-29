@@ -22,6 +22,7 @@ export class Utils {
     static routeUserGroup: String = 'userGroup';
     static routeModelVersion: String = 'version';
     static routeSimVersion: String = 'simulation/version';
+    static routeLayout = 'layout';
 
     // Colors for projections
     static colors = [

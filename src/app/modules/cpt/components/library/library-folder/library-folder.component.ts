@@ -29,6 +29,7 @@ import { PermissionsObject } from '@app/modules/cpt/interfaces/permissions';
 import { SelectionState, Selection } from '@app/modules/cpt/state/selection.state';
 import * as clipboardActions from '@app/modules/cpt/state/clipboard.actions';
 import { ClipboardState, ClipboardStateModel } from '@app/modules/cpt/state/clipboard.state';
+import { LayoutState } from '@app/modules/cpt/state/layout.state';
 
 @Component({
     selector: 'app-library-folder',
@@ -58,7 +59,11 @@ export class LibraryFolderComponent implements OnInit, OnDestroy {
     modifyPermissionsObj: PermissionsObject;
     isInClipboard = false;
     loadingOrEmpty: Observable<string>;
+    selection: TreeNode[] = [];
 
+    get srEnabled() {
+        return LayoutState.simResultOpen;
+    }
 
     get isHighlighted() {
         return this.showPopup || this.hovering;
@@ -74,6 +79,13 @@ export class LibraryFolderComponent implements OnInit, OnDestroy {
 
     constructor(private store: Store, private libraryComponent: LibraryComponent, private actions$: Actions,
         private popover: Popover, private viewContainerRef: ViewContainerRef) { }
+
+    handleDragStarted(node: TreeNode) {
+        if (this.selection.indexOf(node) === -1) {
+            this.selection = [];
+            this.selection = [node];
+        }
+    }
 
     ngOnInit() {
 

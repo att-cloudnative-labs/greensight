@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnInit, 
 import { ForecastVariable } from '@app/modules/cpt/interfaces/forecast-variable';
 import { Unit } from '@app/modules/cpt/interfaces/unit';
 import { ForecastVariableProjection } from '@app/modules/cpt/interfaces/forecastVariableProjections';
-import { Store, ofActionSuccessful, Actions } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 import { EnteredVariableTitle } from '@app/modules/cpt/state/forecast-sheet.action';
 
 /**
@@ -49,10 +49,8 @@ export class VariableCellComponent implements OnInit, OnChanges {
         'border': '1px solid transparent'
     };
     originalTitle: string;
-
     constructor(
-        private store: Store,
-        private actions$: Actions
+        private store: Store
     ) { }
 
 
@@ -64,7 +62,7 @@ export class VariableCellComponent implements OnInit, OnChanges {
      * subvariables to be visible
      */
     get isExpandable(): boolean {
-        return this.projection.subframeNames && this.projection.subframeNames.length > 0;
+        return (this.projection.subframeNames && this.projection.subframeNames.length > 0 ) || (this.variable.timeSegments.length > 0 && this.variable.timeSegments[0].distribution.staticStdDev !== undefined) ;
     }
 
     /**

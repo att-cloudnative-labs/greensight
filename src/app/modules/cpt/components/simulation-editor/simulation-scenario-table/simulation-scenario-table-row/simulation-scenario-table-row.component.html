@@ -43,13 +43,10 @@
 </td>
 
 <td class="inport-unit">
-    <select (change)="unitChanged($event)" *ngIf="newInport.type === 'NUMBER'">
-        <option [selected]="!selectedUnit"></option>
-        <option *ngFor="let unit of forecastUnits"
-            [value]="unit.title"
-            [selected]="selectedUnit === unit.title">{{unit.title}}</option>
+    <select *ngIf="newInport.type === 'NUMBER'" [(ngModel)]="newInport.unit" (change)="unitChanged()">
+        <option></option>
+        <option *ngFor="let unit of units" [value]="unit.title">{{unit.title}}</option>
     </select>
-
     <div *ngIf="newInport.type === 'VARIABLE'">
         <span *ngIf="forecastVar">{{forecastVar.variableUnit}}</span>
     </div>

@@ -4,7 +4,7 @@ import { getMonths } from '@cpt/capacity-planning-projection/lib/date';
 import { DistributionType } from '@cpt/capacity-planning-projection/lib/distribution';
 import { PercentileResult } from '@app/modules/cpt/interfaces/PercentileResult';
 import { EChartOption } from 'echarts';
-import { Select, Store } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 import { SettingsState } from '@cpt/state/settings.state';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import { UserSettings } from '@cpt/interfaces/user-settings';
@@ -178,7 +178,6 @@ export class ForecastGraphComponent implements OnInit, OnDestroy {
             for (const frame of projection.frames) {
                 const subFrameIndex = frame.subFrames.findIndex(x => x.name === subFrameName);
                 const subFrameValue = frame.subFrames[subFrameIndex].value;
-
                 dataValues.push({ x: x_Index, y: subFrameValue });
                 x_Index = x_Index + 1;
             }
@@ -219,6 +218,7 @@ export class ForecastGraphComponent implements OnInit, OnDestroy {
                 x_Index = x_Index + 1;
             }
 
+
             const upperIndex = upperValues.findIndex(values => typeof values.y !== 'undefined');
             const lowerIndex = lowerValues.findIndex(values => typeof values.y !== 'undefined');
 
@@ -235,7 +235,6 @@ export class ForecastGraphComponent implements OnInit, OnDestroy {
                     data: upperValues.map(d => d.y)
                 });
 
-
                 this.chartSeries.push({
                     name: projection.variable.content.title + ': Percentile ' + percentile + ' - Lower',
                     type: 'line',
@@ -248,6 +247,8 @@ export class ForecastGraphComponent implements OnInit, OnDestroy {
                 });
             }
         }
+
+
     }
 
 }

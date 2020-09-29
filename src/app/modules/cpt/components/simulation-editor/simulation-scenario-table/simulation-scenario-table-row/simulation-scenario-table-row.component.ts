@@ -8,6 +8,11 @@ import { Observable } from 'rxjs';
 import { ALL_PARAM_TYPES } from '@cpt/capacity-planning-simulation-types';
 import * as moment from 'moment';
 import { ParamType } from '@cpt/capacity-planning-simulation-types/lib';
+import { TreeNode } from '@app/modules/cpt/interfaces/tree-node';
+import { Modal } from 'ngx-modialog-7/plugins/bootstrap';
+import { Unit } from '@app/modules/cpt/interfaces/unit';
+import { VariableUnitService } from '@app/modules/cpt/services/variable-unit.service';
+
 
 @Component({
     selector: '[app-simulation-scenario-table-row]',
@@ -16,7 +21,7 @@ import { ParamType } from '@cpt/capacity-planning-simulation-types/lib';
 })
 export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, OnChanges {
     @Input() scenarioId: string;
-    @Input() simulationId: string;
+    @Input() simulation: TreeNode;
     @Input() inport;
     @Input() inportId;
     @Input() inportInfos: { types: ParamType[], name: string };
@@ -28,6 +33,8 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
     @Select(ForecastValuesState.forecastUnits) forecastUnits$: Observable<ForecastVariableUnit[]>;
     forecastVariables = [];
     forecastUnits;
+    units: Unit[] = new Array<Unit>();
+
 
     inportTypes = [];
     numValue = 0;
@@ -39,20 +46,24 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
     strValue = '';
     dateValue: any;
     delayTimer;
+    simStartDate;
+    simEndDate;
 
-    constructor(private store: Store) { }
+    constructor(private store: Store, private modal: Modal, private variableUnitService: VariableUnitService) { }
 
     ngOnInit() {
 
     }
 
     ngOnDestroy() {
-        if (this.delayTimer) clearTimeout(this.delayTimer);
+        if (this.delayTimer) { clearTimeout(this.delayTimer); }
     }
 
     ngOnChanges() {
+        this.simStartDate = this.simulation ? this.simulation.content.stepStart : undefined;
+        this.simEndDate = this.simulation ? this.simulation.content.stepLast : undefined;
         if (!this.inportInfos) {
-            this.inportInfos = { types: [], name: "" };
+            this.inportInfos = { types: [], name: '' };
         }
         this.newInport = Object.assign({}, this.inport);
         if (this.newInport.type === 'FORECAST_VAR_REF') {
@@ -68,7 +79,7 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
         if (this.newInport.unit) {
             this.selectedUnit = this.newInport.unit;
         } else {
-            this.selectedUnit = 'undefined';
+            this.selectedUnit = '';
         }
 
         this.variableDescriptors.subscribe(result => {
@@ -125,6 +136,15 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
         if (this.newInport && this.newInport.displayType) {
             this.newInport.type = this.newInport.displayType;
         }
+        this.getUnits();
+    }
+
+
+    getUnits() {
+        this.variableUnitService.getVariableUnits()
+            .subscribe(result => {
+                this.units = result;
+            });
     }
 
     get variableSelectMessage(): string {
@@ -172,15 +192,27 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
             this.delayTimer = setTimeout(() => {
                 this.valueChanged(event);
             }, timeout);
-        }
-        else {
+        } else {
             this.valueChanged(event);
         }
     }
 
     typeChanged(event) {
-        if (this.delayTimer) clearTimeout(this.delayTimer);
+        if(this.delayTimer) clearTimeout(this.delayTimer);
         this.valueChanged(event);
+    }
+
+    checkVarDateRange() {
+        const startDate = moment(this.forecastVar.startDate).format('YYYY-MM');
+        const endDate = moment(this.forecastVar.endDate).format('YYYY-MM');
+
+        if (endDate < this.simStartDate || startDate > this.simEndDate) {
+            this.modal
+                .alert()
+                .title('Warning')
+                .body(`Variable <b>${this.forecastVar.variableName}</b> Time Range Is Not Within The Simulation Time Range.`)
+                .open();
+        }
     }
 
     valueChanged(event) {
@@ -230,6 +262,7 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
 
         if (this.newInport.type === 'VARIABLE') {
             if (this.forecastVar) {
+                this.checkVarDateRange();
                 scenarioInport = $.extend({}, {
                     displayType: 'FORECAST_VAR_REF',
                     type: 'FORECAST_VAR_REF',
@@ -238,10 +271,9 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
                     sheetRefId: this.forecastVar.sheetRefId,
                     unit: inportUnit
                 });
-
                 this.store.dispatch(new simulationActions.InportScenarioVariableUpdated(
                     {
-                        simulationId: this.simulationId,
+                        simulationId: this.simulation.id,
                         inportId: this.inportId,
                         scenarioId: this.scenarioId,
                         newScenarioInport: scenarioInport
@@ -250,6 +282,7 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
             }
         } else if (this.newInport.type === 'BREAKDOWN') {
             if (this.forecastVar) {
+                this.checkVarDateRange();
                 scenarioInport = $.extend({}, {
                     displayType: 'BREAKDOWN',
                     type: 'FORECAST_VAR_REF',
@@ -261,7 +294,7 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
 
                 this.store.dispatch(new simulationActions.InportScenarioVariableUpdated(
                     {
-                        simulationId: this.simulationId,
+                        simulationId: this.simulation.id,
                         inportId: this.inportId,
                         scenarioId: this.scenarioId,
                         newScenarioInport: scenarioInport
@@ -273,12 +306,12 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
                 displayType: this.newInport.type,
                 type: this.newInport.type,
                 value: this.newInport.value,
-                unit: inportUnit
+                unit: this.newInport.unit ? this.newInport.unit : undefined
             });
 
             this.store.dispatch(new simulationActions.InportScenarioUpdated(
                 {
-                    simulationId: this.simulationId,
+                    simulationId: this.simulation.id,
                     inportId: this.inportId,
                     scenarioId: this.scenarioId,
                     newScenarioInport: scenarioInport
@@ -287,13 +320,33 @@ export class SimulationScenarioTableRowComponent implements OnInit, OnDestroy, O
         }
     }
 
-    unitChanged(event) {
-        this.selectedUnit = (event.target.value && event.target.value !== "") ? event.target.value : null;
-        this.valueChanged(event);
+    unitChanged() {
+        if (this.selectedUnit !== this.newInport.unit) {
+            this.selectedUnit = (this.newInport.unit && this.newInport.unit !== '') ? this.newInport.unit : null;
+            let scenarioInport = {};
+
+            scenarioInport = $.extend({}, {
+                displayType: this.newInport.type,
+                type: this.newInport.type,
+                value: this.newInport.value,
+                unit: this.selectedUnit
+            });
+            this.store.dispatch(new simulationActions.InportScenarioUpdated(
+                {
+                    simulationId: this.simulation.id,
+                    inportId: this.inportId,
+                    scenarioId: this.scenarioId,
+                    newScenarioInport: scenarioInport
+                })
+            );
+            this.valueChanged(event);
+        }
+
     }
 }
 
 function triggerValueChange(obj, event) {
-    if (obj)
+    if (obj) {
         obj.valueChanged(event);
+    }
 }

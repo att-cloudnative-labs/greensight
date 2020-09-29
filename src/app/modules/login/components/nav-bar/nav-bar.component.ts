@@ -9,6 +9,7 @@ import { UserEditorButtonClicked, UserGroupEditorButtonClicked } from '@cpt/stat
 import { SettingsState } from '@cpt/state/settings.state';
 import { untilDestroyed } from 'ngx-take-until-destroy';
 import { map } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-nav-bar',
@@ -24,7 +25,7 @@ export class NavBarComponent implements OnInit, OnDestroy {
     showUserEditorPanels$: Observable<boolean>;
 
     constructor(
-        private modal: Modal, private store: Store
+        private modal: Modal, private store: Store, private router: Router
     ) { }
 
     @Input('hideNavLinks') hideNavIcons: Boolean = false;
@@ -53,8 +54,8 @@ export class NavBarComponent implements OnInit, OnDestroy {
                 .cancelBtn('No')
                 .open();
         dialog.result.then(promise => {
-            sessionStorage.clear();
-            window.location.reload();
+            this.router.navigate(['/login']);
+            window.location.replace('/login');
         });
     }
 

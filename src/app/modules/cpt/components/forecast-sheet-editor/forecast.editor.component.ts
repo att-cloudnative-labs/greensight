@@ -22,7 +22,6 @@ import {
 import { ForecastFrame } from '@app/modules/cpt/interfaces/forecast-frame';
 import { ForecastVariableProjection } from '@app/modules/cpt/interfaces/forecastVariableProjections';
 import { ForecastVariable, ForecastVariableModel } from '@app/modules/cpt/interfaces/forecast-variable';
-import { UserService } from '@cpt/services/user.service';
 import { Modal } from 'ngx-modialog-7/plugins/bootstrap';
 import { ForecastGraphComponent } from './forecast-graph/forecast.graph.component';
 import { ForecastVariableTreeNode } from '@app/modules/cpt/interfaces/forecast-variable';
@@ -31,11 +30,10 @@ import { Unit } from '@app/modules/cpt/interfaces/unit';
 import { VariableUnitService } from '@app/modules/cpt/services/variable-unit.service';
 import { SpreadsheetEntryComponent } from './spreadsheet-entry/spreadsheet.entry.component';
 import { TimeSegmentMethod } from '@cpt/capacity-planning-projection/lib/timesegment';
-import { SettingsService } from '@app/modules/cpt/services/settings.service';
 import { UndoRedoObject } from '../../interfaces/undo-redo-object';
 import { UndoRedoManager } from '../../lib/undo-redo-manager';
 import { SplitComponent } from 'angular-split';
-import { Store, ofActionSuccessful, Actions, } from '@ngxs/store';
+import { Store, ofActionSuccessful, Actions } from '@ngxs/store';
 import * as treeActions from '@app/modules/cpt/state/tree.actions';
 import { v4 as uuid } from 'uuid';
 import { TreeState } from '@app/modules/cpt/state/tree.state';
@@ -47,7 +45,7 @@ import { TreeNode } from '@app/modules/cpt/interfaces/tree-node';
 import { Moment, unix } from 'moment';
 import { AddVariable, DeleteVariable, UpdateVariable } from '@app/modules/cpt/state/forecast-sheet.action';
 import * as DockableStackActions from '@app/modules/cpt/state/dockable-stack.actions';
-import { interval } from "rxjs";
+import { interval } from 'rxjs';
 import { ApplicationState } from '@cpt/state/application.state';
 import { ReleaseState } from '@cpt/state/release.state';
 import { ReleaseFetch } from '@cpt/state/release.actions';
@@ -113,8 +111,6 @@ export class ForecastEditorComponent implements OnInit, OnDestroy, AfterViewInit
     constructor(
         private modalDialog: Modal,
         private modal: ModalDialogService,
-        private userService: UserService,
-        private settingsService: SettingsService,
         private variableUnitService: VariableUnitService,
         private store: Store,
         private actions$: Actions
@@ -216,6 +212,7 @@ export class ForecastEditorComponent implements OnInit, OnDestroy, AfterViewInit
                 this.startDate = start.format('YYYY-MM');
                 this.updateProjections();
             });
+
 
         this.actions$.pipe(ofActionSuccessful(
             treeActions.FCSheetEndDateChanged),

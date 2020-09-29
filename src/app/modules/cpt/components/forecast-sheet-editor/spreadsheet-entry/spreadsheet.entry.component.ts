@@ -82,7 +82,7 @@ export class SpreadsheetEntryComponent implements OnInit, OnChanges, OnDestroy {
     frameIndex = 0;
     currentSubFrame = true;
     currentFrame = true;
-
+    stdDev = [ 'P99 - Upper', 'P99 - Lower', 'P95 - Upper', 'P95 - Lower'];
     constructor(private _el: ElementRef, private store: Store, private actions$: Actions
     ) { }
 

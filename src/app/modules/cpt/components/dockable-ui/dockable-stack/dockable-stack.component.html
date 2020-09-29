@@ -1,6 +1,6 @@
 <div class="header">
     <div class="tabs">
-        <div
+        <div 
             *ngFor='let panel of panels'
             class='tab'
             (click)='onTabClick(panel)'
@@ -22,7 +22,13 @@
     </div>
 </div>
 
-<div class="panels">
+<div  *ngIf="srEnabled" class="panels">
+    <div *ngFor='let panel of panels' class='panels' [hidden]="panel != selectedPanel">
+        <app-dockable-panel [panel]='panel' [hidden]="panel != selectedPanel"></app-dockable-panel>
+    </div>
+</div>
+
+<div *ngIf="!srEnabled" appDropList (appDropListDrop)="handleDropNode($event)" class="panels">
     <div *ngFor='let panel of panels' class='panels' [hidden]="panel != selectedPanel">
         <app-dockable-panel [panel]='panel' [hidden]="panel != selectedPanel"></app-dockable-panel>
     </div>
