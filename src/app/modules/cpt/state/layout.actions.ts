@@ -22,3 +22,8 @@ export class SaveLayout {
     static readonly type = '[Layout] Update Layout';
     constructor(public readonly payload: { ownerId: String, content: any }) { }
 }
+
+export class GetLayout {
+    static readonly type = '[Layout] Get User Layout';
+    constructor(public readonly payload: { ownerId: String}) { }
+}

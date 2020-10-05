@@ -6,7 +6,7 @@ import { Utils } from '@cpt/lib/utils';
 import { SettingsService } from '@cpt/services/settings.service';
 import { stringifySigma, UserSettings } from '@cpt/interfaces/user-settings';
 import { of } from 'rxjs';
-
+import * as layoutActions from '@cpt/state/layout.actions';
 
 export interface SettingsStateModel {
     uiVersion: string;
@@ -117,7 +117,7 @@ export class SettingsState {
     @Action(settingActions.SettingsFetch)
     @Action(settingActions.SettingsButtonClicked)
     pullLatestSettings(ctx: StateContext<SettingsStateModel>) {
-        return ctx.dispatch([new settingActions.SettingsFetchBackendInfo(), new settingActions.SettingsFetchSimulationInfo(), new settingActions.SettingsFetchUser()]);
+        return ctx.dispatch([new settingActions.SettingsFetchBackendInfo(), new settingActions.SettingsFetchSimulationInfo(), new settingActions.SettingsFetchUser(), new layoutActions.GetLayout(sessionStorage['user_name'])]);
     }
 
 

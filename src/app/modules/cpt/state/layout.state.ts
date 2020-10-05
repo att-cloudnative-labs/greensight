@@ -339,6 +339,25 @@ export class LayoutState {
 
     }
 
+    @Action(layoutActions.GetLayout)
+    getLayout({ getState, setState }: StateContext<LayoutStateModel>, { payload: { ownerId } }: layoutActions.GetLayout) {
+        // check user's layout
+        this.layoutService.getLayout(sessionStorage['user_name']).subscribe(result => {
+
+            const data = JSON.parse(JSON.stringify({ result }));
+            const content = data !== null ? data['result']['content'] : undefined;
+            sessionStorage['layout'] = content !== undefined ? JSON.stringify(content) : sessionStorage['layout'];
+            const newState = produce(getState(), draft => { });
+            const updatedContent = Object.assign({}, newState);
+            updatedContent.content = content['content'];
+            setState(updatedContent);
+        },
+            error => {
+                console.log('Failed to get user layout ', error);
+            });
+
+    }
+
     openNodeEditorTab(ctx: StateContext<LayoutStateModel>, node: BasicTreeNodeInfo, releaseNr?: number) {
         const fullName = this.store.selectSnapshot(TreeState.nodeFullPathById)(node.id);
         const component = node.type === 'MODEL' ? 'GraphModelEditorComponent' :
