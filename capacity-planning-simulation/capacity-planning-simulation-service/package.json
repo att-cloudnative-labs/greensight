@@ -6,7 +6,7 @@
   "dependencies": {
     "@cpt/capacity-planning-simulation": "0.1.2",
     "@cpt/capacity-planning-simulation-types": "0.1.2",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
     "rxjs": "^6.5.5",
